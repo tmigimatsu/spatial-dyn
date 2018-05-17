@@ -151,13 +151,6 @@ inline Index SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::outerStride() co
   return 6;
 }
 
-typedef SpatialMotion<float,1>  SpatialMotionf;
-typedef SpatialMotion<double,1> SpatialMotiond;
-typedef SpatialMotion<float,6>  SpatialMotion6f;
-typedef SpatialMotion<double,6> SpatialMotion6d;
-typedef SpatialMotion<float,Dynamic>  SpatialMotionXf;
-typedef SpatialMotion<double,Dynamic> SpatialMotionXd;
-
 }  // namespace Eigen
 
 #endif  // EIGEN_SPATIAL_MOTION_H_
