@@ -56,29 +56,34 @@ class SpatialMotionBase : public DenseBase<Derived> {
 
   typedef SpatialMotion<Scalar,6> SquareMatrixType;
 
-  typedef typename Base::PlainObject PlainObject;
+  typedef SpatialMotion<Scalar, ColsAtCompileTime, AutoAlign | (Flags & RowMajorBit ? RowMajor : ColMajor),
+                        MaxColsAtCompileTime> PlainObject;
 
   typedef CwiseNullaryOp<internal::scalar_constant_op<Scalar>,PlainObject> ConstantReturnType;
 
   typedef CwiseNullaryOp<internal::scalar_identity_op<Scalar>,PlainObject> IdentityReturnType;
 
-  typedef CwiseNullaryOp<internal::scalar_identity_op<Scalar>,
-                         typename SpatialMotionBase<SquareMatrixType>::PlainObject> SquareIdentityReturnType;
-  typedef Block<const SquareIdentityReturnType, 6,
-                internal::traits<Derived>::ColsAtCompileTime> BasisReturnType;
+  typedef Block<const CwiseNullaryOp<internal::scalar_identity_op<Scalar>, SquareMatrixType>,
+                6, internal::traits<Derived>::ColsAtCompileTime> BasisReturnType;
+
+  template<typename OtherDerived> struct cross_product_return_type {
+    typedef typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,typename internal::traits<OtherDerived>::Scalar>::ReturnType Scalar;
+    typedef SpatialMotion<Scalar,SpatialMotionBase::ColsAtCompileTime> type;
+  };
 
 #define EIGEN_CURRENT_STORAGE_BASE_CLASS Eigen::SpatialMotionBase
 #define EIGEN_DOC_UNARY_ADDONS(X,Y)
+#include "Eigen/src/plugins/CommonCwiseUnaryOps.h"
 #include "Eigen/src/plugins/CommonCwiseBinaryOps.h"
 #include "Eigen/src/plugins/MatrixCwiseUnaryOps.h"
 #include "Eigen/src/plugins/MatrixCwiseBinaryOps.h"
 #undef EIGEN_CURRENT_STORAGE_BASE_CLASS
 #undef EIGEN_DOC_UNARY_ADDONS
 
-  inline Derived& operator=(const SpatialMotionBase& other);
+  Derived& operator=(const SpatialMotionBase& other);
 
   template <typename OtherDerived>
-  inline Derived& operator=(const DenseBase<OtherDerived>& other);
+  Derived& operator=(const DenseBase<OtherDerived>& other);
 
   template <typename OtherDerived>
   Derived& operator=(const EigenBase<OtherDerived>& other);
@@ -87,20 +92,16 @@ class SpatialMotionBase : public DenseBase<Derived> {
   Derived& operator=(const ReturnByValue<OtherDerived>& other);
 
   template<typename OtherDerived>
-  inline Derived& operator+=(const SpatialMotionBase<OtherDerived>& other);
+  Derived& operator+=(const SpatialMotionBase<OtherDerived>& other);
 
   template<typename OtherDerived>
-  inline Derived& operator-=(const SpatialMotionBase<OtherDerived>& other);
+  Derived& operator-=(const SpatialMotionBase<OtherDerived>& other);
 
   template<typename OtherDerived>
-  const Product<Derived,OtherDerived> operator*(const SpatialMotionBase<OtherDerived> &other) const {
-    EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_MULTIPLY_TWO_SPATIAL_MOTION_VECTORS);
-  };
+  const Product<Derived,OtherDerived> operator*(const SpatialMotionBase<OtherDerived> &other) const;
 
   template<typename OtherDerived>
-  Derived& operator*=(const SpatialMotionBase<OtherDerived>& other) {
-    EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_MULTIPLY_TWO_SPATIAL_MOTION_VECTORS);
-  };
+  Derived& operator*=(const SpatialMotionBase<OtherDerived>& other);
 
   // template<typename OtherDerived>
   // inline Derived& operator+=(const SpatialForceBase<OtherDerived>& other) {
@@ -113,6 +114,25 @@ class SpatialMotionBase : public DenseBase<Derived> {
   //   EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_ADD_SPATIAL_MOTION_AND_SPATIAL_FORCE_VECTORS);
   //   return *this;
   // }
+
+  template<typename CustomNullaryOp>
+  static const CwiseNullaryOp<CustomNullaryOp, PlainObject>
+  NullaryExpr(Index rows, Index cols, const CustomNullaryOp& func);
+
+  template<typename CustomNullaryOp>
+  static const CwiseNullaryOp<CustomNullaryOp, PlainObject>
+  NullaryExpr(Index cols, const CustomNullaryOp& func);
+
+  template<typename CustomNullaryOp>
+  static const CwiseNullaryOp<CustomNullaryOp, PlainObject>
+  NullaryExpr(const CustomNullaryOp& func);
+
+  static const ConstantReturnType Constant(Index cols, const Scalar& value);
+  static const ConstantReturnType Constant(const Scalar& value);
+  static const ConstantReturnType Zero(Index cols);
+  static const ConstantReturnType Zero();
+  static const ConstantReturnType Ones(Index cols);
+  static const ConstantReturnType Ones();
 
   static const IdentityReturnType Identity();
   static const IdentityReturnType Identity(Index cols);
@@ -136,13 +156,8 @@ class SpatialMotionBase : public DenseBase<Derived> {
   typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,typename internal::traits<OtherDerived>::Scalar>::ReturnType
   dot(const SpatialMotionBase<OtherDerived>& other) const;
 
-  template<typename OtherDerived> struct cross_product_return_type {
-    typedef typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,typename internal::traits<OtherDerived>::Scalar>::ReturnType Scalar;
-    typedef SpatialMotion<Scalar,SpatialMotionBase::ColsAtCompileTime> type;
-  };
-
   template<typename OtherDerived>
-  inline typename cross_product_return_type<OtherDerived>::type
+  typename cross_product_return_type<OtherDerived>::type
   cross(const SpatialMotionBase<OtherDerived>& other) const;
 
   // template<typename OtherDerived>
@@ -150,27 +165,24 @@ class SpatialMotionBase : public DenseBase<Derived> {
   // cross(const SpatialForceBase<OtherDerived>& other) const;
 
   template<typename OtherDerived>
-  inline bool operator==(const SpatialMotionBase<OtherDerived>& other) const
-  { return cwiseEqual(other).all(); }
+  bool operator==(const SpatialMotionBase<OtherDerived>& other) const;
 
   template<typename OtherDerived>
-  inline bool operator!=(const SpatialMotionBase<OtherDerived>& other) const
-  { return cwiseNotEqual(other).any(); }
+  bool operator!=(const SpatialMotionBase<OtherDerived>& other) const;
 
-  inline MatrixWrapper<Derived> matrix() { return MatrixWrapper<Derived>(derived()); }
-  inline const MatrixWrapper<const Derived> matrix() const { return MatrixWrapper<const Derived>(derived()); }
+  MatrixWrapper<Derived> matrix();
+  const MatrixWrapper<const Derived> matrix() const;
 
-  inline ArrayWrapper<Derived> array() { return ArrayWrapper<Derived>(derived()); }
-  inline const ArrayWrapper<const Derived> array() const { return ArrayWrapper<const Derived>(derived()); }
+  ArrayWrapper<Derived> array();
+  const ArrayWrapper<const Derived> array() const;
 
-  inline const Matrix<Scalar, SpatialMotionBase::ColsAtCompileTime, 6> transpose() const {
-    return MatrixWrapper<const Derived>(derived()).transpose();
-  }
+  const Matrix<Scalar, SpatialMotionBase::ColsAtCompileTime, 6> transpose() const;
 
  protected:
   SpatialMotionBase() : Base() {}
 
  private:
+  // TODO: Implement?
   template<typename OtherDerived>
   explicit SpatialMotionBase(const SpatialMotionBase<OtherDerived>&);
 
@@ -219,18 +231,89 @@ inline Derived& SpatialMotionBase<Derived>::operator-=(const SpatialMotionBase<O
   return derived();
 }
 
+template<typename Derived>
+template<typename OtherDerived>
+inline const Product<Derived,OtherDerived>
+SpatialMotionBase<Derived>::operator*(const SpatialMotionBase<OtherDerived> &other) const {
+  EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_MULTIPLY_TWO_SPATIAL_MOTION_VECTORS);
+};
+
+template<typename Derived>
+template<typename OtherDerived>
+inline Derived& SpatialMotionBase<Derived>::operator*=(const SpatialMotionBase<OtherDerived>& other) {
+  EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_MULTIPLY_TWO_SPATIAL_MOTION_VECTORS);
+};
+
 // from CwiseNullaryOp.h
+template<typename Derived>
+template<typename CustomNullaryOp>
+inline const CwiseNullaryOp<CustomNullaryOp, typename SpatialMotionBase<Derived>::PlainObject>
+SpatialMotionBase<Derived>::NullaryExpr(Index rows, Index cols, const CustomNullaryOp& func) {
+  return CwiseNullaryOp<CustomNullaryOp, PlainObject>(6, cols, func);
+}
+
+template<typename Derived>
+template<typename CustomNullaryOp>
+inline const CwiseNullaryOp<CustomNullaryOp, typename SpatialMotionBase<Derived>::PlainObject>
+SpatialMotionBase<Derived>::NullaryExpr(Index cols, const CustomNullaryOp& func) {
+  return CwiseNullaryOp<CustomNullaryOp, PlainObject>(6, cols, func);
+}
+
+template<typename Derived>
+template<typename CustomNullaryOp>
+inline const CwiseNullaryOp<CustomNullaryOp, typename SpatialMotionBase<Derived>::PlainObject>
+SpatialMotionBase<Derived>::NullaryExpr(const CustomNullaryOp& func) {
+  return CwiseNullaryOp<CustomNullaryOp, PlainObject>(6, ColsAtCompileTime, func);
+}
+
+template<typename Derived>
+inline const typename SpatialMotionBase<Derived>::ConstantReturnType
+SpatialMotionBase<Derived>::Constant(Index cols, const Scalar& value) {
+  return NullaryExpr(cols, internal::scalar_constant_op<Scalar>(value));
+};
+
+template<typename Derived>
+inline const typename SpatialMotionBase<Derived>::ConstantReturnType
+SpatialMotionBase<Derived>::Constant(const Scalar& value) {
+  EIGEN_STATIC_ASSERT_FIXED_SIZE(Derived)
+  return NullaryExpr(ColsAtCompileTime, internal::scalar_constant_op<Scalar>(value));
+};
+
+template<typename Derived>
+inline const typename SpatialMotionBase<Derived>::ConstantReturnType
+SpatialMotionBase<Derived>::Zero(Index cols) {
+  return Constant(cols, Scalar(0));
+};
+
+template<typename Derived>
+inline const typename SpatialMotionBase<Derived>::ConstantReturnType
+SpatialMotionBase<Derived>::Zero() {
+  return Constant(Scalar(0));
+};
+
+template<typename Derived>
+inline const typename SpatialMotionBase<Derived>::ConstantReturnType
+SpatialMotionBase<Derived>::Ones(Index cols) {
+  return Constant(cols, Scalar(1));
+};
+
+template<typename Derived>
+inline const typename SpatialMotionBase<Derived>::ConstantReturnType
+SpatialMotionBase<Derived>::Ones() {
+  return Constant(Scalar(1));
+};
+
 template<typename Derived>
 inline const typename SpatialMotionBase<Derived>::IdentityReturnType
 SpatialMotionBase<Derived>::Identity() {
   EIGEN_STATIC_ASSERT_FIXED_SIZE(Derived)
-  return SpatialMotionBase<Derived>::NullaryExpr(6, ColsAtCompileTime, internal::scalar_identity_op<Scalar>());
+  return SpatialMotionBase<Derived>::NullaryExpr(ColsAtCompileTime, internal::scalar_identity_op<Scalar>());
 }
 
 template<typename Derived>
 inline const typename SpatialMotionBase<Derived>::IdentityReturnType
 SpatialMotionBase<Derived>::Identity(Index cols) {
-  return DenseBase<Derived>::NullaryExpr(6, cols, internal::scalar_identity_op<Scalar>());
+  return SpatialMotionBase<Derived>::NullaryExpr(cols, internal::scalar_identity_op<Scalar>());
 }
 
 template<typename Derived>
@@ -240,28 +323,34 @@ inline const typename SpatialMotionBase<Derived>::BasisReturnType SpatialMotionB
 }
 
 template<typename Derived>
-inline const typename SpatialMotionBase<Derived>::BasisReturnType SpatialMotionBase<Derived>::UnitLinX()
-{ return Derived::Unit(0); }
+inline const typename SpatialMotionBase<Derived>::BasisReturnType SpatialMotionBase<Derived>::UnitLinX() {
+  return Derived::Unit(0);
+}
 
 template<typename Derived>
-inline const typename SpatialMotionBase<Derived>::BasisReturnType SpatialMotionBase<Derived>::UnitLinY()
-{ return Derived::Unit(1); }
+inline const typename SpatialMotionBase<Derived>::BasisReturnType SpatialMotionBase<Derived>::UnitLinY() {
+  return Derived::Unit(1);
+}
 
 template<typename Derived>
-inline const typename SpatialMotionBase<Derived>::BasisReturnType SpatialMotionBase<Derived>::UnitLinZ()
-{ return Derived::Unit(2); }
+inline const typename SpatialMotionBase<Derived>::BasisReturnType SpatialMotionBase<Derived>::UnitLinZ() {
+  return Derived::Unit(2);
+}
 
 template<typename Derived>
-inline const typename SpatialMotionBase<Derived>::BasisReturnType SpatialMotionBase<Derived>::UnitAngX()
-{ return Derived::Unit(3); }
+inline const typename SpatialMotionBase<Derived>::BasisReturnType SpatialMotionBase<Derived>::UnitAngX() {
+  return Derived::Unit(3);
+}
 
 template<typename Derived>
-inline const typename SpatialMotionBase<Derived>::BasisReturnType SpatialMotionBase<Derived>::UnitAngY()
-{ return Derived::Unit(4); }
+inline const typename SpatialMotionBase<Derived>::BasisReturnType SpatialMotionBase<Derived>::UnitAngY() {
+  return Derived::Unit(4);
+}
 
 template<typename Derived>
-inline const typename SpatialMotionBase<Derived>::BasisReturnType SpatialMotionBase<Derived>::UnitAngZ()
-{ return Derived::Unit(5); }
+inline const typename SpatialMotionBase<Derived>::BasisReturnType SpatialMotionBase<Derived>::UnitAngZ() {
+  return Derived::Unit(5);
+}
 
 template<typename Derived>
 inline Derived& SpatialMotionBase<Derived>::setIdentity() {
@@ -342,6 +431,45 @@ SpatialMotionBase<Derived>::cross(const SpatialForceBase<OtherDerived>& other) c
   );
 }
 */
+
+template<typename Derived>
+template<typename OtherDerived>
+inline bool SpatialMotionBase<Derived>::operator==(const SpatialMotionBase<OtherDerived>& other) const {
+  return cwiseEqual(other).all();
+}
+
+template<typename Derived>
+template<typename OtherDerived>
+inline bool SpatialMotionBase<Derived>::operator!=(const SpatialMotionBase<OtherDerived>& other) const {
+  return cwiseNotEqual(other).any();
+}
+
+template<typename Derived>
+inline MatrixWrapper<Derived> SpatialMotionBase<Derived>::matrix() {
+  return MatrixWrapper<Derived>(derived());
+}
+
+template<typename Derived>
+inline const MatrixWrapper<const Derived> SpatialMotionBase<Derived>::matrix() const {
+  return MatrixWrapper<const Derived>(derived());
+}
+
+template<typename Derived>
+inline ArrayWrapper<Derived> SpatialMotionBase<Derived>::array() {
+  return ArrayWrapper<Derived>(derived());
+}
+
+template<typename Derived>
+inline const ArrayWrapper<const Derived> SpatialMotionBase<Derived>::array() const {
+  return ArrayWrapper<const Derived>(derived());
+}
+
+template<typename Derived>
+inline const Matrix<typename SpatialMotionBase<Derived>::Scalar,
+                    SpatialMotionBase<Derived>::ColsAtCompileTime, 6>
+SpatialMotionBase<Derived>::transpose() const {
+  return MatrixWrapper<const Derived>(derived()).transpose();
+}
 
 }  // namespace Eigen
 

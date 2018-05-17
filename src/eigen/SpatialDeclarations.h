@@ -40,10 +40,9 @@ struct dense_xpr_base<Derived, SpatialMotionXpr> {
 // From util/XprHelper.h
 template<typename T, int Flags>
 struct plain_matrix_type_dense<T, SpatialMotionXpr, Flags> {
-  typedef SpatialMotion<
-    typename traits<T>::Scalar, traits<T>::ColsAtCompileTime,
-    AutoAlign | (Flags&RowMajorBit ? RowMajor : ColMajor), traits<T>::MaxColsAtCompileTime
-  > type;
+  typedef SpatialMotion<typename traits<T>::Scalar, traits<T>::ColsAtCompileTime,
+                        AutoAlign | (Flags&RowMajorBit ? RowMajor : ColMajor),
+                        traits<T>::MaxColsAtCompileTime> type;
 };
 
 // From CoreEvaluators.h

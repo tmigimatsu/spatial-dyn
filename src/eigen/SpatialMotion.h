@@ -19,81 +19,137 @@ class SpatialMotion : public PlainObjectBase<SpatialMotion<_Scalar, _Cols, _Opti
 
  public:
   typedef PlainObjectBase<SpatialMotion> Base;
-
   enum { Options = _Options };
-
   EIGEN_DENSE_PUBLIC_INTERFACE(SpatialMotion)
-
   typedef typename Base::PlainObject PlainObject;
 
   using Base::base;
   using Base::coeffRef;
 
-  inline SpatialMotion() : Base() {
-    Base::_check_template_params();
-    EIGEN_INITIALIZE_COEFFS_IF_THAT_OPTION_IS_ENABLED
-  }
+  SpatialMotion();
 
-  inline SpatialMotion(const SpatialMotion& other) : Base(other) {}
+  SpatialMotion(const SpatialMotion& other);
 
   SpatialMotion(SpatialMotion&& other)
-      EIGEN_NOEXCEPT_IF(std::is_nothrow_move_constructible<Scalar>::value)
-      : Base(std::move(other)) {
-    Base::_check_template_params();
-    if (ColsAtCompileTime != Dynamic) Base::_set_noalias(other);
-  }
+  EIGEN_NOEXCEPT_IF(std::is_nothrow_move_constructible<Scalar>::value);
 
   template<typename OtherDerived>
-  inline SpatialMotion(const EigenBase<OtherDerived> &other) : Base(other.derived()) {}
+  SpatialMotion(const EigenBase<OtherDerived> &other);
 
-  inline SpatialMotion(const Scalar& lin_x, const Scalar& lin_y, const Scalar& lin_z,
-                       const Scalar& ang_x, const Scalar& ang_y, const Scalar& ang_z) {
-    m_storage.data()[0] = lin_x;
-    m_storage.data()[1] = lin_y;
-    m_storage.data()[2] = lin_z;
-    m_storage.data()[3] = ang_x;
-    m_storage.data()[4] = ang_y;
-    m_storage.data()[5] = ang_z;
-  }
+  SpatialMotion(const Scalar& lin_x, const Scalar& lin_y, const Scalar& lin_z,
+                const Scalar& ang_x, const Scalar& ang_y, const Scalar& ang_z);
 
-  inline SpatialMotion& operator=(const SpatialMotion& other) {
-    return Base::_set(other);
-  }
+  SpatialMotion& operator=(const SpatialMotion& other);
 
   SpatialMotion& operator=(SpatialMotion&& other)
-      EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<Scalar>::value) {
-    other.swap(*this);
-    return *this;
-  }
+  EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<Scalar>::value);
 
   template<typename OtherDerived>
-  inline SpatialMotion& operator=(const DenseBase<OtherDerived>& other) {
-    return Base::_set(other);
-  }
+  SpatialMotion& operator=(const DenseBase<OtherDerived>& other);
 
   template<typename OtherDerived>
-  inline SpatialMotion& operator=(const EigenBase<OtherDerived> &other) {
-    return Base::operator=(other);
-  }
+  SpatialMotion& operator=(const EigenBase<OtherDerived> &other);
 
   template<typename OtherDerived>
-  inline SpatialMotion& operator=(const ReturnByValue<OtherDerived>& func) {
-    return Base::operator=(func);
-  }
+  SpatialMotion& operator=(const ReturnByValue<OtherDerived>& func);
 
-  inline SpatialMotion& operator=(const Scalar &value) {
-    Base::setConstant(value);
-    return *this;
-  }
+  SpatialMotion& operator=(const Scalar &value);
 
-  inline Index innerStride() const { return 1; }
-  inline Index outerStride() const { return 6; }
+  Index innerStride() const;
+  Index outerStride() const;
 
  protected:
-
   using Base::m_storage;
 
 };
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::SpatialMotion()
+    : SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::Base() {
+  Base::_check_template_params();
+  EIGEN_INITIALIZE_COEFFS_IF_THAT_OPTION_IS_ENABLED
+}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::SpatialMotion(const SpatialMotion& other)
+    : SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::Base(other) {}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::SpatialMotion(SpatialMotion&& other)
+EIGEN_NOEXCEPT_IF(std::is_nothrow_move_constructible<Scalar>::value)
+    : SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::Base(std::move(other)) {
+  Base::_check_template_params();
+  if (ColsAtCompileTime != Dynamic) Base::_set_noalias(other);
+}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+template<typename OtherDerived>
+inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::SpatialMotion(const EigenBase<OtherDerived> &other)
+    : Base(other.derived()) {}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::SpatialMotion(
+    const Scalar& lin_x, const Scalar& lin_y, const Scalar& lin_z,
+    const Scalar& ang_x, const Scalar& ang_y, const Scalar& ang_z) {
+  m_storage.data()[0] = lin_x;
+  m_storage.data()[1] = lin_y;
+  m_storage.data()[2] = lin_z;
+  m_storage.data()[3] = ang_x;
+  m_storage.data()[4] = ang_y;
+  m_storage.data()[5] = ang_z;
+}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>&
+SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator=(const SpatialMotion& other) {
+  return Base::_set(other);
+}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>&
+SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator=(SpatialMotion&& other)
+EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<Scalar>::value) {
+  other.swap(*this);
+  return *this;
+}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+template<typename OtherDerived>
+inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>&
+SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator=(const DenseBase<OtherDerived>& other) {
+  return Base::_set(other);
+}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+template<typename OtherDerived>
+inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>&
+SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator=(const EigenBase<OtherDerived> &other) {
+  return Base::operator=(other);
+}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+template<typename OtherDerived>
+inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>&
+SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator=(const ReturnByValue<OtherDerived>& func) {
+  return Base::operator=(func);
+}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>&
+SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator=(const Scalar &value) {
+  Base::setConstant(value);
+  return *this;
+}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+inline Index SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::innerStride() const {
+  return 1;
+}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+inline Index SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::outerStride() const {
+  return 6;
+}
 
 typedef SpatialMotion<float,1>  SpatialMotionf;
 typedef SpatialMotion<double,1> SpatialMotiond;
