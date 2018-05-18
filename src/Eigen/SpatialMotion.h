@@ -34,7 +34,7 @@ class SpatialMotion : public PlainObjectBase<SpatialMotion<_Scalar, _Cols, _Opti
   EIGEN_NOEXCEPT_IF(std::is_nothrow_move_constructible<Scalar>::value);
 
   template<typename OtherDerived>
-  SpatialMotion(const EigenBase<OtherDerived> &other);
+  SpatialMotion(const EigenBase<OtherDerived>& other);
 
   SpatialMotion(const Scalar& lin_x, const Scalar& lin_y, const Scalar& lin_z,
                 const Scalar& ang_x, const Scalar& ang_y, const Scalar& ang_z);
@@ -48,7 +48,7 @@ class SpatialMotion : public PlainObjectBase<SpatialMotion<_Scalar, _Cols, _Opti
   SpatialMotion& operator=(const DenseBase<OtherDerived>& other);
 
   template<typename OtherDerived>
-  SpatialMotion& operator=(const EigenBase<OtherDerived> &other);
+  SpatialMotion& operator=(const EigenBase<OtherDerived>& other);
 
   template<typename OtherDerived>
   SpatialMotion& operator=(const ReturnByValue<OtherDerived>& func);
@@ -84,7 +84,7 @@ EIGEN_NOEXCEPT_IF(std::is_nothrow_move_constructible<Scalar>::value)
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 template<typename OtherDerived>
-inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::SpatialMotion(const EigenBase<OtherDerived> &other)
+inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::SpatialMotion(const EigenBase<OtherDerived>& other)
     : Base(other.derived()) {}
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
@@ -123,7 +123,7 @@ SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator=(const DenseBase<Oth
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 template<typename OtherDerived>
 inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>&
-SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator=(const EigenBase<OtherDerived> &other) {
+SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator=(const EigenBase<OtherDerived>& other) {
   return Base::operator=(other);
 }
 
@@ -136,7 +136,7 @@ SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator=(const ReturnByValue
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>&
-SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator=(const Scalar &value) {
+SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator=(const Scalar& value) {
   Base::setConstant(value);
   return *this;
 }

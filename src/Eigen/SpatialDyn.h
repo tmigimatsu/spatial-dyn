@@ -10,20 +10,31 @@
 #ifndef EIGEN_SPATIAL_DYN_H_
 #define EIGEN_SPATIAL_DYN_H_
 
-#include "SpatialMotion.h"
-#include "SpatialForce.h"
-
 namespace Eigen {
 
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+class SpatialMotion;
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+class SpatialForce;
+
 template<typename Derived>
-Matrix<typename Derived::Scalar,3,3> crossMatrix(const MatrixBase<Derived> &x) {
-  EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(Derived, 3)
-  Matrix<typename Derived::Scalar,3,3> result;
-  result <<  0,    -x(2),  x(1),
-             x(2),  0,    -x(0),
-            -x(1),  x(0),  0;
-  return result;
-}
+class SpatialMotionBase;
+
+template<typename Derived>
+class SpatialForceBase;
+
+template<typename Scalar>
+class SpatialInertia;
+
+}  // namespace Eigen
+
+#define EIGEN_TRANSFORM_PLUGIN "Eigen/SpatialTransform.h"
+#include "SpatialMotion.h"
+#include "SpatialForce.h"
+#include "SpatialInertia.h"
+
+namespace Eigen {
 
 typedef Matrix<double,6,1> Vector6d;
 typedef Matrix<double,6,6> Matrix6d;

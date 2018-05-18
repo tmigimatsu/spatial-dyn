@@ -105,7 +105,7 @@ class SpatialMotionBase : public DenseBase<Derived> {
   Derived& operator-=(const SpatialForceBase<OtherDerived>& other);
 
   template<typename OtherDerived>
-  const Product<Derived,OtherDerived> operator*(const SpatialMotionBase<OtherDerived> &other) const;
+  const Product<Derived,OtherDerived> operator*(const SpatialMotionBase<OtherDerived>& other) const;
 
   template<typename OtherDerived>
   Derived& operator*=(const SpatialMotionBase<OtherDerived>& other);
@@ -228,7 +228,7 @@ inline Derived& SpatialMotionBase<Derived>::operator+=(const SpatialForceBase<Ot
 
 template<typename Derived>
 template<typename OtherDerived>
-inline Derived& SpatialMotionBase<Derived>::operator-=(const SpatialMotionBase<OtherDerived> &other) {
+inline Derived& SpatialMotionBase<Derived>::operator-=(const SpatialMotionBase<OtherDerived>& other) {
   call_assignment(derived(), other.derived(), internal::sub_assign_op<Scalar,typename OtherDerived::Scalar>());
   return derived();
 }
@@ -243,7 +243,7 @@ inline Derived& SpatialMotionBase<Derived>::operator-=(const SpatialForceBase<Ot
 template<typename Derived>
 template<typename OtherDerived>
 inline const Product<Derived,OtherDerived>
-SpatialMotionBase<Derived>::operator*(const SpatialMotionBase<OtherDerived> &other) const {
+SpatialMotionBase<Derived>::operator*(const SpatialMotionBase<OtherDerived>& other) const {
   EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_MULTIPLY_TWO_SPATIAL_MOTION_VECTORS);
 };
 

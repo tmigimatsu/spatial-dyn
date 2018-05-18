@@ -1,5 +1,5 @@
 /**
- * ForwardDeclarations.h
+ * SpatialDeclarations.h
  *
  * Copyright 2018. All Rights Reserved.
  *
@@ -19,12 +19,6 @@ class SpatialMotion;
 
 template<typename _Scalar, int _Cols, int _Options = AutoAlign | Eigen::ColMajor, int _MaxCols = _Cols>
 class SpatialForce;
-
-template<typename Derived>
-class SpatialMotionBase;
-
-template<typename Derived>
-class SpatialForceBase;
 
 namespace internal {
 

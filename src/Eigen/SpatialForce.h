@@ -34,7 +34,7 @@ class SpatialForce : public PlainObjectBase<SpatialForce<_Scalar, _Cols, _Option
   EIGEN_NOEXCEPT_IF(std::is_nothrow_move_constructible<Scalar>::value);
 
   template<typename OtherDerived>
-  SpatialForce(const EigenBase<OtherDerived> &other);
+  SpatialForce(const EigenBase<OtherDerived>& other);
 
   SpatialForce(const Scalar& lin_x, const Scalar& lin_y, const Scalar& lin_z,
                 const Scalar& ang_x, const Scalar& ang_y, const Scalar& ang_z);
@@ -48,12 +48,12 @@ class SpatialForce : public PlainObjectBase<SpatialForce<_Scalar, _Cols, _Option
   SpatialForce& operator=(const DenseBase<OtherDerived>& other);
 
   template<typename OtherDerived>
-  SpatialForce& operator=(const EigenBase<OtherDerived> &other);
+  SpatialForce& operator=(const EigenBase<OtherDerived>& other);
 
   template<typename OtherDerived>
   SpatialForce& operator=(const ReturnByValue<OtherDerived>& func);
 
-  SpatialForce& operator=(const Scalar &value);
+  SpatialForce& operator=(const Scalar& value);
 
   Index innerStride() const;
   Index outerStride() const;
@@ -84,7 +84,7 @@ EIGEN_NOEXCEPT_IF(std::is_nothrow_move_constructible<Scalar>::value)
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 template<typename OtherDerived>
-inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::SpatialForce(const EigenBase<OtherDerived> &other)
+inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::SpatialForce(const EigenBase<OtherDerived>& other)
     : Base(other.derived()) {}
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
@@ -123,7 +123,7 @@ SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::operator=(const DenseBase<Othe
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 template<typename OtherDerived>
 inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>&
-SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::operator=(const EigenBase<OtherDerived> &other) {
+SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::operator=(const EigenBase<OtherDerived>& other) {
   return Base::operator=(other);
 }
 
