@@ -11,8 +11,12 @@ template<typename OtherDerived>
 EIGEN_DEVICE_FUNC inline typename SpatialMotionBase<OtherDerived>::PlainObject
 operator*(const SpatialMotionBase<OtherDerived>& other) const {
   typename SpatialMotionBase<OtherDerived>::PlainObject result = other;
+  Eigen::Matrix3d T_x;
+  T_x <<  0,                      -this->translation()(2),  this->translation()(1),
+          this->translation()(2),  0,                      -this->translation()(0),
+         -this->translation()(1),  this->translation()(0),  0;
   result.template topRows<3>() = this->linear() *
-      (result.matrix().template topRows<3>() - this->translation().cross(result.matrix().template bottomRows<3>()));
+      (result.matrix().template topRows<3>() - T_x * result.matrix().template bottomRows<3>());
   result.template bottomRows<3>() = this->linear() * result.matrix().template bottomRows<3>();
   return result;
 }
@@ -21,8 +25,12 @@ template<typename OtherDerived>
 EIGEN_DEVICE_FUNC inline typename SpatialForceBase<OtherDerived>::PlainObject
 operator*(const SpatialForceBase<OtherDerived>& other) const {
   typename SpatialForceBase<OtherDerived>::PlainObject result = other;
+  Eigen::Matrix3d T_x;
+  T_x <<  0,                      -this->translation()(2),  this->translation()(1),
+          this->translation()(2),  0,                      -this->translation()(0),
+         -this->translation()(1),  this->translation()(0),  0;
   result.template bottomRows<3>() = this->linear() *
-      (result.matrix().template bottomRows<3>() - this->translation().cross(result.matrix().template topRows<3>()));
+      (result.matrix().template bottomRows<3>() - T_x * result.matrix().template topRows<3>());
   result.template topRows<3>() = this->linear() * result.matrix().template topRows<3>();
   return result;
 }
