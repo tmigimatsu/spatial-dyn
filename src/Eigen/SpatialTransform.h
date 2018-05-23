@@ -10,7 +10,7 @@
 template<typename OtherDerived>
 EIGEN_DEVICE_FUNC inline typename SpatialMotionBase<OtherDerived>::PlainObject
 operator*(const SpatialMotionBase<OtherDerived>& other) const {
-  typename SpatialMotionBase<OtherDerived>::PlainObject result = other;
+  typename SpatialMotionBase<OtherDerived>::PlainObject result = other;  // Evaluate expr
   result.template topRows<3>() = this->linear() * (result.matrix().template topRows<3>() +
       result.matrix().template bottomRows<3>().colwise().cross(this->translation()));
   result.template bottomRows<3>() = this->linear() * result.matrix().template bottomRows<3>();
@@ -20,7 +20,7 @@ operator*(const SpatialMotionBase<OtherDerived>& other) const {
 template<typename OtherDerived>
 EIGEN_DEVICE_FUNC inline typename SpatialForceBase<OtherDerived>::PlainObject
 operator*(const SpatialForceBase<OtherDerived>& other) const {
-  typename SpatialForceBase<OtherDerived>::PlainObject result = other;
+  typename SpatialForceBase<OtherDerived>::PlainObject result = other;  // Evaluate expr
   result.template bottomRows<3>() = this->linear() * (result.matrix().template bottomRows<3>() +
       result.matrix().template topRows<3>().colwise().cross(this->translation()));
   result.template topRows<3>() = this->linear() * result.matrix().template topRows<3>();
@@ -31,14 +31,8 @@ template<typename OtherScalar>
 EIGEN_DEVICE_FUNC inline SpatialInertia<OtherScalar>
 operator*(const SpatialInertia<OtherScalar>& other) const {
   SpatialInertia<OtherScalar> result;
-  result.template leftCols<3>() = other.template leftCols<3>() * this->linear();
-  result.template rightCols<3>() = other.template rightCols<3>() * this->linear() +
-      result.template leftCols<3>().rowwise().cross(this->translation());
-  result.template bottomLeftCorner<3,3>() = this->linear() * (result.template bottomLeftCorner<3,3>() +
-      result.template topLeftCorner<3,3>().colwise().cross(this->translation()));
-  result.template bottomRightCorner<3,3>() = this->linear() * (result.template bottomRightCorner<3,3>() +
-      result.template topRightCorner<3,3>().colwise().cross(this->translation()));
-  result.template topLeftCorner<3,3>() = this->linear() * result.template topLeftCorner<3,3>();
-  result.template topRightCorner<3,3>() = this->linear() * result.template topRightCorner<3,3>();
+  result.mass = other.mass;
+  result.com = this->linear() * (other.com - this->translation());
+  result.I_com = this->linear() * other.I_com * this->linear().transpose();
   return result;
 }

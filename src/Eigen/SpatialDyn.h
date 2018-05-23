@@ -30,6 +30,7 @@ class SpatialInertia;
 }  // namespace Eigen
 
 #define EIGEN_TRANSFORM_PLUGIN "Eigen/SpatialTransform.h"
+#define EIGEN_MATRIX_PLUGIN "Eigen/MatrixPlugin.h"
 #include "SpatialMotion.h"
 #include "SpatialForce.h"
 #include "SpatialInertia.h"

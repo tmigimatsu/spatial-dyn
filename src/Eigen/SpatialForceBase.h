@@ -235,13 +235,13 @@ template<typename Derived>
 template<typename OtherDerived>
 inline const Product<Derived,OtherDerived>
 SpatialForceBase<Derived>::operator*(const SpatialForceBase<OtherDerived>& other) const {
-  EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_MULTIPLY_TWO_SPATIAL_MOTION_VECTORS);
+  EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_MULTIPLY_TWO_SPATIAL_FORCE_VECTORS);
 };
 
 template<typename Derived>
 template<typename OtherDerived>
 inline Derived& SpatialForceBase<Derived>::operator*=(const SpatialForceBase<OtherDerived>& other) {
-  EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_MULTIPLY_TWO_SPATIAL_MOTION_VECTORS);
+  EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_MULTIPLY_TWO_SPATIAL_FORCE_VECTORS);
 };
 
 // from CwiseNullaryOp.h

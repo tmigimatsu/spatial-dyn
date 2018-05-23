@@ -15,60 +15,80 @@
 
 namespace Eigen {
 
-template<typename Derived>
-Matrix<typename Derived::Scalar,3,3> crossMatrix(const MatrixBase<Derived>& x) {
-  EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(Derived, 3)
-  Matrix<typename Derived::Scalar,3,3> result;
-  result <<  0,    -x(2),  x(1),
-             x(2),  0,    -x(0),
-            -x(1),  x(0),  0;
-  return result;
-}
-
-template<typename Scalar>
-class SpatialInertia : public Matrix<Scalar,6,6> {
+template<typename _Scalar>
+class SpatialInertia {
 
  public:
-  SpatialInertia() : Matrix<Scalar,6,6>() {};
+  SpatialInertia() {}
 
   template<typename ComDerived, typename IComDerived>
-  SpatialInertia(Scalar mass,
-                 const Eigen::MatrixBase<ComDerived>& com,
-                 const Eigen::MatrixBase<IComDerived>& I_com_flat);
+  SpatialInertia(_Scalar mass,
+                 const MatrixBase<ComDerived>& com,
+                 const MatrixBase<IComDerived>& I_com_flat);
+
+  Matrix<_Scalar,6,6> matrix() const;
+
+  template<typename OtherDerived> struct motion_product_return_type {
+    typedef typename ScalarBinaryOpTraits<_Scalar, typename internal::traits<OtherDerived>::Scalar>::ReturnType Scalar;
+    typedef SpatialForce<Scalar, internal::traits<OtherDerived>::ColsAtCompileTime> type;
+  };
+
+  template<typename OtherDerived>
+  typename motion_product_return_type<OtherDerived>::type
+  operator*(const SpatialMotionBase<OtherDerived>& other) const;
+
+  double mass;
+  Matrix<_Scalar,3,1> com;
+  Matrix<_Scalar,3,3> I_com;
 
 };
 
-template<typename Scalar, typename Derived>
-SpatialForce<typename ScalarBinaryOpTraits<Scalar, typename internal::traits<Derived>::Scalar>::ReturnType,
-             internal::traits<Derived>::ColsAtCompileTime>
-operator*(const SpatialInertia<Scalar>& I, const SpatialMotionBase<Derived>& m) {
-  return I * m.matrix();
+template<typename _Scalar>
+Matrix<_Scalar,6,6> SpatialInertia<_Scalar>::matrix() const {
+  const double mcx = mass * com(0);
+  const double mcy = mass * com(1);
+  const double mcz = mass * com(2);
+  const double Imcxx = I_com(0,0) + mass * (com(1) * com(1) + com(2) * com(2));
+  const double Imcyy = I_com(1,1) + mass * (com(0) * com(0) + com(2) * com(2));
+  const double Imczz = I_com(2,2) + mass * (com(0) * com(0) + com(1) * com(1));
+  const double Imcxy = I_com(0,1) - mass * com(0) * com(1);
+  const double Imcxz = I_com(0,2) - mass * com(0) * com(2);
+  const double Imcyz = I_com(1,2) - mass * com(1) * com(2);
+  Matrix<_Scalar,6,6> result;
+  result <<  mass, 0,    0,    0,      mcz,   -mcy,
+             0,    mass, 0,   -mcz,    0,      mcx,
+             0,    0,    mass, mcy,   -mcx,    0,
+             0,   -mcz,  mcy,  Imcxx,  Imcxy,  Imcxz,
+             mcz,  0,   -mcx,  Imcxy,  Imcyy,  Imcyz,
+            -mcy,  mcx,  0,    Imcxz,  Imcyz,  Imczz;
+  return result;
 }
 
-
-template<typename Scalar>
+template<typename _Scalar>
 template<typename ComDerived, typename IComDerived>
-SpatialInertia<Scalar>::SpatialInertia(Scalar m,
-    const Eigen::MatrixBase<ComDerived>& c,
-    const Eigen::MatrixBase<IComDerived>& I) {
+SpatialInertia<_Scalar>::SpatialInertia(_Scalar m,
+    const MatrixBase<ComDerived>& c,
+    const MatrixBase<IComDerived>& I) : mass(m), com(c) {
   EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(ComDerived, 3)
   EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(IComDerived, 6)
 
-  const double mcx = m * c(0);
-  const double mcy = m * c(1);
-  const double mcz = m * c(2);
-  const double Imcxx = I(0) + m * (c(1) * c(1) + c(2) * c(2));
-  const double Imcyy = I(1) + m * (c(0) * c(0) + c(2) * c(2));
-  const double Imczz = I(2) + m * (c(0) * c(0) + c(1) * c(1));
-  const double Imcxy = I(3) - m * c(0) * c(1);
-  const double Imcxz = I(4) - m * c(0) * c(2);
-  const double Imcyz = I(5) - m * c(1) * c(2);
-  *this <<  m,    0,    0,    0,      mcz,   -mcy,
-            0,    m,    0,   -mcz,    0,      mcx,
-            0,    0,    m,    mcy,   -mcx,    0,
-            0,   -mcz,  mcy,  Imcxx,  Imcxy,  Imcxz,
-            mcz,  0,   -mcx,  Imcxy,  Imcyy,  Imcyz,
-           -mcy,  mcx,  0,    Imcxz,  Imcyz,  Imczz;
+  I_com << I(0), I(3), I(4),
+           I(3), I(1), I(5),
+           I(4), I(5), I(2);
+}
+
+template<typename _Scalar>
+template<typename OtherDerived>
+typename SpatialInertia<_Scalar>::template motion_product_return_type<OtherDerived>::type
+SpatialInertia<_Scalar>::operator*(const SpatialMotionBase<OtherDerived>& other) const {
+  typename motion_product_return_type<OtherDerived>::type result;
+  Matrix<_Scalar,3,1> mc = mass * com;
+  result.template topRows<3>() = mass * other.matrix().template topRows<3>() +
+                                 other.matrix().template bottomRows<3>().cross(mc);
+  result.template bottomRows<3>() = I_com * other.matrix().template bottomRows<3>() -
+                                    other.matrix().template topRows<3>().cross(mc) -
+                                    other.matrix().template bottomRows<3>().cross(com).cross(mc);
+  return result;
 }
 
 }  // namespace Eigen
