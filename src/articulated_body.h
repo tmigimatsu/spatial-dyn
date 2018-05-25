@@ -120,6 +120,9 @@ class ArticulatedBody {
   const std::vector<RigidBody>& rigid_bodies() const {
     return rigid_bodies_;
   }
+  const RigidBody& rigid_bodies(int i) const {
+    return rigid_bodies_[i];
+  }
 
   void set_state(const Eigen::VectorXd& q) {
     if (q.size() != dof_) {
@@ -127,6 +130,25 @@ class ArticulatedBody {
     }
     q_ = q;
     CalculateTransforms();
+  }
+
+  const Eigen::VectorXd& q() const {
+    return q_;
+  }
+  const Eigen::VectorXd& dq() const {
+    return dq_;
+  }
+  const double dq(int i) const {
+    return dq_(i);
+  }
+  const SpatialMotiond& g() const {
+    return g_;
+  }
+  const Eigen::Affine3d& T_to_parent(int i) const {
+    return T_to_parent_[i];
+  }
+  const Eigen::Affine3d& T_to_world(int i) const {
+    return T_to_world_[i];
   }
 
  protected:
@@ -142,6 +164,7 @@ class ArticulatedBody {
   Eigen::VectorXd ddq_;
   Eigen::VectorXd tau_;
   SpatialMotionXd J_;
+  SpatialMotiond g_ = 9.81 * SpatialMotiond::UnitLinZ();
   std::vector<Eigen::Affine3d> T_to_parent_;
   std::vector<Eigen::Affine3d> T_to_world_;
   std::vector<std::vector<int>> ancestors_;
@@ -218,11 +241,14 @@ int ArticulatedBody::AddRigidBody(RigidBody&& rb, int id_parent) {
   dof_++;
   T_to_parent_.resize(dof_);
   T_to_world_.resize(dof_);
+  if (q_.size() < dof_) q_.resize(dof_); dq_.setZero();
+  if (dq_.size() < dof_) dq_.resize(dof_); dq_.setZero();
+  if (ddq_.size() < dof_) ddq_.resize(dof_); dq_.setZero();
   if (id_parent < 0) {
-    ancestors_.resize(dof_);
+    ancestors_.push_back({id});
   } else {
     std::vector<int> ancestors = ancestors_[id_parent];
-    ancestors.push_back(id_parent);
+    ancestors.push_back(id);
     ancestors_.push_back(std::move(ancestors));
   }
   return id;

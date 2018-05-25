@@ -13,6 +13,8 @@
 #include "SpatialMotionBase.h"
 #include "SpatialForceBase.h"
 
+#include <utility>  // std::move
+
 namespace Eigen {
 
 template<typename _Scalar>
@@ -20,6 +22,9 @@ class SpatialInertia {
 
  public:
   SpatialInertia() {}
+
+  SpatialInertia(const SpatialInertia<_Scalar>& other);
+  // SpatialInertia(SpatialInertia<_Scalar>&& other);
 
   template<typename ComDerived, typename IComDerived>
   SpatialInertia(_Scalar mass,
@@ -36,6 +41,16 @@ class SpatialInertia {
   template<typename OtherDerived>
   typename motion_product_return_type<OtherDerived>::type
   operator*(const SpatialMotionBase<OtherDerived>& other) const;
+
+  SpatialInertia<_Scalar>& operator+=(const SpatialInertia<_Scalar>& other) {
+    Eigen::Vector3d com_new = (mass * com + other.mass * other.com) / (mass + other.mass);
+    I_com += other.I_com -
+             mass * (com_new - com).doubleCrossMatrix() -
+             other.mass * (com_new - other.com).doubleCrossMatrix();
+    mass += other.mass;
+    com = std::move(com_new);
+    return *this;
+  }
 
   double mass;
   Matrix<_Scalar,3,1> com;
@@ -63,6 +78,18 @@ Matrix<_Scalar,6,6> SpatialInertia<_Scalar>::matrix() const {
             -mcy,  mcx,  0,    Imcxz,  Imcyz,  Imczz;
   return result;
 }
+
+template<typename _Scalar>
+SpatialInertia<_Scalar>::SpatialInertia(const SpatialInertia<_Scalar>& other)
+    : mass(other.mass) {
+  // TODO: Why can't this be initialized?
+  com = other.com;
+  I_com = other.I_com;
+}
+
+// template<typename _Scalar>
+// SpatialInertia<_Scalar>::SpatialInertia(SpatialInertia<_Scalar>&& other)
+//     : mass(other.mass), com(std::move(other.com)), I_com(std::move(other.I_com)) {}
 
 template<typename _Scalar>
 template<typename ComDerived, typename IComDerived>

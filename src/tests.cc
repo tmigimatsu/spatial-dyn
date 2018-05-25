@@ -26,11 +26,12 @@ TEST_CASE("spatial vector transforms", "[SpatialVector]") {
   SpatialDyn::SpatialForced f(1,3,5,2,4,6);
   SpatialDyn::SpatialForced g = T * f;
 
-  RigidBodyDynamics::Math::SpatialTransform T_rbdl(quat.toRotationMatrix(), trans);
+  RigidBodyDynamics::Math::SpatialTransform T_rbdl(quat.toRotationMatrix(), quat.toRotationMatrix().transpose() * trans);
+  RigidBodyDynamics::Math::SpatialTransform Tf_rbdl(quat.toRotationMatrix(), -quat.toRotationMatrix().transpose() * trans);
   RigidBodyDynamics::Math::SpatialVector m_rbdl(2,4,6,1,3,5);
   RigidBodyDynamics::Math::SpatialVector n_rbdl = T_rbdl.apply(m_rbdl);
   RigidBodyDynamics::Math::SpatialVector f_rbdl(2,4,6,1,3,5);
-  RigidBodyDynamics::Math::SpatialVector g_rbdl = T_rbdl.applyAdjoint(f_rbdl);
+  RigidBodyDynamics::Math::SpatialVector g_rbdl = Tf_rbdl.applyAdjoint(f_rbdl);
 
   REQUIRE((n.matrix().head<3>() - n_rbdl.tail<3>()).norm() < 1e-10);
   REQUIRE((n.matrix().tail<3>() - n_rbdl.head<3>()).norm() < 1e-10);
@@ -39,8 +40,8 @@ TEST_CASE("spatial vector transforms", "[SpatialVector]") {
 }
 
 TEST_CASE("spatial inertia", "[SpatialInertia]") {
-  Eigen::Quaterniond quat = Eigen::AngleAxisd(M_PI/3, Eigen::Vector3d::UnitX()) *
-                            Eigen::AngleAxisd(M_PI/3, Eigen::Vector3d::UnitY());
+  Eigen::Quaterniond quat = Eigen::AngleAxisd(1, Eigen::Vector3d::UnitX()) *
+                            Eigen::AngleAxisd(1, Eigen::Vector3d::UnitY());
   Eigen::Vector3d trans(4,5,6);
   double mass = 2;
   Eigen::Vector3d com(1,1,1);
@@ -55,9 +56,9 @@ TEST_CASE("spatial inertia", "[SpatialInertia]") {
   SpatialDyn::SpatialInertiad J = T * I;
   SpatialDyn::SpatialMotiond v(1,2,3,4,5,6);
 
-  RigidBodyDynamics::Math::SpatialTransform T_rbdl(quat.toRotationMatrix(), trans);
+  RigidBodyDynamics::Math::SpatialTransform Tf_rbdl(quat.toRotationMatrix(), -quat.toRotationMatrix().transpose() * trans);
   auto I_rbdl = RigidBodyDynamics::Math::SpatialRigidBodyInertia::createFromMassComInertiaC(mass, com, I_com_3d);
-  RigidBodyDynamics::Math::SpatialRigidBodyInertia J_rbdl = T_rbdl.apply(I_rbdl);
+  RigidBodyDynamics::Math::SpatialRigidBodyInertia J_rbdl = Tf_rbdl.apply(I_rbdl);
   RigidBodyDynamics::Math::SpatialVector v_rbdl(4,5,6,1,2,3);
 
   Eigen::Matrix6d I_mat = I.matrix();

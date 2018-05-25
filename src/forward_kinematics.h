@@ -13,29 +13,27 @@
 #include "articulated_body.h"
 #include "spatial_math.h"
 
-#include <vector>  // std::vector
-
 namespace SpatialDyn {
 
 SpatialMotionXd SpatialJacobian(const ArticulatedBody& ab, int link = -1) {
-  SpatialMotionXd J = SpatialMotionXd::Zero(ab.dof_);
-  if (link < 0) link += ab.dof_;
+  SpatialMotionXd J = SpatialMotionXd::Zero(ab.dof());
+  if (link < 0) link += ab.dof();
   for (const int i : ab.ancestors_[link]) {
-    J.col(i) = ab.T_to_world_[i] * ab.rigid_bodies_[i].joint().subspace();
+    J.col(i) = ab.T_to_world(i) * ab.rigid_bodies(i).joint().subspace();
   }
   return J;
 }
 
 Eigen::Matrix6Xd Jacobian(const ArticulatedBody& ab, int link = -1,
                           const Eigen::Vector3d& offset = Eigen::Vector3d::Zero()) {
-  Eigen::Matrix6Xd J = Eigen::Matrix6Xd::Zero(6, ab.dof_);
-  if (link < 0) link += ab.dof_;
-  const auto& p_0n = ab.T_to_world_[link].translation() +
-                     ab.T_to_world_[link].rotation() * offset;
+  Eigen::Matrix6Xd J = Eigen::Matrix6Xd::Zero(6, ab.dof());
+  if (link < 0) link += ab.dof();
+  const auto& p_0n = ab.T_to_world(link).translation() +
+                     ab.T_to_world(link).linear() * offset;
   for (const int i : ab.ancestors_[link]) {
-    Eigen::Affine3d T_to_link = Eigen::Translation3d(p_0n - ab.T_to_world_[i].translation()) *
-                                ab.T_to_world_[i].rotation();
-    J.col(i) = (T_to_link * ab.rigid_bodies_[i].joint().subspace()).matrix();
+    Eigen::Affine3d T_i_to_point = Eigen::Translation3d(p_0n - ab.T_to_world(i).translation()) *
+                                   ab.T_to_world(i).linear();
+    J.col(i) = (T_i_to_point * ab.rigid_bodies(i).joint().subspace()).matrix();
   }
   return J;
 }
