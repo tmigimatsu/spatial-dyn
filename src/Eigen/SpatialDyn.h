@@ -27,6 +27,9 @@ class SpatialForceBase;
 template<typename Scalar>
 class SpatialInertia;
 
+template<typename Scalar>
+class SpatialInertiaMatrix;
+
 }  // namespace Eigen
 
 #define EIGEN_TRANSFORM_PLUGIN "Eigen/SpatialTransform.h"

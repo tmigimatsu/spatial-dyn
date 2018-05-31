@@ -30,6 +30,8 @@ typedef Eigen::SpatialForce<double,Eigen::Dynamic> SpatialForceXd;
 
 typedef Eigen::SpatialInertia<float> SpatialInertiaf;
 typedef Eigen::SpatialInertia<double> SpatialInertiad;
+typedef Eigen::SpatialInertiaMatrix<float> SpatialInertiaMatrixf;
+typedef Eigen::SpatialInertiaMatrix<double> SpatialInertiaMatrixd;
 
 }  // namespace SpatialDyn
 

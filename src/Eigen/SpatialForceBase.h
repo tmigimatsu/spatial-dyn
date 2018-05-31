@@ -107,6 +107,12 @@ class SpatialForceBase : public DenseBase<Derived> {
   const Product<Derived,OtherDerived> operator*(const SpatialForceBase<OtherDerived>& other) const;
 
   template<typename OtherDerived>
+  SpatialForce<typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,
+                                             typename internal::traits<OtherDerived>::Scalar>::ReturnType,
+               OtherDerived::ColsAtCompileTime>
+  operator*(const MatrixBase<OtherDerived>& other) const;
+
+  template<typename OtherDerived>
   Derived& operator*=(const SpatialForceBase<OtherDerived>& other);
 
   template<typename CustomNullaryOp>
@@ -149,6 +155,12 @@ class SpatialForceBase : public DenseBase<Derived> {
   template<typename OtherDerived>
   typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,typename internal::traits<OtherDerived>::Scalar>::ReturnType
   dot(const SpatialForceBase<OtherDerived>& other) const;
+
+  template<typename OtherDerived>
+  Matrix<typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,typename internal::traits<OtherDerived>::Scalar>::ReturnType,
+         internal::traits<Derived>::ColsAtCompileTime,
+         internal::traits<OtherDerived>::ColsAtCompileTime>
+  transposeProduct(const SpatialMotionBase<OtherDerived>& other) const;
 
   template<typename OtherDerived>
   bool operator==(const SpatialForceBase<OtherDerived>& other) const;
@@ -236,6 +248,20 @@ template<typename OtherDerived>
 inline const Product<Derived,OtherDerived>
 SpatialForceBase<Derived>::operator*(const SpatialForceBase<OtherDerived>& other) const {
   EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_MULTIPLY_TWO_SPATIAL_FORCE_VECTORS);
+};
+
+template<typename Derived>
+template<typename OtherDerived>
+inline SpatialForce<typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,
+                                                  typename internal::traits<OtherDerived>::Scalar>::ReturnType,
+                    OtherDerived::ColsAtCompileTime>
+SpatialForceBase<Derived>::operator*(const MatrixBase<OtherDerived>& other) const {
+  EIGEN_STATIC_ASSERT(Derived::ColsAtCompileTime == Dynamic ||
+                      OtherDerived::RowsAtCompileTime == Dynamic ||
+                      int(Derived::ColsAtCompileTime) == int(OtherDerived::RowsAtCompileTime),
+                      INVALID_MATRIX_PRODUCT);
+  // TODO: Make not lazy
+  return Product<Derived, OtherDerived, LazyProduct>(derived(), other.derived());
 };
 
 template<typename Derived>
@@ -393,6 +419,16 @@ SpatialForceBase<Derived>::dot(const SpatialMotionBase<OtherDerived>& other) con
                                            typename internal::traits<OtherDerived>::Scalar> conj_prod;
   return CwiseBinaryOp<conj_prod, const Derived, const OtherDerived>(
       derived(), other.derived(), conj_prod()).sum();
+}
+
+template<typename Derived>
+template<typename OtherDerived>
+inline Matrix<typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,
+                                            typename internal::traits<OtherDerived>::Scalar>::ReturnType,
+              internal::traits<Derived>::ColsAtCompileTime,
+              internal::traits<OtherDerived>::ColsAtCompileTime>
+SpatialForceBase<Derived>::transposeProduct(const SpatialMotionBase<OtherDerived>& other) const {
+  return derived().transpose() * other.derived().matrix();
 }
 
 template<typename Derived>

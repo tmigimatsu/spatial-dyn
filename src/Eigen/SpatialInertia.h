@@ -24,14 +24,27 @@ class SpatialInertia {
   SpatialInertia() {}
 
   SpatialInertia(const SpatialInertia<_Scalar>& other);
-  // SpatialInertia(SpatialInertia<_Scalar>&& other);
+  SpatialInertia(SpatialInertia<_Scalar>&& other);
+
+  SpatialInertia<_Scalar>& operator=(const SpatialInertia<_Scalar>& other) {
+    mass = other.mass;
+    com = other.com;
+    I_com = other.I_com;
+    return *this;
+  }
+  SpatialInertia<_Scalar>& operator=(SpatialInertia<_Scalar>&& other) {
+    mass = other.mass;
+    com = std::move(other.com);
+    I_com = std::move(other.I_com);
+    return *this;
+  }
 
   template<typename ComDerived, typename IComDerived>
   SpatialInertia(_Scalar mass,
                  const MatrixBase<ComDerived>& com,
                  const MatrixBase<IComDerived>& I_com_flat);
 
-  Matrix<_Scalar,6,6> matrix() const;
+  SpatialInertiaMatrix<_Scalar> matrix() const;
 
   template<typename OtherDerived> struct motion_product_return_type {
     typedef typename ScalarBinaryOpTraits<_Scalar, typename internal::traits<OtherDerived>::Scalar>::ReturnType Scalar;
@@ -42,6 +55,7 @@ class SpatialInertia {
   typename motion_product_return_type<OtherDerived>::type
   operator*(const SpatialMotionBase<OtherDerived>& other) const;
 
+  // TODO: inline
   SpatialInertia<_Scalar>& operator+=(const SpatialInertia<_Scalar>& other) {
     Eigen::Vector3d com_new = (mass * com + other.mass * other.com) / (mass + other.mass);
     I_com += other.I_com -
@@ -59,7 +73,47 @@ class SpatialInertia {
 };
 
 template<typename _Scalar>
-Matrix<_Scalar,6,6> SpatialInertia<_Scalar>::matrix() const {
+class SpatialInertiaMatrix : public Matrix<_Scalar,6,6> {
+
+ public:
+  SpatialInertiaMatrix() {
+    this->setZero();
+  }
+
+  SpatialInertiaMatrix(const SpatialInertia<_Scalar>& other) : Matrix<_Scalar,6,6>(other.matrix()) {};
+
+  template<typename OtherDerived>
+  SpatialInertiaMatrix(const MatrixBase<OtherDerived>& other) : Matrix<_Scalar,6,6>(other) {};
+
+  template<typename OtherDerived>
+  SpatialInertiaMatrix(MatrixBase<OtherDerived>&& other) : Matrix<_Scalar,6,6>(std::move(other)) {};
+
+  template<typename OtherDerived> struct motion_product_return_type {
+    typedef typename ScalarBinaryOpTraits<_Scalar, typename internal::traits<OtherDerived>::Scalar>::ReturnType Scalar;
+    typedef SpatialForce<Scalar, internal::traits<OtherDerived>::ColsAtCompileTime> type;
+  };
+
+  template<typename OtherDerived>
+  typename motion_product_return_type<OtherDerived>::type
+  operator*(const SpatialMotionBase<OtherDerived>& other) const {
+    return Matrix<_Scalar,6,6>::operator*(other.matrix());
+  };
+
+  // TODO: inline
+  SpatialInertiaMatrix<_Scalar>& operator+=(const SpatialInertia<_Scalar>& other) {
+    *this += other.matrix();
+    return *this;
+  }
+  template<typename OtherDerived>
+  SpatialInertiaMatrix<_Scalar>& operator+=(const MatrixBase<OtherDerived>& other) {
+    Matrix<_Scalar,6,6>::operator+=(other);
+    return *this;
+  }
+
+};
+
+template<typename _Scalar>
+SpatialInertiaMatrix<_Scalar> SpatialInertia<_Scalar>::matrix() const {
   const double mcx = mass * com(0);
   const double mcy = mass * com(1);
   const double mcz = mass * com(2);
@@ -69,7 +123,7 @@ Matrix<_Scalar,6,6> SpatialInertia<_Scalar>::matrix() const {
   const double Imcxy = I_com(0,1) - mass * com(0) * com(1);
   const double Imcxz = I_com(0,2) - mass * com(0) * com(2);
   const double Imcyz = I_com(1,2) - mass * com(1) * com(2);
-  Matrix<_Scalar,6,6> result;
+  SpatialInertiaMatrix<_Scalar> result;
   result <<  mass, 0,    0,    0,      mcz,   -mcy,
              0,    mass, 0,   -mcz,    0,      mcx,
              0,    0,    mass, mcy,   -mcx,    0,
@@ -81,11 +135,11 @@ Matrix<_Scalar,6,6> SpatialInertia<_Scalar>::matrix() const {
 
 template<typename _Scalar>
 SpatialInertia<_Scalar>::SpatialInertia(const SpatialInertia<_Scalar>& other)
-    : mass(other.mass) {
-  // TODO: Why can't this be initialized?
-  com = other.com;
-  I_com = other.I_com;
-}
+    : mass(other.mass), com(other.com), I_com(other.I_com) {}
+
+template<typename _Scalar>
+SpatialInertia<_Scalar>::SpatialInertia(SpatialInertia<_Scalar>&& other)
+    : mass(other.mass), com(std::move(other.com)), I_com(std::move(other.I_com)) {}
 
 // template<typename _Scalar>
 // SpatialInertia<_Scalar>::SpatialInertia(SpatialInertia<_Scalar>&& other)

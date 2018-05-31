@@ -124,12 +124,18 @@ class ArticulatedBody {
     return rigid_bodies_[i];
   }
 
-  void set_state(const Eigen::VectorXd& q) {
+  void set_q(const Eigen::VectorXd& q) {
     if (q.size() != dof_) {
       throw std::invalid_argument("ArticulatedBody::set_state(): q must be of size " + std::to_string(dof_));
     }
     q_ = q;
     CalculateTransforms();
+  }
+  void set_dq(const Eigen::VectorXd& dq) {
+    if (dq.size() != dof_) {
+      throw std::invalid_argument("ArticulatedBody::set_state(): q must be of size " + std::to_string(dof_));
+    }
+    dq_ = dq;
   }
 
   const Eigen::VectorXd& q() const {
@@ -150,6 +156,9 @@ class ArticulatedBody {
   const Eigen::Affine3d& T_to_world(int i) const {
     return T_to_world_[i];
   }
+  const std::vector<int>& subtree(int i) const {
+    return subtrees_[i];
+  }
 
  protected:
 
@@ -164,10 +173,11 @@ class ArticulatedBody {
   Eigen::VectorXd ddq_;
   Eigen::VectorXd tau_;
   SpatialMotionXd J_;
-  SpatialMotiond g_ = 9.81 * SpatialMotiond::UnitLinZ();
+  SpatialMotiond g_ = -9.81 * SpatialMotiond::UnitLinZ();
   std::vector<Eigen::Affine3d> T_to_parent_;
   std::vector<Eigen::Affine3d> T_to_world_;
   std::vector<std::vector<int>> ancestors_;
+  std::vector<std::vector<int>> subtrees_;
 
   friend SpatialMotionXd SpatialJacobian(const ArticulatedBody&, int);
   friend Eigen::Matrix6Xd Jacobian(const ArticulatedBody&, int, const Eigen::Vector3d&);
@@ -248,9 +258,13 @@ int ArticulatedBody::AddRigidBody(RigidBody&& rb, int id_parent) {
     ancestors_.push_back({id});
   } else {
     std::vector<int> ancestors = ancestors_[id_parent];
+    for (int ancestor : ancestors) {
+      subtrees_[ancestor].push_back(id);
+    }
     ancestors.push_back(id);
     ancestors_.push_back(std::move(ancestors));
   }
+  subtrees_.push_back({id});
   return id;
 }
 

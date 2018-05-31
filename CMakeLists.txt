@@ -37,7 +37,7 @@ set(SPATIAL_DYN_PUBLIC_INCLUDE_DIRS ${SPATIAL_DYN_PUBLIC_INCLUDE_DIRS} include/e
 ########
 
 set(RBDL_LIB_DIR ${SPATIAL_DYN_LIB_DIR}/rbdl)
-set(RBDL_BUILD_ADDON_URDFREADER ON CACHE BOOL "Build the (experimental) urdf reader")
+# set(RBDL_BUILD_ADDON_URDFREADER ON CACHE BOOL "Build the (experimental) urdf reader")
 set(RBDL_USE_ROS_URDF_LIBRARY OFF CACHE BOOL "Use the URDF library provided by ROS")
 add_subdirectory(${RBDL_LIB_DIR})
 set(RBDL_INCLUDE_DIRS

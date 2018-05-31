@@ -12,7 +12,7 @@ EIGEN_DEVICE_FUNC inline typename SpatialMotionBase<OtherDerived>::PlainObject
 operator*(const SpatialMotionBase<OtherDerived>& other) const {
   typename SpatialMotionBase<OtherDerived>::PlainObject result = other;  // Evaluate expr
   result.template bottomRows<3>() = this->linear() * result.matrix().template bottomRows<3>();
-  result.template topRows<3>() = this->linear() * result.matrix().template topRows<3>() +
+  result.template topRows<3>() = this->linear() * result.matrix().template topRows<3>() -
       result.matrix().template bottomRows<3>().colwise().cross(this->translation());
   return result;
 }
@@ -34,5 +34,18 @@ operator*(const SpatialInertia<OtherScalar>& other) const {
   result.mass = other.mass;
   result.com = *this * other.com;
   result.I_com = this->linear() * other.I_com * this->linear().transpose();
+  return result;
+}
+
+template<typename OtherScalar>
+EIGEN_DEVICE_FUNC inline SpatialInertiaMatrix<OtherScalar>
+operator*(const SpatialInertiaMatrix<OtherScalar>& other) const {
+  SpatialInertiaMatrix<OtherScalar> result = other;
+  result.template leftCols<3>() = result.template leftCols<3>() * this->linear().transpose();
+  result.template rightCols<3>() = result.template rightCols<3>() * this->linear().transpose() -
+      result.template leftCols<3>().rowwise().cross(this->translation());
+  result.template topRows<3>() = this->linear() * result.template topRows<3>();
+  result.template bottomRows<3>() = this->linear() * result.template bottomRows<3>() -
+      result.template topRows<3>().colwise().cross(this->translation());
   return result;
 }

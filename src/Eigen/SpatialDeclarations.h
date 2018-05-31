@@ -67,6 +67,10 @@ template<>
 struct plain_constant_type<SpatialMotion<double,1,0,1>, double> {
   typedef CwiseNullaryOp<scalar_constant_op<double>, const SpatialMotion<double,1,0,1>> type;
 };
+template<>
+struct plain_constant_type<SpatialForce<double,1,0,1>, double> {
+  typedef CwiseNullaryOp<scalar_constant_op<double>, const SpatialForce<double,1,0,1>> type;
+};
 
 // From CoreEvaluators.h
 template<typename Scalar, int Cols, int Options, int MaxCols>
