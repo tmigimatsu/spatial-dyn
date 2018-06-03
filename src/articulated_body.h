@@ -91,6 +91,12 @@ class Joint {
 };
 
 class RigidBody;
+class ArticulatedBody;
+namespace Opspace {
+  Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset, double tolerance);
+  const Eigen::Matrix6d& Inertia(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset, double);
+  Eigen::Vector6d CentrifugalCoriolisGravity(ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset, double);
+}
 
 class ArticulatedBody {
 
@@ -129,13 +135,27 @@ class ArticulatedBody {
       throw std::invalid_argument("ArticulatedBody::set_state(): q must be of size " + std::to_string(dof_));
     }
     q_ = q;
+
     CalculateTransforms();
+    vel_data_.is_computed = false;
+    cc_data_.is_computed = false;
+    grav_data_.is_computed = false;
+    crba_data_.is_computed = false;
+    ainv_data_.is_computed = false;
+    aba_inertia_data_.is_computed = false;
+    aba_data_.is_computed = false;
+    opspace_data_.is_computed = false;
   }
   void set_dq(const Eigen::VectorXd& dq) {
     if (dq.size() != dof_) {
       throw std::invalid_argument("ArticulatedBody::set_state(): q must be of size " + std::to_string(dof_));
     }
     dq_ = dq;
+
+    vel_data_.is_computed = false;
+    cc_data_.is_computed = false;
+    aba_data_.is_computed = false;
+    opspace_data_.is_computed = false;
   }
 
   const Eigen::VectorXd& q() const {
@@ -150,6 +170,9 @@ class ArticulatedBody {
   const SpatialMotiond& g() const {
     return g_;
   }
+  void set_g(const Eigen::Vector3d& g) {
+    g_ << g, Eigen::Vector3d::Zero();
+  }
   const Eigen::Affine3d& T_to_parent(int i) const {
     return T_to_parent_[i];
   }
@@ -160,9 +183,9 @@ class ArticulatedBody {
     return subtrees_[i];
   }
 
- protected:
-
   void CalculateTransforms();
+
+ protected:
 
   size_t dof_ = 0;
   Eigen::Affine3d T_base_to_world_ = Eigen::Affine3d::Identity();
@@ -176,11 +199,94 @@ class ArticulatedBody {
   SpatialMotiond g_ = -9.81 * SpatialMotiond::UnitLinZ();
   std::vector<Eigen::Affine3d> T_to_parent_;
   std::vector<Eigen::Affine3d> T_to_world_;
-  std::vector<std::vector<int>> ancestors_;
+  std::vector<std::vector<int>> ancestors_;  // Ancestors from base to link i
   std::vector<std::vector<int>> subtrees_;
+
+
+  struct VelocityData {
+    bool is_computed = false;  // Reusable with same position, velocity
+    std::vector<SpatialMotiond> v;  // Rigid body velocities
+  };
+  VelocityData vel_data_;
+
+  struct CentrifugalCoriolisData {
+    bool is_computed = false;          // Reusable with same position, velocity
+    std::vector<SpatialMotiond> c;    // Propagated rigid body centrifugal accelerations
+    std::vector<SpatialForced> f_c;    // Rigid body centrifugal and Coriolis forces
+    Eigen::VectorXd C;                 // Joint space centrifugal and Coriolis forces
+  };
+  CentrifugalCoriolisData cc_data_;
+
+  struct GravityData {
+    bool is_computed = false;        // Reusable with same position, gravity
+    std::vector<SpatialForced> f_g;  // Rigid body gravity force
+    Eigen::VectorXd G;               // Joint space gravity
+  };
+  GravityData grav_data_;
+
+  struct RneaData {
+    std::vector<SpatialMotiond> a;  // Rigid body accelerations
+    std::vector<SpatialForced> f;   // Rigid body forces
+  };
+  RneaData rnea_data_;
+
+  struct CrbaData {
+    bool is_computed = false;          // Reusable with same position
+    std::vector<SpatialInertiad> I_c;  // Composite inertia
+    Eigen::MatrixXd A;                 // Joint space inertia
+  };
+  CrbaData crba_data_;
+
+  struct InertiaInverseData {
+    bool is_computed = false;            // Reusable with same position
+    Eigen::LDLT<Eigen::MatrixXd> A_inv;  // Robust Cholesky decomposition of joint space inertia
+  };
+  InertiaInverseData ainv_data_;
+
+  struct AbaInertiaData {
+    bool is_computed = false;  // Reusable with same position
+    std::vector<SpatialInertiaMatrixd> I_a;
+    std::vector<SpatialForced> h;
+    std::vector<double> d;
+  };
+  AbaInertiaData aba_inertia_data_;
+
+  struct AbaData {
+    bool is_computed = false;       // Reusable with same position, velocity
+    std::vector<SpatialMotiond> c;  // Rigid body centrifugal accelerations
+    std::vector<SpatialForced> b;   // Rigid body Coriolis forces
+
+    // Not reusable
+    std::vector<SpatialForced> p;
+    std::vector<double> u;
+    std::vector<SpatialMotiond> a;
+  };
+  AbaData aba_data_;
+
+  struct OpspaceData {
+    bool is_computed = false;  // Reusable with same position, velocity
+    std::vector<SpatialForce6d> p;
+    std::vector<Eigen::Matrix<double,1,6>> u;
+
+    int idx_link;
+    Eigen::Vector3d offset;
+    double tolerance;
+    Eigen::Matrix6d Lambda_inv;
+    Eigen::Matrix6d Lambda;
+  };
+  OpspaceData opspace_data_;
 
   friend SpatialMotionXd SpatialJacobian(const ArticulatedBody&, int);
   friend Eigen::Matrix6Xd Jacobian(const ArticulatedBody&, int, const Eigen::Vector3d&);
+  friend Eigen::VectorXd InverseDynamics(const ArticulatedBody&, const Eigen::MatrixXd&);
+  friend const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody&);
+  friend const Eigen::VectorXd& Gravity(const ArticulatedBody&);
+  friend const Eigen::MatrixXd& Inertia(const ArticulatedBody&);
+  friend const Eigen::LDLT<Eigen::MatrixXd>& InertiaInverse(const ArticulatedBody&);
+  friend Eigen::VectorXd ForwardDynamics(const ArticulatedBody&, const Eigen::VectorXd&);
+  friend Eigen::Vector6d Opspace::CentrifugalCoriolis(const ArticulatedBody&, int, const Eigen::Vector3d&, double);
+  friend const Eigen::Matrix6d& Opspace::Inertia(const ArticulatedBody&, int, const Eigen::Vector3d&, double);
+  friend Eigen::Vector6d Opspace::CentrifugalCoriolisGravity(ArticulatedBody&, int, const Eigen::Vector3d&, double);
 
 };
 
@@ -240,6 +346,7 @@ class RigidBody {
 };
 
 int ArticulatedBody::AddRigidBody(RigidBody&& rb, int id_parent) {
+  // TODO: Set default state
   int id = rigid_bodies_.size();
   if ((id_parent < 0 || id_parent >= id) && id != 0) {
     throw std::invalid_argument("ArticulatedBody::AddRigidBody(): Parent rigid body with id " + std::to_string(id_parent) + " does not exist.");
@@ -265,6 +372,44 @@ int ArticulatedBody::AddRigidBody(RigidBody&& rb, int id_parent) {
     ancestors_.push_back(std::move(ancestors));
   }
   subtrees_.push_back({id});
+
+  vel_data_.is_computed = false;
+  vel_data_.v.push_back(SpatialMotiond());
+
+  cc_data_.is_computed = false;
+  cc_data_.c.push_back(SpatialMotiond());
+  cc_data_.f_c.push_back(SpatialForced());
+  cc_data_.C.resize(dof_);
+
+  grav_data_.is_computed = false;
+  grav_data_.f_g.push_back(SpatialForced());
+  grav_data_.G.resize(dof_);
+
+  rnea_data_.a.push_back(SpatialMotiond());
+  rnea_data_.f.push_back(SpatialForced());
+
+  crba_data_.is_computed = false;
+  crba_data_.I_c.push_back(SpatialInertiad());
+  crba_data_.A.resize(dof_, dof_);
+
+  ainv_data_.is_computed = false;
+
+  aba_inertia_data_.is_computed = false;
+  aba_inertia_data_.I_a.push_back(SpatialInertiaMatrixd());
+  aba_inertia_data_.h.push_back(SpatialForced());
+  aba_inertia_data_.d.push_back(0);
+
+  aba_data_.is_computed = false;
+  aba_data_.c.push_back(SpatialMotiond());
+  aba_data_.b.push_back(SpatialForced());
+  aba_data_.p.push_back(SpatialForced());
+  aba_data_.u.push_back(0);
+  aba_data_.a.push_back(SpatialMotiond());
+
+  opspace_data_.is_computed = false;
+  opspace_data_.p.push_back(SpatialForce6d());
+  opspace_data_.u.push_back(Eigen::Matrix<double,1,6>());
+
   return id;
 }
 

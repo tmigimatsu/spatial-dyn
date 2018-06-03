@@ -8,6 +8,12 @@
  */
 
 #include "spatial_math.h"
+#include "articulated_body.h"
+#include "forward_kinematics.h"
+#include "inverse_dynamics.h"
+#include "forward_dynamics.h"
+#include "opspace_dynamics.h"
+
 #include <rbdl/rbdl.h>
 
 #define CATCH_CONFIG_MAIN
@@ -98,4 +104,149 @@ TEST_CASE("spatial inertia", "[SpatialInertia]") {
   REQUIRE((f.matrix().tail<3>() - f_rbdl.head<3>()).norm() < 1e-10);
   REQUIRE((g.matrix().head<3>() - g_rbdl.tail<3>()).norm() < 1e-10);
   REQUIRE((g.matrix().tail<3>() - g_rbdl.head<3>()).norm() < 1e-10);
+}
+
+void AddBody(SpatialDyn::ArticulatedBody *ab, RigidBodyDynamics::Model *ab_rbdl,
+             int id_parent, const std::string& name,
+             const Eigen::AngleAxisd& aa, const Eigen::Vector3d& trans,
+             double mass, const Eigen::Vector3d& com, const Eigen::Vector6d& I_com,
+             const SpatialDyn::JointType& joint_type) {
+    SpatialDyn::RigidBody rb(name);
+    rb.set_T_to_parent(Eigen::Quaterniond(aa), trans);
+    rb.set_inertia(mass, com, I_com);
+    rb.set_joint(SpatialDyn::Joint(joint_type));
+    ab->AddRigidBody(std::move(rb), id_parent);
+
+    auto joint_frame = RigidBodyDynamics::Math::Xrot(aa.angle(), aa.axis()) * 
+                       RigidBodyDynamics::Math::Xtrans(trans);
+    RigidBodyDynamics::Body body(mass, com,
+        RigidBodyDynamics::Math::Matrix3d(I_com(0), I_com(3), I_com(4),
+                                          I_com(3), I_com(1), I_com(5),
+                                          I_com(4), I_com(5), I_com(2)));
+    RigidBodyDynamics::JointType joint_type_rbdl;
+    RigidBodyDynamics::Math::Vector3d joint_axis_rbdl;
+    switch (joint_type) {
+      case SpatialDyn::JointType::RX:
+        joint_type_rbdl = RigidBodyDynamics::JointTypeRevolute;
+        joint_axis_rbdl = Eigen::Vector3d::UnitX();
+        break;
+      case SpatialDyn::JointType::RY:
+        joint_type_rbdl = RigidBodyDynamics::JointTypeRevolute;
+        joint_axis_rbdl = Eigen::Vector3d::UnitY();
+        break;
+      case SpatialDyn::JointType::RZ:
+        joint_type_rbdl = RigidBodyDynamics::JointTypeRevolute;
+        joint_axis_rbdl = Eigen::Vector3d::UnitZ();
+        break;
+      case SpatialDyn::JointType::PX:
+        joint_type_rbdl = RigidBodyDynamics::JointTypePrismatic;
+        joint_axis_rbdl = Eigen::Vector3d::UnitX();
+        break;
+      case SpatialDyn::JointType::PY:
+        joint_type_rbdl = RigidBodyDynamics::JointTypePrismatic;
+        joint_axis_rbdl = Eigen::Vector3d::UnitY();
+        break;
+      case SpatialDyn::JointType::PZ:
+        joint_type_rbdl = RigidBodyDynamics::JointTypePrismatic;
+        joint_axis_rbdl = Eigen::Vector3d::UnitZ();
+        break;
+      default:
+        joint_type_rbdl = RigidBodyDynamics::JointTypeUndefined;
+        break;
+    }
+    RigidBodyDynamics::Joint joint(joint_type_rbdl, joint_axis_rbdl);
+    ab_rbdl->AddBody(id_parent + 1, joint_frame, joint, body, name);
+}
+
+TEST_CASE("articulated body", "[ArticulatedBody]") {
+  SpatialDyn::ArticulatedBody ab("ur5");
+  RigidBodyDynamics::Model ab_rbdl;
+  AddBody(&ab, &ab_rbdl, -1, "shoulder_pan",
+          Eigen::AngleAxisd::Identity(), Eigen::Vector3d(0, 0, 0.089159),
+          3.7, Eigen::Vector3d(0, 0, 0.14), Eigen::Vector6d(0.010267495893, 0.010267495893, 0.00666, 0, 0, 0),
+          SpatialDyn::JointType::RZ);
+
+  AddBody(&ab, &ab_rbdl, 0, "shoulder_lift",
+          Eigen::AngleAxisd(M_PI/2, Eigen::Vector3d::UnitY()), Eigen::Vector3d(0, 0, 0.28),
+          8.393, Eigen::Vector3d(0, 0, 0.28), Eigen::Vector6d(0.22689067591, 0.22689067591, 0.0151074, 0, 0, 0),
+          SpatialDyn::JointType::RY);
+
+  AddBody(&ab, &ab_rbdl, 1, "forearm",
+          Eigen::AngleAxisd::Identity(), Eigen::Vector3d(0, -0.1197, 0.425),
+          2.275, Eigen::Vector3d(0, 0, 0.25), Eigen::Vector6d(0.049443313556, 0.049443313556, 0.004095, 0, 0, 0),
+          SpatialDyn::JointType::RY);
+
+  AddBody(&ab, &ab_rbdl, 2, "wrist_1",
+          Eigen::AngleAxisd(M_PI/2, Eigen::Vector3d::UnitY()), Eigen::Vector3d(0, 0, 0.39225),
+          1.219, Eigen::Vector3d(0, 0, 0), Eigen::Vector6d(0.111172755531, 0.111172755531, 0.21942, 0, 0, 0),
+          SpatialDyn::JointType::RY);
+
+  AddBody(&ab, &ab_rbdl, 3, "wrist_2",
+          Eigen::AngleAxisd::Identity(), Eigen::Vector3d(0, 0.093, 0),
+          1.219, Eigen::Vector3d(0, 0, 0), Eigen::Vector6d(0.111172755531, 0.111172755531, 0.21942, 0, 0, 0),
+          SpatialDyn::JointType::RZ);
+
+  AddBody(&ab, &ab_rbdl, 4, "wrist_3",
+          Eigen::AngleAxisd(M_PI/2, Eigen::Vector3d::UnitY()), Eigen::Vector3d(0, 0, 0.09465),
+          0.1879, Eigen::Vector3d(0, 0, 0), Eigen::Vector6d(0.0171364731454, 0.0171364731454, 0.033822, 0, 0, 0),
+          SpatialDyn::JointType::RY);
+
+  ab.set_q(Eigen::VectorXd::Ones(ab.dof()));
+  ab.set_dq(Eigen::VectorXd::Ones(ab.dof()));
+  ab_rbdl.gravity = -9.81 * Eigen::Vector3d::UnitZ();
+
+  SECTION("jacobian") {
+    Eigen::Matrix6Xd J = SpatialDyn::Jacobian(ab);
+    Eigen::MatrixXd J_rbdl = Eigen::MatrixXd::Zero(6, ab.dof());
+    RigidBodyDynamics::CalcPointJacobian6D(ab_rbdl, ab.q(), 6, Eigen::Vector3d::Zero(), J_rbdl);
+
+    REQUIRE((J.topRows<3>() - J_rbdl.bottomRows<3>()).norm() < 1e-10);
+    REQUIRE((J.bottomRows<3>() - J_rbdl.topRows<3>()).norm() < 1e-10);
+  }
+
+  SECTION("inverse dynamics") {
+    Eigen::VectorXd ddq = Eigen::VectorXd::Ones(ab.dof());
+
+    Eigen::VectorXd tau = SpatialDyn::InverseDynamics(ab, ddq);
+    Eigen::VectorXd tau_rbdl(ab.dof());
+    RigidBodyDynamics::InverseDynamics(ab_rbdl, ab.q(), ab.dq(), ddq, tau_rbdl);
+
+    REQUIRE((tau - tau_rbdl).norm() < 1e-10);
+  }
+
+  SECTION("inertia") {
+    Eigen::MatrixXd A = Inertia(ab);
+    Eigen::MatrixXd A_rbdl(ab.dof(), ab.dof());
+    RigidBodyDynamics::CompositeRigidBodyAlgorithm(ab_rbdl, ab.q(), A_rbdl);
+
+    REQUIRE((A - A_rbdl).norm() < 1e-10);
+  }
+
+  SECTION("forward dynamics") {
+    Eigen::VectorXd tau = Eigen::VectorXd::Ones(ab.dof());
+
+    Eigen::VectorXd ddq = SpatialDyn::ForwardDynamics(ab, tau);
+    Eigen::VectorXd ddq_rbdl(ab.dof());
+    RigidBodyDynamics::ForwardDynamics(ab_rbdl, ab.q(), ab.dq(), tau, ddq_rbdl);
+
+    REQUIRE((ddq - ddq_rbdl).norm() < 1e-10);
+  }
+
+  SECTION("centrifugal coriolis") {
+    ab_rbdl.gravity.setZero();
+
+    Eigen::VectorXd tau = SpatialDyn::CentrifugalCoriolis(ab);
+    Eigen::VectorXd tau_rbdl(ab.dof());
+    RigidBodyDynamics::NonlinearEffects(ab_rbdl, ab.q(), ab.dq(), tau_rbdl);
+
+    REQUIRE((tau - tau_rbdl).norm() < 1e-10);
+  }
+
+  SECTION("gravity") {
+    Eigen::VectorXd tau = SpatialDyn::Gravity(ab);
+    Eigen::VectorXd tau_rbdl(ab.dof());
+    RigidBodyDynamics::NonlinearEffects(ab_rbdl, ab.q(), Eigen::VectorXd::Zero(ab.dof()), tau_rbdl);
+
+    REQUIRE((tau - tau_rbdl).norm() < 1e-10);
+  }
 }

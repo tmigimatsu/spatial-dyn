@@ -39,6 +39,9 @@ class SpatialInertiaMatrix;
 #include "SpatialForce.h"
 #include "SpatialInertia.h"
 
+#include <algorithm>  // std::max
+#include <limits>     // std::numeric_limits
+
 namespace Eigen {
 
 typedef Matrix<double,6,1> Vector6d;
@@ -48,6 +51,21 @@ typedef Matrix<double,6,Dynamic> Matrix6Xd;
 typedef Matrix<float,6,1> Vector6f;
 typedef Matrix<float,6,6> Matrix6f;
 typedef Matrix<float,6,Dynamic> Matrix6Xf;
+
+template<typename Derived>
+inline typename MatrixBase<Derived>::PlainObject
+PseudoInverse(const MatrixBase<Derived>& A, double tolerance = 0) {
+  Eigen::JacobiSVD<typename MatrixBase<Derived>::PlainObject>
+      svd(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
+  const auto& S = svd.singularValues();
+  if (tolerance <= 0) {
+    tolerance = std::numeric_limits<typename internal::traits<Derived>::Scalar>::epsilon() *
+                std::max(A.cols(), A.cols()) * S(0);
+  }
+  return svd.matrixV() *
+         (S.array() > tolerance).select(S.array().inverse(), 0).matrix().asDiagonal() *
+         svd.matrixU().adjoint();
+}
 
 }  // namespace Eigen
 
