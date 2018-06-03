@@ -15,11 +15,11 @@
 
 namespace SpatialDyn {
 
-// ABA
-Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& tau) {
-  auto& aba = const_cast<ArticulatedBody::AbaData&>(ab.aba_data_);
-  auto& aba_I = const_cast<ArticulatedBody::AbaInertiaData&>(ab.aba_inertia_data_);
-  auto& vel = const_cast<ArticulatedBody::VelocityData&>(ab.vel_data_);
+void AbaPrecomputeVelocityInertia(const ArticulatedBody& ab) {
+  auto& aba = ab.aba_data_;
+  auto& aba_I = ab.aba_inertia_data_;
+  auto& vel = ab.vel_data_;
+  if (aba.is_computed && aba_I.is_computed) return;
 
   // Forward pass
   for (int i = 0; i < ab.dof(); i++) {
@@ -42,7 +42,6 @@ Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
 
       aba.b[i] = vel.v[i].cross(I * vel.v[i]);
     }
-    aba.p[i] = aba.b[i];
 
     if (!aba_I.is_computed) aba_I.I_a[i] = I;
   }
@@ -50,10 +49,10 @@ Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
   aba.is_computed = true;
 
   // Backward pass
-  for (int i = ab.dof() - 1; i >= 0; i--) {
-    const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
-    const int parent = ab.rigid_bodies(i).id_parent();
-    if (!aba_I.is_computed) {
+  if (!aba_I.is_computed) {
+    for (int i = ab.dof() - 1; i >= 0; i--) {
+      const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
+      const int parent = ab.rigid_bodies(i).id_parent();
       aba_I.h[i] = aba_I.I_a[i] * s;
       aba_I.d[i] = s.dot(aba_I.h[i]);
       if (parent >= 0) {
@@ -61,14 +60,33 @@ Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
         aba_I.I_a[parent] += ab.T_to_parent(i) * aba_I.I_a[i];
       }
     }
+  }
+  aba_I.is_computed = true;
 
+}
+
+// ABA
+Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& tau) {
+  auto& aba = ab.aba_data_;
+  auto& aba_I = ab.aba_inertia_data_;
+
+  AbaPrecomputeVelocityInertia(ab);
+
+  // Forward pass
+  for (int i = 0; i < ab.dof(); i++) {
+    aba.p[i] = aba.b[i];
+  }
+
+  // Backward pass
+  for (int i = ab.dof() - 1; i >= 0; i--) {
+    const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
+    const int parent = ab.rigid_bodies(i).id_parent();
     aba.u[i] = tau(i) - s.dot(aba.p[i]);
     if (parent >= 0) {
       aba.p[parent] += ab.T_to_parent(i) *
           (aba.p[i] + aba_I.I_a[i] * aba.c[i] + aba.u[i] / aba_I.d[i] * aba_I.h[i]);
     }
   }
-  aba_I.is_computed = true;
 
   Eigen::VectorXd ddq(ab.dof());
   for (int i = 0; i < ab.dof(); i++) {

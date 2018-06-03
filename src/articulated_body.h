@@ -93,9 +93,10 @@ class Joint {
 class RigidBody;
 class ArticulatedBody;
 namespace Opspace {
-  Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset, double tolerance);
   const Eigen::Matrix6d& Inertia(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset, double);
-  Eigen::Vector6d CentrifugalCoriolisGravity(ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset, double);
+  Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset, double tolerance);
+  Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, const Eigen::MatrixXd&, int idx_link, const Eigen::Vector3d& offset, double);
+  Eigen::Vector6d Gravity(ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset, double);
 }
 
 class ArticulatedBody {
@@ -207,7 +208,7 @@ class ArticulatedBody {
     bool is_computed = false;  // Reusable with same position, velocity
     std::vector<SpatialMotiond> v;  // Rigid body velocities
   };
-  VelocityData vel_data_;
+  mutable VelocityData vel_data_;
 
   struct CentrifugalCoriolisData {
     bool is_computed = false;          // Reusable with same position, velocity
@@ -215,33 +216,33 @@ class ArticulatedBody {
     std::vector<SpatialForced> f_c;    // Rigid body centrifugal and Coriolis forces
     Eigen::VectorXd C;                 // Joint space centrifugal and Coriolis forces
   };
-  CentrifugalCoriolisData cc_data_;
+  mutable CentrifugalCoriolisData cc_data_;
 
   struct GravityData {
     bool is_computed = false;        // Reusable with same position, gravity
     std::vector<SpatialForced> f_g;  // Rigid body gravity force
     Eigen::VectorXd G;               // Joint space gravity
   };
-  GravityData grav_data_;
+  mutable GravityData grav_data_;
 
   struct RneaData {
     std::vector<SpatialMotiond> a;  // Rigid body accelerations
     std::vector<SpatialForced> f;   // Rigid body forces
   };
-  RneaData rnea_data_;
+  mutable RneaData rnea_data_;
 
   struct CrbaData {
     bool is_computed = false;          // Reusable with same position
     std::vector<SpatialInertiad> I_c;  // Composite inertia
     Eigen::MatrixXd A;                 // Joint space inertia
   };
-  CrbaData crba_data_;
+  mutable CrbaData crba_data_;
 
   struct InertiaInverseData {
     bool is_computed = false;            // Reusable with same position
     Eigen::LDLT<Eigen::MatrixXd> A_inv;  // Robust Cholesky decomposition of joint space inertia
   };
-  InertiaInverseData ainv_data_;
+  mutable InertiaInverseData ainv_data_;
 
   struct AbaInertiaData {
     bool is_computed = false;  // Reusable with same position
@@ -249,7 +250,7 @@ class ArticulatedBody {
     std::vector<SpatialForced> h;
     std::vector<double> d;
   };
-  AbaInertiaData aba_inertia_data_;
+  mutable AbaInertiaData aba_inertia_data_;
 
   struct AbaData {
     bool is_computed = false;       // Reusable with same position, velocity
@@ -261,7 +262,7 @@ class ArticulatedBody {
     std::vector<double> u;
     std::vector<SpatialMotiond> a;
   };
-  AbaData aba_data_;
+  mutable AbaData aba_data_;
 
   struct OpspaceData {
     bool is_computed = false;  // Reusable with same position, velocity
@@ -274,7 +275,7 @@ class ArticulatedBody {
     Eigen::Matrix6d Lambda_inv;
     Eigen::Matrix6d Lambda;
   };
-  OpspaceData opspace_data_;
+  mutable OpspaceData opspace_data_;
 
   friend SpatialMotionXd SpatialJacobian(const ArticulatedBody&, int);
   friend Eigen::Matrix6Xd Jacobian(const ArticulatedBody&, int, const Eigen::Vector3d&);
@@ -284,9 +285,11 @@ class ArticulatedBody {
   friend const Eigen::MatrixXd& Inertia(const ArticulatedBody&);
   friend const Eigen::LDLT<Eigen::MatrixXd>& InertiaInverse(const ArticulatedBody&);
   friend Eigen::VectorXd ForwardDynamics(const ArticulatedBody&, const Eigen::VectorXd&);
+  friend void AbaPrecomputeVelocityInertia(const ArticulatedBody&);
   friend Eigen::Vector6d Opspace::CentrifugalCoriolis(const ArticulatedBody&, int, const Eigen::Vector3d&, double);
+  friend Eigen::Vector6d Opspace::CentrifugalCoriolis(const ArticulatedBody&, const Eigen::MatrixXd& J, int, const Eigen::Vector3d&, double);
   friend const Eigen::Matrix6d& Opspace::Inertia(const ArticulatedBody&, int, const Eigen::Vector3d&, double);
-  friend Eigen::Vector6d Opspace::CentrifugalCoriolisGravity(ArticulatedBody&, int, const Eigen::Vector3d&, double);
+  friend Eigen::Vector6d Opspace::Gravity(ArticulatedBody&, int, const Eigen::Vector3d&, double);
 
 };
 

@@ -13,17 +13,15 @@
 #include "articulated_body.h"
 #include "spatial_math.h"
 
-#include <vector>  // std::vector
-
 namespace SpatialDyn {
 
 // RNEA
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd& ddq) {
-  auto& rnea = const_cast<ArticulatedBody::RneaData&>(ab.rnea_data_);
-  auto& vel  = const_cast<ArticulatedBody::VelocityData&>(ab.vel_data_);
-  auto& cc = const_cast<ArticulatedBody::CentrifugalCoriolisData&>(ab.cc_data_);
-  auto& grav = const_cast<ArticulatedBody::GravityData&>(ab.grav_data_);
-  auto& aba = const_cast<ArticulatedBody::AbaData&>(ab.aba_data_);
+  auto& rnea = ab.rnea_data_;
+  auto& vel  = ab.vel_data_;
+  auto& cc = ab.cc_data_;
+  auto& grav = ab.grav_data_;
+  auto& aba = ab.aba_data_;
 
   // Forward pass
   for (int i = 0; i < ab.dof(); i++) {
@@ -84,8 +82,8 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
 }
 
 const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
-  auto& vel  = const_cast<ArticulatedBody::VelocityData&>(ab.vel_data_);
-  auto& cc = const_cast<ArticulatedBody::CentrifugalCoriolisData&>(ab.cc_data_);
+  auto& vel = ab.vel_data_;
+  auto& cc = ab.cc_data_;
   if (cc.is_computed) {
     return cc.C;
   }
@@ -124,7 +122,7 @@ const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
 }
 
 const Eigen::VectorXd& Gravity(const ArticulatedBody& ab) {
-  auto& grav = const_cast<ArticulatedBody::GravityData&>(ab.grav_data_);
+  auto& grav = ab.grav_data_;
   if (grav.is_computed) {
     return grav.G;
   }
@@ -139,7 +137,6 @@ const Eigen::VectorXd& Gravity(const ArticulatedBody& ab) {
   }
 
   // Backward pass
-  Eigen::VectorXd tau(ab.dof());           // Resulting joint torques
   for (int i = ab.dof() - 1; i >= 0; i--) {
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     grav.G(i) = s.dot(grav.f_g[i]);
@@ -155,7 +152,7 @@ const Eigen::VectorXd& Gravity(const ArticulatedBody& ab) {
 
 // CRBA
 const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab) {
-  auto& crba = const_cast<ArticulatedBody::CrbaData&>(ab.crba_data_);
+  auto& crba = ab.crba_data_;
   if (crba.is_computed) {
     return crba.A;
   }
@@ -190,13 +187,12 @@ const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab) {
 }
 
 const Eigen::LDLT<Eigen::MatrixXd>& InertiaInverse(const ArticulatedBody& ab) {
-  auto& ainv = const_cast<ArticulatedBody::InertiaInverseData&>(ab.ainv_data_);
+  auto& ainv = ab.ainv_data_;
   if (!ainv.is_computed) {
     ainv.A_inv = Inertia(ab).ldlt();
   }
   return ainv.A_inv;
 }
-
 
 }  // namespace SpatialDyn
 
