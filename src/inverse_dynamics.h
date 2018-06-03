@@ -21,7 +21,6 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
   auto& vel  = ab.vel_data_;
   auto& cc = ab.cc_data_;
   auto& grav = ab.grav_data_;
-  auto& aba = ab.aba_data_;
 
   // Forward pass
   for (int i = 0; i < ab.dof(); i++) {
@@ -35,18 +34,18 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
       else            vel.v[i] = T_from_parent * vel.v[parent] + ab.dq(i) * s;
     }
 
-    if (!aba.is_computed) {
-      if (parent < 0) aba.c[i].setZero();
-      else            aba.c[i] = vel.v[i].cross(ab.dq(i) * s);
+    if (!cc.is_vel_computed) {
+      if (parent < 0) cc.c[i].setZero();
+      else            cc.c[i] = vel.v[i].cross(ab.dq(i) * s);
 
-      aba.b[i] = vel.v[i].cross(I * vel.v[i]);
+      cc.b[i] = vel.v[i].cross(I * vel.v[i]);
     }
 
-    if (!cc.is_computed) {
-      if (parent < 0) cc.c[i].setZero();
-      else            cc.c[i] = T_from_parent * cc.c[parent] + aba.c[i];
+    if (!cc.is_force_computed) {
+      if (parent < 0) cc.c_c[i].setZero();
+      else            cc.c_c[i] = T_from_parent * cc.c_c[parent] + cc.c[i];
 
-      cc.f_c[i] = I * cc.c[i] + aba.b[i];
+      cc.f_c[i] = I * cc.c_c[i] + cc.b[i];
     }
 
     if (!grav.is_computed) {
@@ -60,6 +59,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
     rnea.f[i] = I * rnea.a[i];
   }
   vel.is_computed = true;
+  cc.is_vel_computed = true;
 
   // Backward pass
   Eigen::VectorXd tau(ab.dof());           // Resulting joint torques
@@ -76,7 +76,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
       rnea.f[parent] += ab.T_to_parent(i) * rnea.f[i];
     }
   }
-  cc.is_computed = true;
+  cc.is_force_computed = true;
   grav.is_computed = true;
   return tau;
 }
@@ -84,13 +84,14 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
 const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
   auto& vel = ab.vel_data_;
   auto& cc = ab.cc_data_;
-  if (cc.is_computed) {
+  if (cc.is_force_computed) {
     return cc.C;
   }
 
   // Forward pass
   for (int i = 0; i < ab.dof(); i++) {
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
+    const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
     const int parent = ab.rigid_bodies(i).id_parent();
     const auto T_from_parent = ab.T_to_parent(i).inverse();
 
@@ -99,13 +100,22 @@ const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
       else            vel.v[i] = T_from_parent * vel.v[parent] + ab.dq(i) * s;
     }
 
-    if (parent < 0) cc.c[i].setZero();
-    else            cc.c[i] = T_from_parent * cc.c[parent] + vel.v[i].cross(ab.dq(i) * s);
+    if (!cc.is_vel_computed) {
+      if (parent < 0) cc.c[i].setZero();
+      else            cc.c[i] = vel.v[i].cross(ab.dq(i) * s);
 
-    const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
-    cc.f_c[i] = I * cc.c[i] + vel.v[i].cross(I * vel.v[i]);
+      cc.b[i] = vel.v[i].cross(I * vel.v[i]);
+    }
+
+    if (!cc.is_force_computed) {
+      if (parent < 0) cc.c_c[i].setZero();
+      else            cc.c_c[i] = T_from_parent * cc.c_c[parent] + cc.c[i];
+
+      cc.f_c[i] = I * cc.c_c[i] + cc.b[i];
+    }
   }
   vel.is_computed = true;
+  cc.is_vel_computed = true;
 
   // Backward pass
   for (int i = ab.dof() - 1; i >= 0; i--) {
@@ -117,7 +127,7 @@ const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
       cc.f_c[parent] += ab.T_to_parent(i) * cc.f_c[i];
     }
   }
-  cc.is_computed = true;
+  cc.is_force_computed = true;
   return cc.C;
 }
 
@@ -187,11 +197,11 @@ const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab) {
 }
 
 const Eigen::LDLT<Eigen::MatrixXd>& InertiaInverse(const ArticulatedBody& ab) {
-  auto& ainv = ab.ainv_data_;
-  if (!ainv.is_computed) {
-    ainv.A_inv = Inertia(ab).ldlt();
+  auto& crba = ab.crba_data_;
+  if (!crba.is_inv_computed) {
+    crba.A_inv = Inertia(ab).ldlt();
   }
-  return ainv.A_inv;
+  return crba.A_inv;
 }
 
 }  // namespace SpatialDyn

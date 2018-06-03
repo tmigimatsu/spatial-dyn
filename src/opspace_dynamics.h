@@ -39,7 +39,7 @@ Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, const Eigen::Matr
   Eigen::Vector6d mu = JacobianDynamicInverse(ab, J, tolerance).transpose() *
                        SpatialDyn::CentrifugalCoriolis(ab);
   mu -= Opspace::Inertia(ab, J) *
-        (Eigen::Affine3d(ab.T_to_world(idx_link).linear()) * cc.c[idx_link]).matrix();
+        (Eigen::Affine3d(ab.T_to_world(idx_link).linear()) * cc.c_c[idx_link]).matrix();
   return mu;
 }
 
@@ -51,7 +51,7 @@ Eigen::VectorXd Gravity(const ArticulatedBody& ab, const Eigen::MatrixXd& J, dou
 const Eigen::Matrix6d& Inertia(const ArticulatedBody& ab, int idx_link = -1, const Eigen::Vector3d& offset = Eigen::Vector3d::Zero(), double tolerance = 0) {
   if (idx_link < 0) idx_link += ab.dof();
   auto& ops = ab.opspace_data_;
-  auto& aba_I = ab.aba_inertia_data_;
+  auto& aba = ab.aba_data_;
 
   if (ops.is_computed && ops.idx_link == idx_link && ops.offset == offset) {
     if (ops.tolerance != tolerance) {
@@ -65,7 +65,7 @@ const Eigen::Matrix6d& Inertia(const ArticulatedBody& ab, int idx_link = -1, con
 
   // Forward pass
   for (int i = 0; i < ab.dof(); i++) {
-    if (!aba_I.is_computed) aba_I.I_a[i] = ab.rigid_bodies(i).inertia();
+    if (!aba.is_computed) aba.I_a[i] = ab.rigid_bodies(i).inertia();
     if (i == idx_link) {
       ops.p[i] = Eigen::Affine3d(ab.T_to_world(i).linear().transpose()) * -SpatialForce6d::Identity();
     } else {
@@ -77,29 +77,29 @@ const Eigen::Matrix6d& Inertia(const ArticulatedBody& ab, int idx_link = -1, con
   for (int i = ab.dof() - 1; i >= 0; i--) {
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     const int parent = ab.rigid_bodies(i).id_parent();
-    if (!aba_I.is_computed) {
-      aba_I.h[i] = aba_I.I_a[i] * s;
-      aba_I.d[i] = s.dot(aba_I.h[i]);
+    if (!aba.is_computed) {
+      aba.h[i] = aba.I_a[i] * s;
+      aba.d[i] = s.dot(aba.h[i]);
       if (parent >= 0) {
-        aba_I.I_a[i] -= aba_I.h[i].matrix() / aba_I.d[i] * aba_I.h[i].transpose();
-        aba_I.I_a[parent] += ab.T_to_parent(i) * aba_I.I_a[i];
+        aba.I_a[i] -= aba.h[i].matrix() / aba.d[i] * aba.h[i].transpose();
+        aba.I_a[parent] += ab.T_to_parent(i) * aba.I_a[i];
       }
     }
 
     ops.u[i] = -s.matrix().transpose() * ops.p[i].matrix();
 
     if (parent >= 0) {
-      ops.p[parent] += ab.T_to_parent(i) * (ops.p[i] + aba_I.h[i] / aba_I.d[i] * ops.u[i]);
+      ops.p[parent] += ab.T_to_parent(i) * (ops.p[i] + aba.h[i] / aba.d[i] * ops.u[i]);
     }
   }
-  aba_I.is_computed = true;
+  aba.is_computed = true;
 
   SpatialMotion6d a = SpatialMotion6d::Zero();
   for (int i : ab.ancestors_[idx_link]) {
     const auto T_from_parent = ab.T_to_parent(i).inverse();
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     a = T_from_parent * a;
-    auto ddq = (ops.u[i] - aba_I.h[i].transpose() * a.matrix()) / aba_I.d[i];
+    auto ddq = (ops.u[i] - aba.h[i].transpose() * a.matrix()) / aba.d[i];
     a += s * ddq;
   }
 
@@ -114,13 +114,13 @@ const Eigen::Matrix6d& Inertia(const ArticulatedBody& ab, int idx_link = -1, con
 Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, int idx_link = -1, const Eigen::Vector3d& offset = Eigen::Vector3d::Zero(), double tolerance = 0) {
   if (idx_link < 0) idx_link += ab.dof();
   auto& aba = ab.aba_data_;
-  auto& aba_I = ab.aba_inertia_data_;
+  auto& cc = ab.cc_data_;
 
   AbaPrecomputeVelocityInertia(ab);
 
   // Forward pass
   for (int i = 0; i < ab.dof(); i++) {
-    aba.p[i] = aba.b[i];
+    aba.p[i] = cc.b[i];
   }
 
   // Backward pass
@@ -130,7 +130,7 @@ Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, int idx_link = -1
     aba.u[i] = -s.dot(aba.p[i]);
     if (parent >= 0) {
       aba.p[parent] += ab.T_to_parent(i) *
-          (aba.p[i] + aba_I.I_a[i] * aba.c[i] + aba.u[i] / aba_I.d[i] * aba_I.h[i]);
+          (aba.p[i] + aba.I_a[i] * cc.c[i] + aba.u[i] / aba.d[i] * aba.h[i]);
     }
   }
 
@@ -140,20 +140,19 @@ Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, int idx_link = -1
     const int parent = ab.rigid_bodies(i).id_parent();
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     if (parent >= 0) {
-      a = T_from_parent * a + aba.c[i];
+      a = T_from_parent * a + cc.c[i];
     }
-    double ddq = (aba.u[i] - aba_I.h[i].dot(a)) / aba_I.d[i];
+    double ddq = (aba.u[i] - aba.h[i].dot(a)) / aba.d[i];
     a += ddq * s;
   }
 
-  Eigen::Vector6d mu_p = Eigen::Affine3d(ab.T_to_world(idx_link).linear()) * a;
-  return Opspace::Inertia(ab, idx_link, offset, tolerance) * -mu_p;
+  Eigen::Vector6d mu = Eigen::Affine3d(ab.T_to_world(idx_link).linear()) * a;
+  return Opspace::Inertia(ab, idx_link, offset, tolerance) * -mu;
 }
 
 Eigen::Vector6d Gravity(ArticulatedBody& ab, int idx_link = -1, const Eigen::Vector3d& offset = Eigen::Vector3d::Zero(), double tolerance = 0) {
   if (idx_link < 0) idx_link += ab.dof();
   auto& aba = ab.aba_data_;
-  auto& aba_I = ab.aba_inertia_data_;
 
   AbaPrecomputeVelocityInertia(ab);
 
@@ -169,10 +168,9 @@ Eigen::Vector6d Gravity(ArticulatedBody& ab, int idx_link = -1, const Eigen::Vec
     const int parent = ab.rigid_bodies(i).id_parent();
     aba.u[i] = tau(i) - s.dot(aba.p[i]);
     if (parent >= 0) {
-      aba.p[parent] += ab.T_to_parent(i) * (aba.p[i] + aba.u[i] / aba_I.d[i] * aba_I.h[i]);
+      aba.p[parent] += ab.T_to_parent(i) * (aba.p[i] + aba.u[i] / aba.d[i] * aba.h[i]);
     }
   }
-  aba_I.is_computed = true;
 
   SpatialMotiond a = SpatialMotiond::Zero();
   for (int i : ab.ancestors_[idx_link]) {
@@ -182,7 +180,7 @@ Eigen::Vector6d Gravity(ArticulatedBody& ab, int idx_link = -1, const Eigen::Vec
     if (parent >= 0) {
       a = T_from_parent * a;
     }
-    double ddq = (aba.u[i] - aba_I.h[i].dot(a)) / aba_I.d[i];
+    double ddq = (aba.u[i] - aba.h[i].dot(a)) / aba.d[i];
     a += ddq * s;
   }
 

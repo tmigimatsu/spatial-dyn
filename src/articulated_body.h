@@ -139,11 +139,11 @@ class ArticulatedBody {
 
     CalculateTransforms();
     vel_data_.is_computed = false;
-    cc_data_.is_computed = false;
+    cc_data_.is_vel_computed = false;
+    cc_data_.is_force_computed = false;
     grav_data_.is_computed = false;
     crba_data_.is_computed = false;
-    ainv_data_.is_computed = false;
-    aba_inertia_data_.is_computed = false;
+    crba_data_.is_inv_computed = false;
     aba_data_.is_computed = false;
     opspace_data_.is_computed = false;
   }
@@ -154,8 +154,8 @@ class ArticulatedBody {
     dq_ = dq;
 
     vel_data_.is_computed = false;
-    cc_data_.is_computed = false;
-    aba_data_.is_computed = false;
+    cc_data_.is_vel_computed = false;
+    cc_data_.is_force_computed = false;
     opspace_data_.is_computed = false;
   }
 
@@ -173,6 +173,7 @@ class ArticulatedBody {
   }
   void set_g(const Eigen::Vector3d& g) {
     g_ << g, Eigen::Vector3d::Zero();
+    grav_data_.is_computed = false;
   }
   const Eigen::Affine3d& T_to_parent(int i) const {
     return T_to_parent_[i];
@@ -211,8 +212,12 @@ class ArticulatedBody {
   mutable VelocityData vel_data_;
 
   struct CentrifugalCoriolisData {
-    bool is_computed = false;          // Reusable with same position, velocity
-    std::vector<SpatialMotiond> c;    // Propagated rigid body centrifugal accelerations
+    bool is_vel_computed = false;   // Reusable with same position, velocity
+    std::vector<SpatialMotiond> c;  // Rigid body centrifugal accelerations
+    std::vector<SpatialForced> b;   // Rigid body Coriolis forces
+
+    bool is_force_computed = false;    // Reusable with same position, velocity
+    std::vector<SpatialMotiond> c_c;   // Composite centrifugal accelerations
     std::vector<SpatialForced> f_c;    // Rigid body centrifugal and Coriolis forces
     Eigen::VectorXd C;                 // Joint space centrifugal and Coriolis forces
   };
@@ -235,27 +240,17 @@ class ArticulatedBody {
     bool is_computed = false;          // Reusable with same position
     std::vector<SpatialInertiad> I_c;  // Composite inertia
     Eigen::MatrixXd A;                 // Joint space inertia
+
+    bool is_inv_computed = false;    // Reusable with same position
+    Eigen::LDLT<Eigen::MatrixXd> A_inv;  // Robust Cholesky decomposition of joint space inertia
   };
   mutable CrbaData crba_data_;
 
-  struct InertiaInverseData {
-    bool is_computed = false;            // Reusable with same position
-    Eigen::LDLT<Eigen::MatrixXd> A_inv;  // Robust Cholesky decomposition of joint space inertia
-  };
-  mutable InertiaInverseData ainv_data_;
-
-  struct AbaInertiaData {
+  struct AbaData {
     bool is_computed = false;  // Reusable with same position
     std::vector<SpatialInertiaMatrixd> I_a;
     std::vector<SpatialForced> h;
     std::vector<double> d;
-  };
-  mutable AbaInertiaData aba_inertia_data_;
-
-  struct AbaData {
-    bool is_computed = false;       // Reusable with same position, velocity
-    std::vector<SpatialMotiond> c;  // Rigid body centrifugal accelerations
-    std::vector<SpatialForced> b;   // Rigid body Coriolis forces
 
     // Not reusable
     std::vector<SpatialForced> p;
@@ -379,8 +374,12 @@ int ArticulatedBody::AddRigidBody(RigidBody&& rb, int id_parent) {
   vel_data_.is_computed = false;
   vel_data_.v.push_back(SpatialMotiond());
 
-  cc_data_.is_computed = false;
+  cc_data_.is_vel_computed = false;
   cc_data_.c.push_back(SpatialMotiond());
+  cc_data_.b.push_back(SpatialForced());
+
+  cc_data_.is_force_computed = false;
+  cc_data_.c_c.push_back(SpatialMotiond());
   cc_data_.f_c.push_back(SpatialForced());
   cc_data_.C.resize(dof_);
 
@@ -395,16 +394,13 @@ int ArticulatedBody::AddRigidBody(RigidBody&& rb, int id_parent) {
   crba_data_.I_c.push_back(SpatialInertiad());
   crba_data_.A.resize(dof_, dof_);
 
-  ainv_data_.is_computed = false;
-
-  aba_inertia_data_.is_computed = false;
-  aba_inertia_data_.I_a.push_back(SpatialInertiaMatrixd());
-  aba_inertia_data_.h.push_back(SpatialForced());
-  aba_inertia_data_.d.push_back(0);
+  crba_data_.is_inv_computed = false;
 
   aba_data_.is_computed = false;
-  aba_data_.c.push_back(SpatialMotiond());
-  aba_data_.b.push_back(SpatialForced());
+  aba_data_.I_a.push_back(SpatialInertiaMatrixd());
+  aba_data_.h.push_back(SpatialForced());
+  aba_data_.d.push_back(0);
+
   aba_data_.p.push_back(SpatialForced());
   aba_data_.u.push_back(0);
   aba_data_.a.push_back(SpatialMotiond());
