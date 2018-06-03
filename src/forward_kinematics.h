@@ -18,7 +18,7 @@ namespace SpatialDyn {
 SpatialMotionXd SpatialJacobian(const ArticulatedBody& ab, int link = -1) {
   SpatialMotionXd J = SpatialMotionXd::Zero(ab.dof());
   if (link < 0) link += ab.dof();
-  for (const int i : ab.ancestors_[link]) {
+  for (const int i : ab.ancestors(link)) {
     J.col(i) = ab.T_to_world(i) * ab.rigid_bodies(i).joint().subspace();
   }
   return J;
@@ -29,7 +29,7 @@ Eigen::Matrix6Xd Jacobian(const ArticulatedBody& ab, int link = -1,
   Eigen::Matrix6Xd J = Eigen::Matrix6Xd::Zero(6, ab.dof());
   if (link < 0) link += ab.dof();
   const auto& p_0n = ab.T_to_world(link) * offset;
-  for (const int i : ab.ancestors_[link]) {
+  for (const int i : ab.ancestors(link)) {
     Eigen::Affine3d T_i_to_point = Eigen::Translation3d(ab.T_to_world(i).translation() - p_0n) *
                                    ab.T_to_world(i).linear();
     J.col(i) = (T_i_to_point * ab.rigid_bodies(i).joint().subspace()).matrix();

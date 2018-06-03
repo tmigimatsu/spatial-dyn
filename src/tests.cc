@@ -226,10 +226,12 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
     Eigen::VectorXd tau = Eigen::VectorXd::Ones(ab.dof());
 
     Eigen::VectorXd ddq = SpatialDyn::ForwardDynamics(ab, tau);
+    Eigen::VectorXd ddq_aba = SpatialDyn::ForwardDynamics(ab, tau);
     Eigen::VectorXd ddq_rbdl(ab.dof());
     RigidBodyDynamics::ForwardDynamics(ab_rbdl, ab.q(), ab.dq(), tau, ddq_rbdl);
 
     REQUIRE((ddq - ddq_rbdl).norm() < 1e-10);
+    REQUIRE((ddq_aba - ddq_rbdl).norm() < 1e-10);
   }
 
   SECTION("centrifugal coriolis") {

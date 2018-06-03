@@ -15,6 +15,10 @@
 
 namespace SpatialDyn {
 
+Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& tau) {
+  return InertiaInverse(ab).solve(tau - CentrifugalCoriolis(ab) - Gravity(ab));
+}
+
 void AbaPrecomputeVelocityInertia(const ArticulatedBody& ab) {
   auto& aba = ab.aba_data_;
   auto& cc = ab.cc_data_;
@@ -66,7 +70,7 @@ void AbaPrecomputeVelocityInertia(const ArticulatedBody& ab) {
 }
 
 // ABA
-Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& tau) {
+Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab, const Eigen::VectorXd& tau) {
   auto& aba = ab.aba_data_;
   auto& cc = ab.cc_data_;
 

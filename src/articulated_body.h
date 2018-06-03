@@ -130,6 +130,9 @@ class ArticulatedBody {
   const RigidBody& rigid_bodies(int i) const {
     return rigid_bodies_[i];
   }
+  const std::vector<int>& ancestors(int i) const {
+    return ancestors_[i];
+  }
 
   void set_q(const Eigen::VectorXd& q) {
     if (q.size() != dof_) {
@@ -272,14 +275,13 @@ class ArticulatedBody {
   };
   mutable OpspaceData opspace_data_;
 
-  friend SpatialMotionXd SpatialJacobian(const ArticulatedBody&, int);
-  friend Eigen::Matrix6Xd Jacobian(const ArticulatedBody&, int, const Eigen::Vector3d&);
   friend Eigen::VectorXd InverseDynamics(const ArticulatedBody&, const Eigen::MatrixXd&);
   friend const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody&);
   friend const Eigen::VectorXd& Gravity(const ArticulatedBody&);
   friend const Eigen::MatrixXd& Inertia(const ArticulatedBody&);
   friend const Eigen::LDLT<Eigen::MatrixXd>& InertiaInverse(const ArticulatedBody&);
   friend Eigen::VectorXd ForwardDynamics(const ArticulatedBody&, const Eigen::VectorXd&);
+  friend Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody&, const Eigen::VectorXd&);
   friend void AbaPrecomputeVelocityInertia(const ArticulatedBody&);
   friend Eigen::Vector6d Opspace::CentrifugalCoriolis(const ArticulatedBody&, int, const Eigen::Vector3d&, double);
   friend Eigen::Vector6d Opspace::CentrifugalCoriolis(const ArticulatedBody&, const Eigen::MatrixXd& J, int, const Eigen::Vector3d&, double);
