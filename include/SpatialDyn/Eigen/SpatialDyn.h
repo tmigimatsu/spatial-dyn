@@ -54,16 +54,16 @@ typedef Matrix<float,6,Dynamic> Matrix6Xf;
 
 template<typename Derived>
 inline typename MatrixBase<Derived>::PlainObject
-PseudoInverse(const MatrixBase<Derived>& A, double tolerance = 0) {
+PseudoInverse(const MatrixBase<Derived>& A, double svd_epsilon = 0) {
   Eigen::JacobiSVD<typename MatrixBase<Derived>::PlainObject>
       svd(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
   const auto& S = svd.singularValues();
-  if (tolerance <= 0) {
-    tolerance = std::numeric_limits<typename internal::traits<Derived>::Scalar>::epsilon() *
+  if (svd_epsilon <= 0) {
+    svd_epsilon = std::numeric_limits<typename internal::traits<Derived>::Scalar>::epsilon() *
                 std::max(A.cols(), A.cols()) * S(0);
   }
   return svd.matrixV() *
-         (S.array() > tolerance).select(S.array().inverse(), 0).matrix().asDiagonal() *
+         (S.array() > svd_epsilon).select(S.array().inverse(), 0).matrix().asDiagonal() *
          svd.matrixU().adjoint();
 }
 

@@ -18,28 +18,33 @@ class ArticulatedBody;
 
 namespace Opspace {
 
+Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
+                                const Eigen::VectorXd& ddx, Eigen::MatrixXd *N = nullptr,
+                                double svd_epsilon = 0, bool centrifugal_coriolis = false,
+                                bool gravity = false);
+
 const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
-                               double tolerance = 0);
+                               double svd_epsilon = 0);
 
 const Eigen::MatrixXd& InertiaInverse(const ArticulatedBody& ab, const Eigen::MatrixXd& J);
 
 const Eigen::MatrixXd& JacobianDynamicInverse(const ArticulatedBody& ab,
                                               const Eigen::MatrixXd& J,
-                                              double tolerance = 0);
+                                              double svd_epsilon = 0);
 
 Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                     int idx_link = -1,
                                     const Eigen::Vector3d& offset = Eigen::Vector3d::Zero(),
-                                    double tolerance = 0);
+                                    double svd_epsilon = 0);
 
 Eigen::VectorXd Gravity(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
-                        double tolerance = 0);
+                        double svd_epsilon = 0);
 
 // ABA
 const Eigen::Matrix6d& InertiaAba(const ArticulatedBody& ab,
                                   int idx_link = -1,
                                   const Eigen::Vector3d& offset = Eigen::Vector3d::Zero(),
-                                  double tolerance = 0);
+                                  double svd_epsilon = 0);
 
 const Eigen::Matrix6d& InertiaInverseAba(const ArticulatedBody& ab,
                                          int idx_link = -1,
@@ -48,12 +53,12 @@ const Eigen::Matrix6d& InertiaInverseAba(const ArticulatedBody& ab,
 Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab,
                                        int idx_link = -1,
                                        const Eigen::Vector3d& offset = Eigen::Vector3d::Zero(),
-                                       double tolerance = 0);
+                                       double svd_epsilon = 0);
 
 Eigen::Vector6d GravityAba(const ArticulatedBody& ab,
                            int idx_link = -1,
                            const Eigen::Vector3d& offset = Eigen::Vector3d::Zero(),
-                           double tolerance = 0);
+                           double svd_epsilon = 0);
 
 }  // namespace Opspace
 }  // namespace SpatialDyn

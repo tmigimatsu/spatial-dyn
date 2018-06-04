@@ -14,14 +14,14 @@
 namespace SpatialDyn {
 namespace Opspace {
 
-const Eigen::Matrix6d& InertiaAba(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset, double tolerance) {
+const Eigen::Matrix6d& InertiaAba(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset, double svd_epsilon) {
   if (idx_link < 0) idx_link += ab.dof();
   auto& ops = ab.opspace_aba_data_;
 
   if (!ops.is_lambda_computed || ops.idx_link != idx_link ||
-      ops.offset != offset || ops.tolerance != tolerance) {
-    ops.Lambda = Eigen::PseudoInverse(InertiaInverseAba(ab, idx_link, offset), tolerance);
-    ops.tolerance = tolerance;
+      ops.offset != offset || ops.svd_epsilon != svd_epsilon) {
+    ops.Lambda = Eigen::PseudoInverse(InertiaInverseAba(ab, idx_link, offset), svd_epsilon);
+    ops.svd_epsilon = svd_epsilon;
     ops.is_lambda_computed = true;
   }
 
@@ -87,7 +87,7 @@ const Eigen::Matrix6d& InertiaInverseAba(const ArticulatedBody& ab, int idx_link
   return ops.Lambda_inv;
 }
 
-Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset, double tolerance) {
+Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset, double svd_epsilon) {
   if (idx_link < 0) idx_link += ab.dof();
   auto& aba = ab.aba_data_;
   auto& cc = ab.cc_data_;
@@ -156,10 +156,10 @@ Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab, int idx_link, 
   }
 
   Eigen::Vector6d mu = Eigen::Affine3d(ab.T_to_world(idx_link).linear()) * a;
-  return Opspace::InertiaAba(ab, idx_link, offset, tolerance) * -mu;
+  return Opspace::InertiaAba(ab, idx_link, offset, svd_epsilon) * -mu;
 }
 
-Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset, double tolerance) {
+Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset, double svd_epsilon) {
   if (idx_link < 0) idx_link += ab.dof();
   auto& aba = ab.aba_data_;
 
@@ -206,7 +206,7 @@ Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen:
   }
 
   Eigen::Vector6d p = Eigen::Affine3d(ab.T_to_world(idx_link).linear()) * a;
-  return Opspace::InertiaAba(ab, idx_link, offset, tolerance) * -p;
+  return Opspace::InertiaAba(ab, idx_link, offset, svd_epsilon) * -p;
 }
 
 }  // namespace Opspace

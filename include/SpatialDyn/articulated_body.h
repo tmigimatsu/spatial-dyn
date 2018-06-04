@@ -135,13 +135,14 @@ class ArticulatedBody {
 
   struct OpspaceData {
     Eigen::MatrixXd J;
-    double tolerance;
+    double svd_epsilon;
 
     bool is_lambda_computed = false;
     Eigen::MatrixXd Lambda;
 
     bool is_lambda_inv_computed = false;
     Eigen::MatrixXd Lambda_inv;
+    Eigen::MatrixXd A_inv_J_bar_T;
 
     bool is_jbar_computed = false;
     Eigen::MatrixXd J_bar;
@@ -151,7 +152,7 @@ class ArticulatedBody {
   struct OpspaceAbaData {
     int idx_link;
     Eigen::Vector3d offset;
-    double tolerance;
+    double svd_epsilon;
 
     bool is_lambda_computed = false;  // Reusable with same position
     Eigen::Matrix6d Lambda;
