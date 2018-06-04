@@ -134,30 +134,53 @@ class ArticulatedBody {
   mutable AbaData aba_data_;
 
   struct OpspaceData {
-    bool is_computed = false;  // Reusable with same position, velocity
-    std::vector<SpatialForce6d> p;
-    std::vector<Eigen::Matrix<double,1,6>> u;
+    Eigen::MatrixXd J;
+    double tolerance;
 
+    bool is_lambda_computed = false;
+    Eigen::MatrixXd Lambda;
+
+    bool is_lambda_inv_computed = false;
+    Eigen::MatrixXd Lambda_inv;
+
+    bool is_jbar_computed = false;
+    Eigen::MatrixXd J_bar;
+  };
+  mutable OpspaceData opspace_data_;
+
+  struct OpspaceAbaData {
     int idx_link;
     Eigen::Vector3d offset;
     double tolerance;
-    Eigen::Matrix6d Lambda_inv;
+
+    bool is_lambda_computed = false;  // Reusable with same position
     Eigen::Matrix6d Lambda;
+
+    bool is_lambda_inv_computed = false;  // Reusable with same position
+    Eigen::Matrix6d Lambda_inv;
+
+    std::vector<SpatialForce6d> p;
+    std::vector<Eigen::Matrix<double,1,6>> u;
   };
-  mutable OpspaceData opspace_data_;
+  mutable OpspaceAbaData opspace_aba_data_;
 
   friend Eigen::VectorXd InverseDynamics(const ArticulatedBody&, const Eigen::MatrixXd&);
   friend const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody&);
   friend const Eigen::VectorXd& Gravity(const ArticulatedBody&);
   friend const Eigen::MatrixXd& Inertia(const ArticulatedBody&);
   friend const Eigen::LDLT<Eigen::MatrixXd>& InertiaInverse(const ArticulatedBody&);
-  friend Eigen::VectorXd ForwardDynamics(const ArticulatedBody&, const Eigen::VectorXd&);
+
   friend Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody&, const Eigen::VectorXd&);
-  friend void AbaPrecomputeVelocityInertia(const ArticulatedBody&);
-  friend Eigen::Vector6d Opspace::CentrifugalCoriolis(const ArticulatedBody&, int, const Eigen::Vector3d&, double);
+
+  friend const Eigen::MatrixXd& Opspace::Inertia(const ArticulatedBody&, const Eigen::MatrixXd& J, double);
+  friend const Eigen::MatrixXd& Opspace::InertiaInverse(const ArticulatedBody&, const Eigen::MatrixXd& J);
+  friend const Eigen::MatrixXd& Opspace::JacobianDynamicInverse(const ArticulatedBody&, const Eigen::MatrixXd& J, double);
   friend Eigen::Vector6d Opspace::CentrifugalCoriolis(const ArticulatedBody&, const Eigen::MatrixXd& J, int, const Eigen::Vector3d&, double);
-  friend const Eigen::Matrix6d& Opspace::Inertia(const ArticulatedBody&, int, const Eigen::Vector3d&, double);
-  friend Eigen::Vector6d Opspace::Gravity(ArticulatedBody&, int, const Eigen::Vector3d&, double);
+
+  friend const Eigen::Matrix6d& Opspace::InertiaAba(const ArticulatedBody&, int, const Eigen::Vector3d&, double);
+  friend const Eigen::Matrix6d& Opspace::InertiaInverseAba(const ArticulatedBody&, int, const Eigen::Vector3d&);
+  friend Eigen::Vector6d Opspace::CentrifugalCoriolisAba(const ArticulatedBody&, int, const Eigen::Vector3d&, double);
+  friend Eigen::Vector6d Opspace::GravityAba(const ArticulatedBody&, int, const Eigen::Vector3d&, double);
 
 };
 

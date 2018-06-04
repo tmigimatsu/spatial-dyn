@@ -15,19 +15,48 @@
 namespace SpatialDyn {
 namespace Opspace {
 
-Eigen::MatrixXd InertiaInverse(const ArticulatedBody& ab, const Eigen::MatrixXd& J, double tolerance) {
-  return J * SpatialDyn::InertiaInverse(ab).solve(J.transpose());
+const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
+                               double tolerance) {
+  auto& ops = ab.opspace_data_;
+
+  if (!ops.is_lambda_computed || ops.J != J || ops.tolerance != tolerance) {
+    ops.Lambda = Eigen::PseudoInverse(InertiaInverse(ab, J), tolerance);
+    ops.tolerance = tolerance;
+    ops.is_lambda_computed = true;
+  }
+
+  return ops.Lambda;
 }
 
-Eigen::MatrixXd Inertia(const ArticulatedBody& ab, const Eigen::MatrixXd& J, double tolerance) {
-  return Eigen::PseudoInverse(Opspace::InertiaInverse(ab, J, tolerance));
+const Eigen::MatrixXd& InertiaInverse(const ArticulatedBody& ab, const Eigen::MatrixXd& J) {
+  auto& ops = ab.opspace_data_;
+
+  if (!ops.is_lambda_inv_computed || ops.J != J) {
+    ops.Lambda_inv = J * SpatialDyn::InertiaInverse(ab).solve(J.transpose());
+    ops.J = J;
+    ops.is_lambda_inv_computed = true;
+    ops.is_lambda_computed = false;
+    ops.is_jbar_computed = false;
+  }
+
+  return ops.Lambda_inv;
 }
 
-Eigen::MatrixXd JacobianDynamicInverse(const ArticulatedBody& ab, const Eigen::MatrixXd& J, double tolerance) {
-  return InertiaInverse(ab).solve(J.transpose() * Opspace::Inertia(ab, J, tolerance));
+const Eigen::MatrixXd& JacobianDynamicInverse(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
+                                              double tolerance) {
+  auto& ops = ab.opspace_data_;
+
+  if (!ops.is_jbar_computed || ops.J != J) {
+    ops.J_bar = InertiaInverse(ab).solve(J.transpose() * Opspace::Inertia(ab, J, tolerance));
+    ops.is_jbar_computed = true;
+  }
+
+  return ops.J_bar;
 }
 
-Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, const Eigen::MatrixXd& J, int idx_link, const Eigen::Vector3d& offset, double tolerance) {
+Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
+                                    int idx_link, const Eigen::Vector3d& offset,
+                                    double tolerance) {
   if (idx_link < 0) idx_link += ab.dof();
   auto& cc = ab.cc_data_;
 
@@ -39,7 +68,8 @@ Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, const Eigen::Matr
   return mu;
 }
 
-Eigen::VectorXd Gravity(const ArticulatedBody& ab, const Eigen::MatrixXd& J, double tolerance) {
+Eigen::VectorXd Gravity(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
+                        double tolerance) {
   return JacobianDynamicInverse(ab, J, tolerance).transpose() * Gravity(ab);
 }
 

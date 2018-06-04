@@ -257,19 +257,19 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
 
     SECTION("inertia") {
       Eigen::Matrix6d Lambda = SpatialDyn::Opspace::Inertia(ab, J);
-      Eigen::Matrix6d Lambda_aba = SpatialDyn::Opspace::Inertia(ab);
+      Eigen::Matrix6d Lambda_aba = SpatialDyn::Opspace::InertiaAba(ab);
       REQUIRE((Lambda - Lambda_aba).norm() < 1e-10);
     }
 
     SECTION("centrifugal coriolis") {
       Eigen::Vector6d mu = SpatialDyn::Opspace::CentrifugalCoriolis(ab, J);
-      Eigen::Vector6d mu_aba = SpatialDyn::Opspace::CentrifugalCoriolis(ab);
+      Eigen::Vector6d mu_aba = SpatialDyn::Opspace::CentrifugalCoriolisAba(ab);
       REQUIRE((mu - mu_aba).norm() < 1e-10);
     }
 
     SECTION("gravity") {
       Eigen::Vector6d p = SpatialDyn::Opspace::Gravity(ab, J);
-      Eigen::Vector6d p_aba = SpatialDyn::Opspace::Gravity(ab);
+      Eigen::Vector6d p_aba = SpatialDyn::Opspace::GravityAba(ab);
       REQUIRE((p - p_aba).norm() < 1e-10);
     }
 

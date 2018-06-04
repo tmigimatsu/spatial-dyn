@@ -60,7 +60,11 @@ void ArticulatedBody::set_q(const Eigen::VectorXd& q) {
   crba_data_.is_computed = false;
   crba_data_.is_inv_computed = false;
   aba_data_.is_computed = false;
-  opspace_data_.is_computed = false;
+  opspace_data_.is_lambda_computed = false;
+  opspace_data_.is_lambda_inv_computed = false;
+  opspace_data_.is_jbar_computed = false;
+  opspace_aba_data_.is_lambda_computed = false;
+  opspace_aba_data_.is_lambda_inv_computed = false;
 }
 
 const Eigen::VectorXd& ArticulatedBody::dq() const {
@@ -78,7 +82,6 @@ void ArticulatedBody::set_dq(const Eigen::VectorXd& dq) {
   vel_data_.is_computed = false;
   cc_data_.is_vel_computed = false;
   cc_data_.is_force_computed = false;
-  opspace_data_.is_computed = false;
 }
 
 const SpatialMotiond& ArticulatedBody::g() const {
@@ -162,9 +165,14 @@ int ArticulatedBody::AddRigidBody(RigidBody&& rb, int id_parent) {
   aba_data_.u.push_back(0);
   aba_data_.a.push_back(SpatialMotiond());
 
-  opspace_data_.is_computed = false;
-  opspace_data_.p.push_back(SpatialForce6d());
-  opspace_data_.u.push_back(Eigen::Matrix<double,1,6>());
+  opspace_data_.is_lambda_computed = false;
+  opspace_data_.is_lambda_inv_computed = false;
+  opspace_data_.is_jbar_computed = false;
+
+  opspace_aba_data_.is_lambda_computed = false;
+  opspace_aba_data_.is_lambda_inv_computed = false;
+  opspace_aba_data_.p.push_back(SpatialForce6d());
+  opspace_aba_data_.u.push_back(Eigen::Matrix<double,1,6>());
 
   return id;
 }
