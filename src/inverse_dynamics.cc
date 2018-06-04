@@ -61,16 +61,20 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
   Eigen::VectorXd tau(ab.dof());           // Resulting joint torques
   for (int i = ab.dof() - 1; i >= 0; i--) {
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
-    cc.C(i) = s.dot(cc.f_c[i]);
-    grav.G(i) = s.dot(grav.f_g[i]);
-    tau(i) = s.dot(rnea.f[i]) + cc.C(i) + grav.G(i);
-
     const int parent = ab.rigid_bodies(i).id_parent();
-    if (parent >= 0) {
-      cc.f_c[parent] += ab.T_to_parent(i) * cc.f_c[i];
-      grav.f_g[parent] += ab.T_to_parent(i) * grav.f_g[i];
-      rnea.f[parent] += ab.T_to_parent(i) * rnea.f[i];
+
+    if (!cc.is_force_computed) {
+      cc.C(i) = s.dot(cc.f_c[i]);
+      if (parent >= 0) cc.f_c[parent] += ab.T_to_parent(i) * cc.f_c[i];
     }
+
+    if (!grav.is_computed) {
+      grav.G(i) = s.dot(grav.f_g[i]);
+      if (parent >= 0) grav.f_g[parent] += ab.T_to_parent(i) * grav.f_g[i];
+    }
+
+    tau(i) = s.dot(rnea.f[i]) + cc.C(i) + grav.G(i);
+    if (parent >= 0) rnea.f[parent] += ab.T_to_parent(i) * rnea.f[i];
   }
   cc.is_force_computed = true;
   grav.is_computed = true;
