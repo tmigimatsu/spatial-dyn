@@ -26,7 +26,7 @@ TEST_CASE("spatial vector transforms", "[SpatialVector]") {
                             Eigen::AngleAxisd(M_PI/3, Eigen::Vector3d::UnitY());
   Eigen::Vector3d trans(4,5,6);
 
-  Eigen::Affine3d T = Eigen::Translation3d(trans) * quat;
+  Eigen::Isometry3d T = Eigen::Translation3d(trans) * quat;
   SpatialDyn::SpatialMotiond m(1,3,5,2,4,6);
   SpatialDyn::SpatialMotiond n = T * m;
   SpatialDyn::SpatialForced f(1,3,5,2,4,6);
@@ -56,7 +56,7 @@ TEST_CASE("spatial inertia", "[SpatialInertia]") {
               I_com(3), I_com(1), I_com(5),
               I_com(4), I_com(5), I_com(2);
 
-  Eigen::Affine3d T = Eigen::Translation3d(trans) * quat;
+  Eigen::Isometry3d T = Eigen::Translation3d(trans) * quat;
   SpatialDyn::SpatialInertiad I(mass, com, I_com);
   SpatialDyn::SpatialInertiad J = T * I;
   SpatialDyn::SpatialMotiond v(1,2,3,4,5,6);

@@ -99,7 +99,7 @@ Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, const Eigen::Matr
   Eigen::Vector6d mu = JacobianDynamicInverse(ab, J, svd_epsilon).transpose() *
                        SpatialDyn::CentrifugalCoriolis(ab);
   mu -= Opspace::Inertia(ab, J) *
-        (Eigen::Affine3d(ab.T_to_world(idx_link).linear()) * cc.c_c[idx_link]).matrix();
+        (Eigen::Isometry3d(ab.T_to_world(idx_link).linear()) * cc.c_c[idx_link]).matrix();
   return mu;
 }
 

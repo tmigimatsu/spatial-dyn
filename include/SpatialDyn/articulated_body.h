@@ -33,8 +33,8 @@ class ArticulatedBody {
 
   void set_T_base_to_world(const Eigen::Quaterniond& ori_in_parent,
                            const Eigen::Vector3d& pos_in_parent);
-  void set_T_base_to_world(const Eigen::Affine3d& T_to_parent);
-  const Eigen::Affine3d& T_base_to_world() const;
+  void set_T_base_to_world(const Eigen::Isometry3d& T_to_parent);
+  const Eigen::Isometry3d& T_base_to_world() const;
 
   int AddRigidBody(RigidBody&& rb, int id_parent = -1);
 
@@ -54,8 +54,9 @@ class ArticulatedBody {
   const SpatialMotiond& g() const;
   void set_g(const Eigen::Vector3d& g);
 
-  const Eigen::Affine3d& T_to_parent(int i) const;
-  const Eigen::Affine3d& T_to_world(int i) const;
+  const Eigen::Isometry3d& T_to_parent(int i) const;
+  const Eigen::Isometry3d& T_from_parent(int i) const;
+  const Eigen::Isometry3d& T_to_world(int i) const;
 
   const std::vector<int>& subtree(int i) const;
 
@@ -64,7 +65,7 @@ class ArticulatedBody {
  protected:
 
   size_t dof_ = 0;
-  Eigen::Affine3d T_base_to_world_ = Eigen::Affine3d::Identity();
+  Eigen::Isometry3d T_base_to_world_ = Eigen::Isometry3d::Identity();
   std::vector<RigidBody> rigid_bodies_;
 
   Eigen::VectorXd q_;
@@ -73,8 +74,9 @@ class ArticulatedBody {
   Eigen::VectorXd tau_;
   SpatialMotionXd J_;
   SpatialMotiond g_ = -9.81 * SpatialMotiond::UnitLinZ();
-  std::vector<Eigen::Affine3d> T_to_parent_;
-  std::vector<Eigen::Affine3d> T_to_world_;
+  std::vector<Eigen::Isometry3d> T_to_parent_;
+  std::vector<Eigen::Isometry3d> T_from_parent_;
+  std::vector<Eigen::Isometry3d> T_to_world_;
   std::vector<std::vector<int>> ancestors_;  // Ancestors from base to link i
   std::vector<std::vector<int>> subtrees_;
 

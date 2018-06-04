@@ -29,7 +29,7 @@ class Joint {
   // Motion subspace
   const SpatialMotiond& subspace() const;
 
-  Eigen::Affine3d T_joint(double q) const;
+  Eigen::Isometry3d T_joint(double q) const;
 
  protected:
 

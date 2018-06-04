@@ -20,14 +20,14 @@ int RigidBody::id_parent() const {
   return id_parent_;
 }
 
-const Eigen::Affine3d& RigidBody::T_to_parent() const {
+const Eigen::Isometry3d& RigidBody::T_to_parent() const {
   return T_to_parent_;
 }
 void RigidBody::set_T_to_parent(const Eigen::Quaterniond& ori_in_parent,
                      const Eigen::Vector3d& pos_in_parent) {
   T_to_parent_ = Eigen::Translation3d(pos_in_parent) * ori_in_parent;
 }
-void RigidBody::set_T_to_parent(const Eigen::Affine3d& T_to_parent) {
+void RigidBody::set_T_to_parent(const Eigen::Isometry3d& T_to_parent) {
   T_to_parent_ = T_to_parent;
 }
 

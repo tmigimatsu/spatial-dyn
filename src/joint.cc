@@ -48,22 +48,22 @@ const SpatialMotiond& Joint::subspace() const {
   return subspace_;
 }
 
-Eigen::Affine3d Joint::T_joint(double q) const {
+Eigen::Isometry3d Joint::T_joint(double q) const {
   switch (type_) {
     case JointType::RX:
-      return Eigen::Affine3d(Eigen::AngleAxisd(q, Eigen::Vector3d::UnitX()));
+      return Eigen::Isometry3d(Eigen::AngleAxisd(q, Eigen::Vector3d::UnitX()));
     case JointType::RY:
-      return Eigen::Affine3d(Eigen::AngleAxisd(q, Eigen::Vector3d::UnitY()));
+      return Eigen::Isometry3d(Eigen::AngleAxisd(q, Eigen::Vector3d::UnitY()));
     case JointType::RZ:
-      return Eigen::Affine3d(Eigen::AngleAxisd(q, Eigen::Vector3d::UnitZ()));
+      return Eigen::Isometry3d(Eigen::AngleAxisd(q, Eigen::Vector3d::UnitZ()));
     case JointType::PX:
-      return Eigen::Affine3d(Eigen::Translation3d(q * Eigen::Vector3d::UnitX()));
+      return Eigen::Isometry3d(Eigen::Translation3d(q * Eigen::Vector3d::UnitX()));
     case JointType::PY:
-      return Eigen::Affine3d(Eigen::Translation3d(q * Eigen::Vector3d::UnitY()));
+      return Eigen::Isometry3d(Eigen::Translation3d(q * Eigen::Vector3d::UnitY()));
     case JointType::PZ:
-      return Eigen::Affine3d(Eigen::Translation3d(q * Eigen::Vector3d::UnitZ()));
+      return Eigen::Isometry3d(Eigen::Translation3d(q * Eigen::Vector3d::UnitZ()));
     default:
-      return Eigen::Affine3d::Identity();
+      return Eigen::Isometry3d::Identity();
   }
 }
 

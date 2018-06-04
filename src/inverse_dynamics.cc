@@ -23,11 +23,10 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
     const int parent = ab.rigid_bodies(i).id_parent();
-    const auto T_from_parent = ab.T_to_parent(i).inverse();
 
     if (!vel.is_computed) {
       if (parent < 0) vel.v[i] = ab.dq(i) * s;
-      else            vel.v[i] = T_from_parent * vel.v[parent] + ab.dq(i) * s;
+      else            vel.v[i] = ab.T_from_parent(i) * vel.v[parent] + ab.dq(i) * s;
     }
 
     if (!cc.is_vel_computed) {
@@ -39,7 +38,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
 
     if (!cc.is_force_computed) {
       if (parent < 0) cc.c_c[i].setZero();
-      else            cc.c_c[i] = T_from_parent * cc.c_c[parent] + cc.c[i];
+      else            cc.c_c[i] = ab.T_from_parent(i) * cc.c_c[parent] + cc.c[i];
 
       cc.f_c[i] = I * cc.c_c[i] + cc.b[i];
     }
@@ -50,7 +49,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
     }
 
     if (parent < 0) rnea.a[i] = ddq(i) * s;
-    else            rnea.a[i] = T_from_parent * rnea.a[parent] + ddq(i) * s;
+    else            rnea.a[i] = ab.T_from_parent(i) * rnea.a[parent] + ddq(i) * s;
 
     rnea.f[i] = I * rnea.a[i];
   }
@@ -93,11 +92,10 @@ const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
     const int parent = ab.rigid_bodies(i).id_parent();
-    const auto T_from_parent = ab.T_to_parent(i).inverse();
 
     if (!vel.is_computed) {
       if (parent < 0) vel.v[i] = ab.dq(i) * s;
-      else            vel.v[i] = T_from_parent * vel.v[parent] + ab.dq(i) * s;
+      else            vel.v[i] = ab.T_from_parent(i) * vel.v[parent] + ab.dq(i) * s;
     }
 
     if (!cc.is_vel_computed) {
@@ -109,7 +107,7 @@ const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
 
     if (!cc.is_force_computed) {
       if (parent < 0) cc.c_c[i].setZero();
-      else            cc.c_c[i] = T_from_parent * cc.c_c[parent] + cc.c[i];
+      else            cc.c_c[i] = ab.T_from_parent(i) * cc.c_c[parent] + cc.c[i];
 
       cc.f_c[i] = I * cc.c_c[i] + cc.b[i];
     }

@@ -30,10 +30,10 @@ class RigidBody {
   int id() const;
   int id_parent() const;
 
-  const Eigen::Affine3d& T_to_parent() const;
+  const Eigen::Isometry3d& T_to_parent() const;
   void set_T_to_parent(const Eigen::Quaterniond& ori_in_parent,
                        const Eigen::Vector3d& pos_in_parent);
-  void set_T_to_parent(const Eigen::Affine3d& T_to_parent);
+  void set_T_to_parent(const Eigen::Isometry3d& T_to_parent);
 
   const SpatialInertiad& inertia() const;
   void set_inertia(double mass, const Eigen::Vector3d& com, const Eigen::Vector6d& I_com_flat);
@@ -45,7 +45,7 @@ class RigidBody {
 
   int id_ = -1;
   int id_parent_ = -1;
-  Eigen::Affine3d T_to_parent_ = Eigen::Affine3d::Identity();
+  Eigen::Isometry3d T_to_parent_ = Eigen::Isometry3d::Identity();
   SpatialInertiad inertia_ = SpatialInertiad(1, Eigen::Vector3d::Zero(), Eigen::Vector6d::Zero());
   Joint joint_;
 

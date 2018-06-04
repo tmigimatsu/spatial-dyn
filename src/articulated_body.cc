@@ -23,10 +23,10 @@ void ArticulatedBody::set_T_base_to_world(const Eigen::Quaterniond& ori_in_paren
                                           const Eigen::Vector3d& pos_in_parent) {
   T_base_to_world_ = Eigen::Translation3d(pos_in_parent) * ori_in_parent;
 }
-void ArticulatedBody::set_T_base_to_world(const Eigen::Affine3d& T_to_parent) {
+void ArticulatedBody::set_T_base_to_world(const Eigen::Isometry3d& T_to_parent) {
   T_base_to_world_ = T_to_parent;
 }
-const Eigen::Affine3d& ArticulatedBody::T_base_to_world() const {
+const Eigen::Isometry3d& ArticulatedBody::T_base_to_world() const {
   return T_base_to_world_;
 }
 
@@ -92,10 +92,13 @@ void ArticulatedBody::set_g(const Eigen::Vector3d& g) {
   grav_data_.is_computed = false;
 }
 
-const Eigen::Affine3d& ArticulatedBody::T_to_parent(int i) const {
+const Eigen::Isometry3d& ArticulatedBody::T_to_parent(int i) const {
   return T_to_parent_[i];
 }
-const Eigen::Affine3d& ArticulatedBody::T_to_world(int i) const {
+const Eigen::Isometry3d& ArticulatedBody::T_from_parent(int i) const {
+  return T_from_parent_[i];
+}
+const Eigen::Isometry3d& ArticulatedBody::T_to_world(int i) const {
   return T_to_world_[i];
 }
 
@@ -115,6 +118,7 @@ int ArticulatedBody::AddRigidBody(RigidBody&& rb, int id_parent) {
 
   dof_++;
   T_to_parent_.resize(dof_);
+  T_from_parent_.resize(dof_);
   T_to_world_.resize(dof_);
   if (q_.size() < dof_) q_.resize(dof_); dq_.setZero();
   if (dq_.size() < dof_) dq_.resize(dof_); dq_.setZero();
@@ -181,6 +185,7 @@ void ArticulatedBody::CalculateTransforms() {
   for (size_t i = 0; i < rigid_bodies_.size(); i++) {
     const RigidBody& rb = rigid_bodies_[i];
     T_to_parent_[i] = rb.T_to_parent() * rb.joint().T_joint(q_(i));
+    T_from_parent_[i] = T_to_parent_[i].inverse();
     T_to_world_[i] = (i > 0) ? T_to_world_[i-1] * T_to_parent_[i] : T_to_parent_[i];
   }
 }
