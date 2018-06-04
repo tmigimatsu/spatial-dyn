@@ -44,7 +44,8 @@ set(RBDL_INCLUDE_DIRS
     ${RBDL_LIB_DIR}/include
     ${RBDL_LIB_DIR}/addons
     ${CMAKE_BINARY_DIR}/lib/rbdl/include)
-set(SPATIAL_DYN_EXTERNAL_LIBS ${SPATIAL_DYN_EXTERNAL_LIBS} rbdl rbdl_urdfreader)
+# set(SPATIAL_DYN_EXTERNAL_LIBS ${SPATIAL_DYN_EXTERNAL_LIBS} rbdl rbdl_urdfreader)
+set(SPATIAL_DYN_EXTERNAL_LIBS ${SPATIAL_DYN_EXTERNAL_LIBS} rbdl)
 set(SPATIAL_DYN_INCLUDE_DIRS ${SPATIAL_DYN_INCLUDE_DIRS} ${RBDL_INCLUDE_DIRS})
 
 # #############
@@ -69,12 +70,21 @@ include_directories(${SPATIAL_DYN_INCLUDE_DIRS})
 
 # Create library
 # set(SPATIAL_DYN_LIB spatial-dyn)
-# set(SPATIAL_DYN_SRC
-#     ${SPATIAL_DYN_SRC_DIR}/src/main.cc)
+set(SPATIAL_DYN_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(SPATIAL_DYN_SRC
+    ${SPATIAL_DYN_SRC_DIR}/articulated_body.cc
+    ${SPATIAL_DYN_SRC_DIR}/forward_dynamics.cc
+    ${SPATIAL_DYN_SRC_DIR}/forward_kinematics.cc
+    ${SPATIAL_DYN_SRC_DIR}/inverse_dynamics.cc
+    ${SPATIAL_DYN_SRC_DIR}/joint.cc
+    ${SPATIAL_DYN_SRC_DIR}/opspace_dynamics.cc
+    ${SPATIAL_DYN_SRC_DIR}/opspace_dynamics_aba.cc
+    ${SPATIAL_DYN_SRC_DIR}/rigid_body.cc
+)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-add_executable(${CMAKE_PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cc)
-add_executable(${CMAKE_PROJECT_NAME}_tests ${CMAKE_CURRENT_SOURCE_DIR}/src/tests.cc)
+add_executable(${CMAKE_PROJECT_NAME} ${SPATIAL_DYN_SRC_DIR}/main.cc ${SPATIAL_DYN_SRC})
+add_executable(${CMAKE_PROJECT_NAME}_tests ${SPATIAL_DYN_SRC_DIR}/tests.cc ${SPATIAL_DYN_SRC})
 
 # add_library(${SPATIAL_DYN_LIB} SHARED ${SPATIAL_DYN_SRC})
 # target_include_directories(${SPATIAL_DYN_LIB} INTERFACE
