@@ -18,6 +18,8 @@ class ArticulatedBody;
 
 namespace Opspace {
 
+Eigen::Vector3d OrientationError(const Eigen::Quaterniond &quat, const Eigen::Quaterniond &quat_des);
+
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                 const Eigen::VectorXd& ddx, Eigen::MatrixXd *N = nullptr,
                                 double svd_epsilon = 0, bool centrifugal_coriolis = false,

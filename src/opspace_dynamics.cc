@@ -15,9 +15,17 @@
 namespace SpatialDyn {
 namespace Opspace {
 
+Eigen::Vector3d OrientationError(const Eigen::Quaterniond &quat, const Eigen::Quaterniond &quat_des) {
+  Eigen::Quaterniond quat_err = quat * quat_des.inverse();
+  Eigen::AngleAxisd aa_err(quat_err);  // Angle will always be between [0, pi]
+  double angle = (quat_err.w() < 0) ? aa_err.angle() - 2 * M_PI : aa_err.angle();
+  return 2 * angle * aa_err.axis();
+}
+
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                 const Eigen::VectorXd& ddx, Eigen::MatrixXd *N,
-                                double svd_epsilon, bool gravity) {
+                                double svd_epsilon, bool centrifugal_coriolis, bool gravity) {
+  // TODO: centrifugal_coriolis
   Eigen::VectorXd tau;
 
   if (N == nullptr || N->size() == 0) {

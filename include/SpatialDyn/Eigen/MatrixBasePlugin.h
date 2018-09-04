@@ -27,3 +27,28 @@ doubleCrossMatrix() const {
   result(2,2) = aa + bb;
   return result;
 }
+
+EIGEN_DEVICE_FUNC
+EIGEN_STRONG_INLINE std::string toMatlab() const {
+  typedef typename internal::traits<Derived>::Scalar Scalar;
+  std::stringstream ss;
+  ss.precision(std::numeric_limits<Scalar>::digits10);
+  if (derived().cols() == 1) { // Column vector
+    // [[1],[2],[3],[4]] => "1 2 3 4"
+    for (int i = 0; i < derived().rows(); ++i) {
+      if (i > 0) ss << " ";
+      ss << derived().coeff(0);
+    }
+  } else { // matrix
+    // [1,2,3,4]     => "1 2 3 4"
+    // [[1,2],[3,4]] => "1 2; 3 4"
+    for (int i = 0; i < derived().rows(); ++i) {
+      if (i > 0) ss << "; ";
+      for (int j = 0; j < derived().cols(); ++j) {
+        if (j > 0) ss << " ";
+        ss << derived().coeff(i,j);
+      }
+    }
+  }
+  return ss.str();
+}

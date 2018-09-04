@@ -67,4 +67,38 @@ Eigen::Isometry3d Joint::T_joint(double q) const {
   }
 }
 
+Joint::operator std::string() const {
+  switch (type_) {
+    case JointType::RX:
+      return "RX";
+    case JointType::RY:
+      return "RY";
+    case JointType::RZ:
+      return "RZ";
+    case JointType::PX:
+      return "PX";
+    case JointType::PY:
+      return "PY";
+    case JointType::PZ:
+      return "PZ";
+    default:
+      return "UNDEFINED";
+  }
+}
+
+static const std::map<std::string, JointType> kStringToJointType = {
+  {"RX", JointType::RX}, {"RY", JointType::RY}, {"RZ", JointType::RZ},
+  {"PX", JointType::PX}, {"PY", JointType::PY}, {"PZ", JointType::PZ},
+  {"UNDEFINED", JointType::UNDEFINED}
+};
+
+JointType Joint::FromString(const std::string& type) {
+  try {
+    return kStringToJointType.at(type);
+  } catch (...) {
+    return JointType::UNDEFINED;
+  }
+}
+
+
 }  // namespace SpatialDyn

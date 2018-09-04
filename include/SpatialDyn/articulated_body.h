@@ -46,10 +46,21 @@ class ArticulatedBody {
   const Eigen::VectorXd& q() const;
   const double q(int i) const;
   void set_q(const Eigen::VectorXd& q);
+  void set_q(Eigen::VectorXd&& q);
 
   const Eigen::VectorXd& dq() const;
   const double dq(int i) const;
   void set_dq(const Eigen::VectorXd& dq);
+  void set_dq(Eigen::VectorXd&& q);
+
+  const Eigen::VectorXd& ddq() const;
+  const double ddq(int i) const;
+  void set_ddq(const Eigen::VectorXd& ddq);
+  void set_ddq(Eigen::VectorXd&& q);
+
+  const Eigen::VectorXd& tau() const;
+  const double tau(int i) const;
+  void set_tau(const Eigen::VectorXd& tau);
 
   const SpatialMotiond& g() const;
   void set_g(const Eigen::Vector3d& g);

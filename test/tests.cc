@@ -167,7 +167,7 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
           SpatialDyn::JointType::RZ);
 
   AddBody(&ab, &ab_rbdl, 0, "shoulder_lift",
-          Eigen::AngleAxisd(M_PI/2, Eigen::Vector3d::UnitY()), Eigen::Vector3d(0, 0, 0.28),
+          Eigen::AngleAxisd(M_PI/2, Eigen::Vector3d::UnitY()), Eigen::Vector3d(0, 0.13585, 0),
           8.393, Eigen::Vector3d(0, 0, 0.28), Eigen::Vector6d(0.22689067591, 0.22689067591, 0.0151074, 0, 0, 0),
           SpatialDyn::JointType::RY);
 

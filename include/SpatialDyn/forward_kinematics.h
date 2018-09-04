@@ -15,6 +15,14 @@
 
 namespace SpatialDyn {
 
+Eigen::Vector3d Position(const ArticulatedBody& ab, int link = -1,
+                         const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
+
+Eigen::Quaterniond Orientation(const ArticulatedBody& ab, int link = -1);
+
+// Eigen::Quaterniond Orientation(const ArticulatedBody& ab, int link = -1,
+//                                 const Eigen::Quaterniond& near, bool near = true);
+
 Eigen::Matrix6Xd Jacobian(const ArticulatedBody& ab, int link = -1,
                           const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
 

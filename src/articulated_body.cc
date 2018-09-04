@@ -83,6 +83,38 @@ void ArticulatedBody::set_dq(const Eigen::VectorXd& dq) {
   cc_data_.is_vel_computed = false;
   cc_data_.is_force_computed = false;
 }
+void ArticulatedBody::set_dq(Eigen::VectorXd&& dq) {
+  if (dq.size() != dof_) {
+    throw std::invalid_argument("ArticulatedBody::set_state(): q must be of size " + std::to_string(dof_));
+  }
+  dq_ = std::move(dq);
+
+  vel_data_.is_computed = false;
+  cc_data_.is_computed = false;
+}
+
+const Eigen::VectorXd& ArticulatedBody::ddq() const {
+  return ddq_;
+}
+const double ArticulatedBody::ddq(int i) const {
+  return ddq_(i);
+}
+void ArticulatedBody::set_ddq(const Eigen::VectorXd& ddq) {
+  ddq_ = ddq;
+}
+void ArticulatedBody::set_ddq(Eigen::VectorXd&& ddq) {
+  ddq_ = std::move(ddq);
+}
+
+const Eigen::VectorXd& ArticulatedBody::tau() const {
+  return tau_;
+}
+const double ArticulatedBody::tau(int i) const {
+  return tau_(i);
+}
+void ArticulatedBody::set_tau(const Eigen::VectorXd& tau) {
+  tau_ = tau;
+}
 
 const SpatialMotiond& ArticulatedBody::g() const {
   return g_;

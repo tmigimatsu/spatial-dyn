@@ -12,6 +12,8 @@
 
 #include "spatial_math.h"
 
+#include <map>  // std::map
+
 namespace SpatialDyn {
 
 enum class JointType { UNDEFINED, RX, RY, RZ, PX, PY, PZ };
@@ -31,10 +33,13 @@ class Joint {
 
   Eigen::Isometry3d T_joint(double q) const;
 
+  operator std::string() const;
+  static JointType FromString(const std::string& type);
+
  protected:
 
   JointType type_ = JointType::UNDEFINED;
-  SpatialMotiond subspace_ = SpatialMotiond(0, 0, 0, 0, 0, 0);
+  SpatialMotiond subspace_ = SpatialMotiond::Zero();
 
 };
 
