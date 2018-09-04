@@ -67,6 +67,39 @@ PseudoInverse(const MatrixBase<Derived>& A, double svd_epsilon = 0) {
          svd.matrixU().adjoint();
 }
 
+template<typename Scalar>
+Matrix<Scalar,3,3> RotationX(Scalar angle) {
+  Matrix<Scalar,3,3> R;
+  Scalar ca = std::cos(angle);
+  Scalar sa = std::sin(angle);
+  R << 1, 0,   0,
+       0, ca, -sa,
+       0, sa,  ca;
+  return R;
+}
+
+template<typename Scalar>
+Matrix<Scalar,3,3> RotationY(Scalar angle) {
+  Matrix<Scalar,3,3> R;
+  Scalar ca = std::cos(angle);
+  Scalar sa = std::sin(angle);
+  R <<  ca, 0, sa,
+        0,  1, 0,
+       -sa, 0, ca;
+  return R;
+}
+
+template<typename Scalar>
+Matrix<Scalar,3,3> RotationZ(Scalar angle) {
+  Matrix<Scalar,3,3> R;
+  Scalar ca = std::cos(angle);
+  Scalar sa = std::sin(angle);
+  R << ca, -sa, 0,
+       sa,  ca, 0,
+       0,   0,  1;
+  return R;
+}
+
 }  // namespace Eigen
 
 #endif  // EIGEN_SPATIAL_DYN_H_

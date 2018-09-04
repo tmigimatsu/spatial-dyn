@@ -9,81 +9,114 @@
 
 #include "inverse_dynamics.h"
 
+#define CACHE_INVERSE_DYNAMICS
+
 namespace SpatialDyn {
 
+// Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq) {
+// }
+
 // RNEA
-Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd& ddq) {
-  auto& rnea = ab.rnea_data_;
-  auto& vel  = ab.vel_data_;
-  auto& cc = ab.cc_data_;
-  auto& grav = ab.grav_data_;
+Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq, bool cache) {
+  if (!cache) {
 
-  // Forward pass
-  for (int i = 0; i < ab.dof(); i++) {
-    const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
-    const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
-    const int parent = ab.rigid_bodies(i).id_parent();
+    auto& rnea = ab.rnea_data_;
+    auto& vel  = ab.vel_data_;
 
-    if (!vel.is_computed) {
-      if (parent < 0) vel.v[i] = ab.dq(i) * s;
-      else            vel.v[i] = ab.T_from_parent(i) * vel.v[parent] + ab.dq(i) * s;
+    // Forward pass
+    for (int i = 0; i < ab.dof(); i++) {
+      const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
+      const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
+      const int parent = ab.rigid_bodies(i).id_parent();
+
+      if (!vel.is_computed) {
+        if (parent < 0) {
+          vel.v[i] = ab.dq(i) * s;
+        } else {
+          vel.v[i] = ab.T_from_parent(i) * vel.v[parent] + ab.dq(i) * s;
+        }
+      }
+
+      if (parent < 0) {
+        rnea.a[i] = ddq(i) * s - ab.T_to_world(i).inverse() * ab.g();
+      } else {
+        rnea.a[i] = ab.T_from_parent(i) * rnea.a[parent] + ddq(i) * s +
+                    vel.v[i].cross(ab.dq(i) * s);
+      }
+
+      rnea.f[i] = I * rnea.a[i] + vel.v[i].cross(I * vel.v[i]);
     }
+    vel.is_computed = true;
 
-    if (!cc.is_vel_computed) {
-      if (parent < 0) cc.c[i].setZero();
-      else            cc.c[i] = vel.v[i].cross(ab.dq(i) * s);
+    // Backward pass
+    Eigen::VectorXd tau(ab.dof());           // Resulting joint torques
+    for (int i = ab.dof() - 1; i >= 0; i--) {
+      const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
+      const int parent = ab.rigid_bodies(i).id_parent();
 
-      cc.b[i] = vel.v[i].cross(I * vel.v[i]);
+      tau(i) = s.dot(rnea.f[i]);
+      if (parent >= 0) rnea.f[parent] += ab.T_to_parent(i) * rnea.f[i];
     }
+    return tau;
 
-    if (!cc.is_force_computed) {
-      if (parent < 0) cc.c_c[i].setZero();
-      else            cc.c_c[i] = ab.T_from_parent(i) * cc.c_c[parent] + cc.c[i];
+  } else {
 
-      cc.f_c[i] = I * cc.c_c[i] + cc.b[i];
+    auto& rnea = ab.rnea_data_;
+    auto& vel  = ab.vel_data_;
+    auto& cc = ab.cc_data_;
+    auto& grav = ab.grav_data_;
+
+    // Forward pass
+    for (int i = 0; i < ab.dof(); i++) {
+      const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
+      const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
+      const int parent = ab.rigid_bodies(i).id_parent();
+
+      if (!vel.is_computed) {
+        if (parent < 0) vel.v[i] = ab.dq(i) * s;
+        else            vel.v[i] = ab.T_from_parent(i) * vel.v[parent] + ab.dq(i) * s;
+      }
+
+      if (!cc.is_computed) {
+        if (parent < 0) cc.c_c[i].setZero();
+        else            cc.c_c[i] = ab.T_from_parent(i) * cc.c_c[parent] + vel.v[i].cross(ab.dq(i) * s);
+
+        cc.f_c[i] = I * cc.c_c[i] + vel.v[i].cross(I * vel.v[i]);
+      }
+
+      if (!grav.is_computed) {
+        const auto T_from_world = ab.T_to_world(i).inverse();
+        grav.f_g[i] = I * (T_from_world * -ab.g());
+      }
+
+      if (parent < 0) rnea.a[i] = ddq(i) * s;
+      else            rnea.a[i] = ab.T_from_parent(i) * rnea.a[parent] + ddq(i) * s;
+
+      rnea.f[i] = I * rnea.a[i];
     }
+    vel.is_computed = true;
 
-    if (!grav.is_computed) {
-      const auto T_from_world = ab.T_to_world(i).inverse();
-      grav.f_g[i] = I * (T_from_world * -ab.g());
+    // Backward pass
+    Eigen::VectorXd tau(ab.dof());           // Resulting joint torques
+    for (int i = ab.dof() - 1; i >= 0; i--) {
+      const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
+      const int parent = ab.rigid_bodies(i).id_parent();
+
+      rnea.f[i] += cc.f_c[i] + grav.f_g[i];
+      tau(i) = s.dot(rnea.f[i]);
+      if (parent >= 0) rnea.f[parent] += ab.T_to_parent(i) * rnea.f[i];
     }
+    cc.is_computed = true;
+    grav.is_computed = true;
+    return tau;
 
-    if (parent < 0) rnea.a[i] = ddq(i) * s;
-    else            rnea.a[i] = ab.T_from_parent(i) * rnea.a[parent] + ddq(i) * s;
-
-    rnea.f[i] = I * rnea.a[i];
   }
-  vel.is_computed = true;
-  cc.is_vel_computed = true;
-
-  // Backward pass
-  Eigen::VectorXd tau(ab.dof());           // Resulting joint torques
-  for (int i = ab.dof() - 1; i >= 0; i--) {
-    const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
-    const int parent = ab.rigid_bodies(i).id_parent();
-
-    if (!cc.is_force_computed) {
-      cc.C(i) = s.dot(cc.f_c[i]);
-      if (parent >= 0) cc.f_c[parent] += ab.T_to_parent(i) * cc.f_c[i];
-    }
-
-    if (!grav.is_computed) {
-      grav.G(i) = s.dot(grav.f_g[i]);
-      if (parent >= 0) grav.f_g[parent] += ab.T_to_parent(i) * grav.f_g[i];
-    }
-
-    tau(i) = s.dot(rnea.f[i]) + cc.C(i) + grav.G(i);
-    if (parent >= 0) rnea.f[parent] += ab.T_to_parent(i) * rnea.f[i];
-  }
-  cc.is_force_computed = true;
-  grav.is_computed = true;
-  return tau;
 }
 
 const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
   auto& vel = ab.vel_data_;
   auto& cc = ab.cc_data_;
-  if (cc.is_force_computed) {
+  if (cc.is_computed) {
     return cc.C;
   }
 
@@ -98,22 +131,15 @@ const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
       else            vel.v[i] = ab.T_from_parent(i) * vel.v[parent] + ab.dq(i) * s;
     }
 
-    if (!cc.is_vel_computed) {
-      if (parent < 0) cc.c[i].setZero();
-      else            cc.c[i] = vel.v[i].cross(ab.dq(i) * s);
-
-      cc.b[i] = vel.v[i].cross(I * vel.v[i]);
+    if (parent < 0) {
+      cc.c_c[i].setZero();
+    } else {
+      cc.c_c[i] = ab.T_from_parent(i) * cc.c_c[parent] + vel.v[i].cross(ab.dq(i) * s);
     }
 
-    if (!cc.is_force_computed) {
-      if (parent < 0) cc.c_c[i].setZero();
-      else            cc.c_c[i] = ab.T_from_parent(i) * cc.c_c[parent] + cc.c[i];
-
-      cc.f_c[i] = I * cc.c_c[i] + cc.b[i];
-    }
+    cc.f_c[i] = I * cc.c_c[i] + vel.v[i].cross(I * vel.v[i]);
   }
   vel.is_computed = true;
-  cc.is_vel_computed = true;
 
   // Backward pass
   for (int i = ab.dof() - 1; i >= 0; i--) {
@@ -125,7 +151,7 @@ const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
       cc.f_c[parent] += ab.T_to_parent(i) * cc.f_c[i];
     }
   }
-  cc.is_force_computed = true;
+  cc.is_computed = true;
   return cc.C;
 }
 
@@ -137,11 +163,9 @@ const Eigen::VectorXd& Gravity(const ArticulatedBody& ab) {
 
   // Forward pass
   for (int i = 0; i < ab.dof(); i++) {
-    if (!grav.is_computed) {
-      const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
-      const auto T_from_world = ab.T_to_world(i).inverse();
-      grav.f_g[i] = I * (T_from_world * -ab.g());
-    }
+    const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
+    const auto T_from_world = ab.T_to_world(i).inverse();
+    grav.f_g[i] = I * (T_from_world * -ab.g());
   }
 
   // Backward pass

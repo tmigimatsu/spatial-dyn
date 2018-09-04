@@ -99,11 +99,7 @@ class ArticulatedBody {
   mutable VelocityData vel_data_;
 
   struct CentrifugalCoriolisData {
-    bool is_vel_computed = false;   // Reusable with same position, velocity
-    std::vector<SpatialMotiond> c;  // Rigid body centrifugal accelerations
-    std::vector<SpatialForced> b;   // Rigid body Coriolis forces
-
-    bool is_force_computed = false;    // Reusable with same position, velocity
+    bool is_computed = false;    // Reusable with same position, velocity
     std::vector<SpatialMotiond> c_c;   // Composite centrifugal accelerations
     std::vector<SpatialForced> f_c;    // Rigid body centrifugal and Coriolis forces
     Eigen::VectorXd C;                 // Joint space centrifugal and Coriolis forces
@@ -178,7 +174,7 @@ class ArticulatedBody {
   };
   mutable OpspaceAbaData opspace_aba_data_;
 
-  friend Eigen::VectorXd InverseDynamics(const ArticulatedBody&, const Eigen::MatrixXd&);
+  friend Eigen::VectorXd InverseDynamics(const ArticulatedBody&, const Eigen::VectorXd&, bool);
   friend const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody&);
   friend const Eigen::VectorXd& Gravity(const ArticulatedBody&);
   friend const Eigen::MatrixXd& Inertia(const ArticulatedBody&);

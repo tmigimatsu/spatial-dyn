@@ -80,7 +80,7 @@ class SpatialInertiaMatrix : public Matrix<_Scalar,6,6> {
     this->setZero();
   }
 
-  SpatialInertiaMatrix(const SpatialInertia<_Scalar>& other) : Matrix<_Scalar,6,6>(other.matrix()) {};
+  SpatialInertiaMatrix(const SpatialInertia<_Scalar>& other);
 
   template<typename OtherDerived>
   SpatialInertiaMatrix(const MatrixBase<OtherDerived>& other) : Matrix<_Scalar,6,6>(other) {};
@@ -134,16 +134,34 @@ SpatialInertiaMatrix<_Scalar> SpatialInertia<_Scalar>::matrix() const {
 }
 
 template<typename _Scalar>
+SpatialInertiaMatrix<_Scalar>::SpatialInertiaMatrix(const SpatialInertia<_Scalar>& other) {
+  const double& mass               = other.mass;
+  const Matrix<_Scalar,3,1>& com   = other.com;
+  const Matrix<_Scalar,3,3>& I_com = other.I_com;
+  const double mcx = mass * com(0);
+  const double mcy = mass * com(1);
+  const double mcz = mass * com(2);
+  const double Imcxx = I_com(0,0) + mass * (com(1) * com(1) + com(2) * com(2));
+  const double Imcyy = I_com(1,1) + mass * (com(0) * com(0) + com(2) * com(2));
+  const double Imczz = I_com(2,2) + mass * (com(0) * com(0) + com(1) * com(1));
+  const double Imcxy = I_com(0,1) - mass * com(0) * com(1);
+  const double Imcxz = I_com(0,2) - mass * com(0) * com(2);
+  const double Imcyz = I_com(1,2) - mass * com(1) * com(2);
+  *this <<  mass, 0,    0,    0,      mcz,   -mcy,
+            0,    mass, 0,   -mcz,    0,      mcx,
+            0,    0,    mass, mcy,   -mcx,    0,
+            0,   -mcz,  mcy,  Imcxx,  Imcxy,  Imcxz,
+            mcz,  0,   -mcx,  Imcxy,  Imcyy,  Imcyz,
+           -mcy,  mcx,  0,    Imcxz,  Imcyz,  Imczz;
+}
+
+template<typename _Scalar>
 SpatialInertia<_Scalar>::SpatialInertia(const SpatialInertia<_Scalar>& other)
     : mass(other.mass), com(other.com), I_com(other.I_com) {}
 
 template<typename _Scalar>
 SpatialInertia<_Scalar>::SpatialInertia(SpatialInertia<_Scalar>&& other)
     : mass(other.mass), com(std::move(other.com)), I_com(std::move(other.I_com)) {}
-
-// template<typename _Scalar>
-// SpatialInertia<_Scalar>::SpatialInertia(SpatialInertia<_Scalar>&& other)
-//     : mass(other.mass), com(std::move(other.com)), I_com(std::move(other.I_com)) {}
 
 template<typename _Scalar>
 template<typename ComDerived, typename IComDerived>

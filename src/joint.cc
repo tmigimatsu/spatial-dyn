@@ -51,11 +51,11 @@ const SpatialMotiond& Joint::subspace() const {
 Eigen::Isometry3d Joint::T_joint(double q) const {
   switch (type_) {
     case JointType::RX:
-      return Eigen::Isometry3d(Eigen::AngleAxisd(q, Eigen::Vector3d::UnitX()));
+      return Eigen::Isometry3d(Eigen::RotationX(q));
     case JointType::RY:
-      return Eigen::Isometry3d(Eigen::AngleAxisd(q, Eigen::Vector3d::UnitY()));
+      return Eigen::Isometry3d(Eigen::RotationY(q));
     case JointType::RZ:
-      return Eigen::Isometry3d(Eigen::AngleAxisd(q, Eigen::Vector3d::UnitZ()));
+      return Eigen::Isometry3d(Eigen::RotationZ(q));
     case JointType::PX:
       return Eigen::Isometry3d(Eigen::Translation3d(q * Eigen::Vector3d::UnitX()));
     case JointType::PY:

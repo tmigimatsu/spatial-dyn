@@ -89,7 +89,6 @@ const Eigen::Matrix6d& InertiaInverseAba(const ArticulatedBody& ab, int idx_link
 Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset, double svd_epsilon) {
   if (idx_link < 0) idx_link += ab.dof();
   auto& aba = ab.aba_data_;
-  auto& cc = ab.cc_data_;
   auto& vel = ab.vel_data_;
 
   // Forward pass
@@ -106,19 +105,17 @@ Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab, int idx_link, 
       }
     }
 
-    if (!cc.is_vel_computed) {
-      if (parent < 0) cc.c[i].setZero();
-      else            cc.c[i] = vel.v[i].cross(ab.dq(i) * s);
-
-      cc.b[i] = vel.v[i].cross(I * vel.v[i]);
+    if (parent < 0) {
+      aba.a[i].setZero();
+    } else {
+      aba.a[i] = vel.v[i].cross(ab.dq(i) * s);
     }
 
     if (!aba.is_computed) aba.I_a[i] = I;
 
-    aba.p[i] = cc.b[i];
+    aba.p[i] = vel.v[i].cross(I * vel.v[i]);
   }
   vel.is_computed = true;
-  cc.is_vel_computed = true;
 
   // Backward pass
   for (int i = ab.dof() - 1; i >= 0; i--) {
@@ -136,7 +133,7 @@ Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab, int idx_link, 
     aba.u[i] = -s.dot(aba.p[i]);
     if (parent >= 0) {
       aba.p[parent] += ab.T_to_parent(i) *
-          (aba.p[i] + aba.I_a[i] * cc.c[i] + aba.u[i] / aba.d[i] * aba.h[i]);
+          (aba.p[i] + aba.I_a[i] * aba.a[i] + aba.u[i] / aba.d[i] * aba.h[i]);
     }
   }
   aba.is_computed = true;
@@ -146,7 +143,7 @@ Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab, int idx_link, 
     const int parent = ab.rigid_bodies(i).id_parent();
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     if (parent >= 0) {
-      a = ab.T_from_parent(i) * a + cc.c[i];
+      a = ab.T_from_parent(i) * a + aba.a[i];
     }
     double ddq = (aba.u[i] - aba.h[i].dot(a)) / aba.d[i];
     a += ddq * s;

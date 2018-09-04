@@ -54,8 +54,26 @@ void ArticulatedBody::set_q(const Eigen::VectorXd& q) {
 
   CalculateTransforms();
   vel_data_.is_computed = false;
-  cc_data_.is_vel_computed = false;
-  cc_data_.is_force_computed = false;
+  cc_data_.is_computed = false;
+  grav_data_.is_computed = false;
+  crba_data_.is_computed = false;
+  crba_data_.is_inv_computed = false;
+  aba_data_.is_computed = false;
+  opspace_data_.is_lambda_computed = false;
+  opspace_data_.is_lambda_inv_computed = false;
+  opspace_data_.is_jbar_computed = false;
+  opspace_aba_data_.is_lambda_computed = false;
+  opspace_aba_data_.is_lambda_inv_computed = false;
+}
+void ArticulatedBody::set_q(Eigen::VectorXd&& q) {
+  if (q.size() != dof_) {
+    throw std::invalid_argument("ArticulatedBody::set_state(): q must be of size " + std::to_string(dof_));
+  }
+  q_ = std::move(q);
+
+  CalculateTransforms();
+  vel_data_.is_computed = false;
+  cc_data_.is_computed = false;
   grav_data_.is_computed = false;
   crba_data_.is_computed = false;
   crba_data_.is_inv_computed = false;
@@ -80,8 +98,7 @@ void ArticulatedBody::set_dq(const Eigen::VectorXd& dq) {
   dq_ = dq;
 
   vel_data_.is_computed = false;
-  cc_data_.is_vel_computed = false;
-  cc_data_.is_force_computed = false;
+  cc_data_.is_computed = false;
 }
 void ArticulatedBody::set_dq(Eigen::VectorXd&& dq) {
   if (dq.size() != dof_) {
@@ -170,11 +187,7 @@ int ArticulatedBody::AddRigidBody(RigidBody&& rb, int id_parent) {
   vel_data_.is_computed = false;
   vel_data_.v.push_back(SpatialMotiond());
 
-  cc_data_.is_vel_computed = false;
-  cc_data_.c.push_back(SpatialMotiond());
-  cc_data_.b.push_back(SpatialForced());
-
-  cc_data_.is_force_computed = false;
+  cc_data_.is_computed = false;
   cc_data_.c_c.push_back(SpatialMotiond());
   cc_data_.f_c.push_back(SpatialForced());
   cc_data_.C.resize(dof_);
