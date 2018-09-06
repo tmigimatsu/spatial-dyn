@@ -1,5 +1,5 @@
 /**
- * articulated_body.h
+ * rigid_body.h
  *
  * Copyright 2018. All Rights Reserved.
  *
@@ -10,6 +10,7 @@
 #ifndef SPATIAL_DYN_RIGID_BODY_H_
 #define SPATIAL_DYN_RIGID_BODY_H_
 
+#include "graphics.h"
 #include "joint.h"
 #include "spatial_math.h"
 
@@ -27,6 +28,7 @@ class RigidBody {
   RigidBody(const std::string& name);
 
   std::string name;
+  Graphics graphics;
 
   int id() const;
   int id_parent() const;

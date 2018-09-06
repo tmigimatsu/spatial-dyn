@@ -9,6 +9,9 @@
 
 #include "joint.h"
 
+#include <exception>  // std::invalid_argument
+#include <map>        // std::map
+
 namespace SpatialDyn {
 
 Joint::Joint(JointType type) {
@@ -46,6 +49,81 @@ void Joint::set_type(JointType type) {
 
 const SpatialMotiond& Joint::subspace() const {
   return subspace_;
+}
+
+double Joint::q_min() const {
+  return q_min_;
+}
+void Joint::set_q_min(double q_min) {
+  if (q_min > q_max_) {
+    throw std::invalid_argument("Joint::set_q_min(): q_min (" + std::to_string(q_min) +
+                                ") cannot be greater than q_max (" + std::to_string(q_max_) + ").");
+  }
+  q_min_ = q_min;
+}
+
+double Joint::q_max() const {
+  return q_max_;
+}
+void Joint::set_q_max(double q_max) {
+  if (q_max < q_min_) {
+    throw std::invalid_argument("Joint::set_q_min(): q_max (" + std::to_string(q_max) +
+                                ") cannot be less than q_min (" + std::to_string(q_min_) + ").");
+  }
+  q_max_ = q_max;
+}
+
+void Joint::set_q_limits(double q_min, double q_max) {
+  if (q_min > q_max) {
+    throw std::invalid_argument("Joint::set_q_limits(): q_min (" + std::to_string(q_min) +
+                                ") cannot be greater than q_max (" + std::to_string(q_max) + ").");
+  }
+  q_min_ = q_min;
+  q_max_ = q_max;
+}
+
+double Joint::dq_max() const {
+  return dq_max_;
+}
+void Joint::set_dq_max(double dq_max) {
+  if (dq_max < 0.) {
+    throw std::invalid_argument("Joint::set_dq_max(): dq_max (" + std::to_string(dq_max) +
+                                ") cannot be negative.");
+  }
+  dq_max_ = dq_max;
+}
+
+double Joint::fq_max() const {
+  return fq_max_;
+}
+void Joint::set_fq_max(double fq_max) {
+  if (fq_max < 0.) {
+    throw std::invalid_argument("Joint::set_fq_max(): fq_max (" + std::to_string(fq_max) +
+                                ") cannot be negative.");
+  }
+  fq_max_ = fq_max;
+}
+
+double Joint::f_coulomb() const {
+  return f_coulomb_;
+}
+void Joint::set_f_coulomb(double f_coulomb) {
+  if (f_coulomb < 0.) {
+    throw std::invalid_argument("Joint::set_f_coulomb(): f_coulomb (" + std::to_string(f_coulomb) +
+                                ") cannot be negative.");
+  }
+  f_coulomb_ = f_coulomb;
+}
+
+double Joint::f_stiction() const {
+  return f_stiction_;
+}
+void Joint::set_f_stiction(double f_stiction) {
+  if (f_stiction < 0.) {
+    throw std::invalid_argument("Joint::set_f_stiction(): f_stiction (" + std::to_string(f_stiction) +
+                                ") cannot be negative.");
+  }
+  f_stiction_ = f_stiction;
 }
 
 Eigen::Isometry3d Joint::T_joint(double q) const {

@@ -12,6 +12,7 @@
 #include "tinyxml2.h"
 
 #include <exception>  // std::runtime_error
+#include <limits>     // std::numeric_limits
 #include <list>       // std::list
 #include <map>        // std::map
 #include <utility>    // std::pair
@@ -57,43 +58,107 @@ double ParseDoubleAttribute(const tinyxml2::XMLElement* xml_element, const std::
 }
 
 std::pair<Eigen::Vector3d, Eigen::Quaterniond>
-ParseOrigin(const tinyxml2::XMLElement* xml_origin) {
-  Eigen::Vector3d pos;
-  Eigen::Quaterniond ori;
-  const char* attr_xyz = xml_origin->Attribute("xyz");
-  if (attr_xyz != nullptr) {
-    pos = Eigen::Vector3d::FromMatlab(attr_xyz);
-  } else {
-    pos.setZero();
-  }
+ParseOriginElement(const tinyxml2::XMLElement* xml_element) {
+  Eigen::Vector3d pos = Eigen::Vector3d::Zero();
+  Eigen::Quaterniond ori = Eigen::Quaterniond::Identity();
 
-  const char* attr_rpy = xml_origin->Attribute("rpy");
-  if (attr_rpy != nullptr) {
-    Eigen::Vector3d rpy = Eigen::Vector3d::FromMatlab(std::string(attr_rpy));
-    // TODO: Check Euler angles
-    ori = Eigen::AngleAxisd(rpy(0), Eigen::Vector3d::UnitX()) *
-          Eigen::AngleAxisd(rpy(1), Eigen::Vector3d::UnitY()) *
-          Eigen::AngleAxisd(rpy(2), Eigen::Vector3d::UnitZ());
-  } else {
-    ori.setIdentity();
+  const tinyxml2::XMLElement* xml_origin = xml_element->FirstChildElement("origin");
+  if (xml_origin != nullptr) {
+    const char* attr_xyz = xml_origin->Attribute("xyz");
+    if (attr_xyz != nullptr) {
+      pos = Eigen::Vector3d::FromMatlab(attr_xyz);
+    }
+
+    const char* attr_rpy = xml_origin->Attribute("rpy");
+    if (attr_rpy != nullptr) {
+      Eigen::Vector3d rpy = Eigen::Vector3d::FromMatlab(std::string(attr_rpy));
+      // TODO: Check Euler angles
+      ori = Eigen::AngleAxisd(rpy(0), Eigen::Vector3d::UnitX()) *
+            Eigen::AngleAxisd(rpy(1), Eigen::Vector3d::UnitY()) *
+            Eigen::AngleAxisd(rpy(2), Eigen::Vector3d::UnitZ());
+    }
   }
   return std::make_pair(std::move(pos), std::move(ori));
+}
+
+Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual) {
+  Graphics graphics;
+
+  // Parse name
+  const char* attr_name = xml_visual->Attribute("name");
+  if (attr_name != nullptr) {
+    graphics.name = attr_name;
+  }
+
+  // Parse origin
+  Eigen::Vector3d pos;
+  Eigen::Quaterniond ori;
+  std::tie(pos, ori) = ParseOriginElement(xml_visual);
+  graphics.T_to_parent = Eigen::Translation3d(pos) * ori;
+
+  // Parse geometry
+  const tinyxml2::XMLElement* xml_geometry = ParseElement(xml_visual, "geometry");
+  const tinyxml2::XMLElement* xml_type = xml_geometry->FirstChildElement();
+  if (xml_type == nullptr) {
+    throw std::runtime_error("ParseGraphics(): <box>|<cylinder>|<sphere>|<mesh> element missing from <geometry> element.");
+  }
+  Geometry& geometry = graphics.geometry;
+  std::string str_type = xml_type->Name();
+  if (str_type == "box") {
+    geometry.type = GeometryType::BOX;
+    geometry.scale = Eigen::Vector3d::FromMatlab(ParseAttribute(xml_type, "size"));
+  } else if (str_type == "cylinder") {
+    geometry.type = GeometryType::CYLINDER;
+    geometry.radius = ParseDoubleAttribute(xml_type, "radius");
+    geometry.length = ParseDoubleAttribute(xml_type, "length");
+  } else if (str_type == "sphere") {
+    geometry.type = GeometryType::SPHERE;
+    geometry.radius = ParseDoubleAttribute(xml_type, "radius");
+  } else if (str_type == "mesh") {
+    geometry.type = GeometryType::MESH;
+    geometry.mesh = ParseAttribute(xml_type, "filename");
+
+    const char* attr_scale = xml_type->Attribute("scale");
+    if (attr_scale != nullptr) {
+      geometry.scale = Eigen::Vector3d::FromMatlab(std::string(attr_scale));
+    } else {
+      geometry.scale.setOnes();
+    }
+  } else {
+    throw std::runtime_error("ParseGraphics(): <box>|<cylinder>|<sphere>|<mesh> element missing from <geometry> element. Found <" + str_type + "> instead.");
+  }
+
+  // Parse material
+  Material& material = graphics.material;
+  const tinyxml2::XMLElement* xml_material = xml_geometry->FirstChildElement("material");
+  if (xml_material != nullptr) {
+    material.name = ParseAttribute(xml_material, "name");
+
+    const tinyxml2::XMLElement* xml_color = xml_material->FirstChildElement("color");
+    if (xml_color != nullptr) {
+      std::string str_rgba = ParseAttribute(xml_color, "rgba");
+      material.rgba = Eigen::Vector4d::FromMatlab(str_rgba);
+    }
+
+    const tinyxml2::XMLElement* xml_texture = xml_material->FirstChildElement("texture");
+    if (xml_color != nullptr) {
+      material.texture = ParseAttribute(xml_texture, "filename");
+    }
+  }
+
+  return graphics;
 }
 
 RigidBody ParseRigidBody(const tinyxml2::XMLElement* xml_link) {
   std::string attr_name = ParseAttribute(xml_link, "name");
   RigidBody rb(attr_name);
 
+  // Parse inertial
   const tinyxml2::XMLElement* xml_inertial = xml_link->FirstChildElement("inertial");
   if (xml_inertial != nullptr) {
-    Eigen::Vector3d com;
-    Eigen::Matrix3d R;
-    const tinyxml2::XMLElement* xml_origin = xml_inertial->FirstChildElement("origin");
-    if (xml_origin != nullptr) {
-      std::pair<Eigen::Vector3d, Eigen::Quaterniond> com_R = ParseOrigin(xml_origin);
-      com = com_R.first;
-      R = com_R.second.toRotationMatrix();
-    }
+    std::pair<Eigen::Vector3d, Eigen::Quaterniond> com_R = ParseOriginElement(xml_inertial);
+    Eigen::Vector3d com = com_R.first;
+    Eigen::Matrix3d R = com_R.second.toRotationMatrix();
 
     const tinyxml2::XMLElement* xml_mass = ParseElement(xml_inertial, "mass");
     double mass = ParseDoubleAttribute(xml_mass, "value");
@@ -115,11 +180,13 @@ RigidBody ParseRigidBody(const tinyxml2::XMLElement* xml_link) {
     rb.set_inertia(mass, com, I_com_flat);
   }
 
+  // Parse graphics
   const tinyxml2::XMLElement* xml_visual = xml_link->FirstChildElement("visual");
   if (xml_visual != nullptr) {
-
+    rb.graphics = ParseGraphics(xml_visual);
   }
 
+  // Parse collision
   const tinyxml2::XMLElement* xml_collision = xml_link->FirstChildElement("collision");
   if (xml_collision != nullptr) {
 
@@ -143,7 +210,8 @@ void AddRigidBody(ArticulatedBody& ab,
 
   int id_new;
   if (name_parent.empty()) {
-    id_new = ab.AddRigidBody(std::move(rb));
+    ab.set_T_base_to_world(rb.T_to_parent());
+    id_new = -1;
   } else {
     if (rb_ids.find(name_parent) == rb_ids.end()) {
       AddRigidBody(ab, rigid_bodies, rb_list, rb_ids, name_parent);
@@ -164,12 +232,12 @@ ArticulatedBody ParseModel(const std::string& urdf) {
     throw std::runtime_error("ParseModel(): Unable to parse " + urdf + " - " + std::string(doc.ErrorName()));
   }
 
-  // Parse robot element
+  // Parse robot
   const tinyxml2::XMLElement* xml_robot = ParseElement(doc, "robot");
   std::string robot_name = ParseAttribute(xml_robot, "name");
   ArticulatedBody ab(robot_name);
 
-  // Parse link elements
+  // Parse links
   std::map<std::string, std::pair<RigidBody, std::string>> rigid_bodies;
   std::list<std::string> rb_list;
   const tinyxml2::XMLElement* xml_link = ParseElement(xml_robot, "link");
@@ -180,40 +248,34 @@ ArticulatedBody ParseModel(const std::string& urdf) {
                                rb.name + " cannot exist.");
     }
     std::string rb_name = rb.name;
-    rigid_bodies[rb_name] = std::make_pair(std::move(rb), std::string());
+    rigid_bodies[rb_name] = std::make_pair(std::move(rb), "");
     rb_list.push_back(rb_name);
     xml_link = xml_link->NextSiblingElement("link");
   }
 
-
+  // Parse joints
   const tinyxml2::XMLElement* xml_joint = ParseElement(xml_robot, "joint");
   while (xml_joint != nullptr) {
-    // Parent
+    // Parse parent
     const tinyxml2::XMLElement* xml_parent = ParseElement(xml_joint, "parent");
     std::string parent_link = ParseAttribute(xml_parent, "link");
     if (rigid_bodies.find(parent_link) == rigid_bodies.end()) {
       throw std::runtime_error("ParseModel(): Parent link (" + parent_link + ") does not exist.");
     }
 
-    // Child
+    // Parse child
     const tinyxml2::XMLElement* xml_child = xml_joint->FirstChildElement("child");
     std::string child_link = ParseAttribute(xml_child, "link");
     if (rigid_bodies.find(child_link) == rigid_bodies.end()) {
       throw std::runtime_error("ParseModel(): Child link (" + child_link + ") does not exist.");
     }
 
-    // Origin
-    const tinyxml2::XMLElement* xml_origin = xml_joint->FirstChildElement("origin");
+    // Parse origin
     Eigen::Vector3d pos;
     Eigen::Quaterniond ori;
-    if (xml_origin != nullptr) {
-      std::tie(pos, ori) = ParseOrigin(xml_origin);
-    } else {
-      pos.setZero();
-      ori.setIdentity();
-    }
+    std::tie(pos, ori) = ParseOriginElement(xml_joint);
 
-    // Axis
+    // Parse axis
     int axis_num = 0;  // 0: x, 1: y, 2: z
     const tinyxml2::XMLElement* xml_axis = xml_joint->FirstChildElement("axis");
     if (xml_axis != nullptr) {
@@ -226,6 +288,27 @@ ArticulatedBody ParseModel(const std::string& urdf) {
       }
     }
 
+    // Parse dynamics
+    double f_coulomb = 0., f_stiction = 0.;
+    const tinyxml2::XMLElement* xml_dynamics = xml_joint->FirstChildElement("dynamics");
+    if (xml_dynamics != nullptr) {
+      xml_dynamics->QueryDoubleAttribute("damping", &f_coulomb);
+      xml_dynamics->QueryDoubleAttribute("friction", &f_stiction);
+    }
+
+    // Parse limits
+    double q_min = 0., q_max = 0.,
+           dq_max = std::numeric_limits<double>::infinity(),
+           fq_max = std::numeric_limits<double>::infinity();
+    const tinyxml2::XMLElement* xml_limit = xml_joint->FirstChildElement("limit");
+    if (xml_limit != nullptr) {
+      xml_limit->QueryDoubleAttribute("lower", &q_min);
+      xml_limit->QueryDoubleAttribute("upper", &q_max);
+      xml_limit->QueryDoubleAttribute("velocity", &dq_max);
+      xml_limit->QueryDoubleAttribute("effort", &fq_max);
+    }
+
+    // Populate rigid body fields
     RigidBody& rb = rigid_bodies.at(child_link).first;
     std::string& name_parent = rigid_bodies.at(child_link).second;
 
@@ -248,7 +331,23 @@ ArticulatedBody ParseModel(const std::string& urdf) {
           default: type = JointType::UNDEFINED; break;
         }
       }
+      if (attr_type == "revolute" || attr_type == "prismatic") {
+        if (xml_limit == nullptr) {
+          throw std::runtime_error("ParseGraphics(): <limit> element missing from <joint> element.");
+        }
+        dq_max = ParseDoubleAttribute(xml_limit, "velocity");
+        fq_max = ParseDoubleAttribute(xml_limit, "effort");
+      }
+
       Joint joint(type);
+      if (attr_type != "continuous") {
+        joint.set_q_limits(q_min, q_max);
+      }
+      joint.set_dq_max(dq_max);
+      joint.set_fq_max(fq_max);
+      joint.set_f_coulomb(f_coulomb);
+      joint.set_f_stiction(f_stiction);
+
       rb.set_joint(std::move(joint));
       rb.set_T_to_parent(ori, pos);
       name_parent = parent_link;
@@ -263,6 +362,7 @@ ArticulatedBody ParseModel(const std::string& urdf) {
     xml_joint = xml_joint->NextSiblingElement("joint");
   }
 
+  // Add rigid bodies to articulated body
   std::map<std::string, int> rb_ids;
   for (auto it = rb_list.begin(); it != rb_list.end(); ) {
     const std::string& name_rb = *it;
