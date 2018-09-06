@@ -52,9 +52,9 @@ set(RBDL_INCLUDE_DIRS
 set(SPATIAL_DYN_EXTERNAL_LIBS ${SPATIAL_DYN_EXTERNAL_LIBS} rbdl)
 set(SPATIAL_DYN_INCLUDE_DIRS ${SPATIAL_DYN_INCLUDE_DIRS} ${RBDL_INCLUDE_DIRS})
 
-# #############
-# # Cpp_redis #
-# #############
+#############
+# Cpp_redis #
+#############
 
 set(CPP_REDIS_LIB_DIR ${SPATIAL_DYN_LIB_DIR}/cpp_redis.git)
 add_subdirectory(${CPP_REDIS_LIB_DIR})
@@ -64,6 +64,17 @@ set(CPP_REDIS_INCLUDE_DIRS
     ${CPP_REDIS_LIB_DIR}/tacopie/includes)
 set(SPATIAL_DYN_PUBLIC_LIBS ${SPATIAL_DYN_PUBLIC_LIBS} cpp_redis)
 set(SPATIAL_DYN_INCLUDE_DIRS ${SPATIAL_DYN_INCLUDE_DIRS} ${CPP_REDIS_INCLUDE_DIRS})
+
+############
+# TinyXML2 #
+############
+
+set(TINYXML_LIB_DIR ${SPATIAL_DYN_LIB_DIR}/tinyxml2.git)
+add_subdirectory(${TINYXML_LIB_DIR})
+set(TINYXML_INCLUDE_DIRS
+    ${TINYXML_LIB_DIR})
+set(SPATIAL_DYN_INCLUDE_DIRS ${SPATIAL_DYN_INCLUDE_DIRS} ${TINYXML_INCLUDE_DIRS})
+set(SPATIAL_DYN_EXTERNAL_LIBS ${SPATIAL_DYN_EXTERNAL_LIBS} tinyxml2)
 
 ######################
 # SpatialDyn library #
@@ -84,6 +95,8 @@ set(SPATIAL_DYN_SRC
     ${SPATIAL_DYN_SRC_DIR}/opspace_dynamics_aba.cc
     ${SPATIAL_DYN_SRC_DIR}/rigid_body.cc
     ${SPATIAL_DYN_SRC_DIR}/simulation.cc
+    ${SPATIAL_DYN_SRC_DIR}/util/timer.cc
+    ${SPATIAL_DYN_SRC_DIR}/util/urdf.cc
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)

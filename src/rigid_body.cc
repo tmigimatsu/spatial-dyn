@@ -47,4 +47,8 @@ void RigidBody::set_joint(Joint&& joint) {
   joint_ = joint;
 }
 
+void RigidBody::set_joint(const Joint& joint) {
+  joint_ = joint;
+}
+
 }  // namespace SpatialDyn

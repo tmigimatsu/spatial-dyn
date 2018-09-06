@@ -37,6 +37,7 @@ class ArticulatedBody {
   const Eigen::Isometry3d& T_base_to_world() const;
 
   int AddRigidBody(RigidBody&& rb, int id_parent = -1);
+  int AddRigidBody(const RigidBody& rb, int id_parent = -1);
 
   const std::vector<RigidBody>& rigid_bodies() const;
   const RigidBody& rigid_bodies(int i) const;
@@ -191,6 +192,8 @@ class ArticulatedBody {
   friend const Eigen::Matrix6d& Opspace::InertiaInverseAba(const ArticulatedBody&, int, const Eigen::Vector3d&);
   friend Eigen::Vector6d Opspace::CentrifugalCoriolisAba(const ArticulatedBody&, int, const Eigen::Vector3d&, double);
   friend Eigen::Vector6d Opspace::GravityAba(const ArticulatedBody&, int, const Eigen::Vector3d&, double);
+
+  void ExpandDof(int id, int id_parent);
 
 };
 

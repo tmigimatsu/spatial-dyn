@@ -164,7 +164,24 @@ int ArticulatedBody::AddRigidBody(RigidBody&& rb, int id_parent) {
   rb.id_ = id;
   rb.id_parent_ = id_parent;
   rigid_bodies_.push_back(std::move(rb));
+  ExpandDof(id, id_parent);
+  return id;
+}
+int ArticulatedBody::AddRigidBody(const RigidBody& rb_in, int id_parent) {
+  // TODO: Set default state
+  int id = rigid_bodies_.size();
+  if ((id_parent < 0 || id_parent >= id) && id != 0) {
+    throw std::invalid_argument("ArticulatedBody::AddRigidBody(): Parent rigid body with id " + std::to_string(id_parent) + " does not exist.");
+  }
+  RigidBody rb = rb_in;
+  rb.id_ = id;
+  rb.id_parent_ = id_parent;
+  rigid_bodies_.push_back(std::move(rb));
+  ExpandDof(id, id_parent);
+  return id;
+}
 
+void ArticulatedBody::ExpandDof(int id, int id_parent) {
   dof_++;
   T_to_parent_.resize(dof_);
   T_from_parent_.resize(dof_);
@@ -222,8 +239,6 @@ int ArticulatedBody::AddRigidBody(RigidBody&& rb, int id_parent) {
   opspace_aba_data_.is_lambda_inv_computed = false;
   opspace_aba_data_.p.push_back(SpatialForce6d());
   opspace_aba_data_.u.push_back(Eigen::Matrix<double,1,6>());
-
-  return id;
 }
 
 void ArticulatedBody::CalculateTransforms() {

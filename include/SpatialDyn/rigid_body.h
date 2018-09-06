@@ -23,6 +23,7 @@ class RigidBody {
 
  public:
 
+  RigidBody() {}
   RigidBody(const std::string& name);
 
   std::string name;
@@ -40,6 +41,7 @@ class RigidBody {
 
   const Joint& joint() const;
   void set_joint(Joint&& joint);
+  void set_joint(const Joint& joint);
 
  protected:
 

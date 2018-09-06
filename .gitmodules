@@ -4,3 +4,6 @@
 [submodule "lib/cpp_redis"]
 	path = lib/cpp_redis.git
 	url = https://github.com/Cylix/cpp_redis.git
+[submodule "lib/tinyxml2.git"]
+	path = lib/tinyxml2.git
+	url = https://github.com/leethomason/tinyxml2.git
