@@ -186,9 +186,9 @@ void ArticulatedBody::ExpandDof(int id, int id_parent) {
   T_to_parent_.resize(dof_);
   T_from_parent_.resize(dof_);
   T_to_world_.resize(dof_);
-  if (q_.size() < dof_) q_.resize(dof_); dq_.setZero();
+  if (q_.size() < dof_) q_.resize(dof_); q_.setZero();
   if (dq_.size() < dof_) dq_.resize(dof_); dq_.setZero();
-  if (ddq_.size() < dof_) ddq_.resize(dof_); dq_.setZero();
+  if (ddq_.size() < dof_) ddq_.resize(dof_); ddq_.setZero();
   if (id_parent < 0) {
     ancestors_.push_back({id});
   } else {

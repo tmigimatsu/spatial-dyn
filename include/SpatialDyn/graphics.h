@@ -20,10 +20,10 @@ enum class GeometryType { UNDEFINED, BOX, CYLINDER, SPHERE, MESH };
 
 struct Geometry {
   GeometryType type = GeometryType::UNDEFINED;
-  Eigen::Vector3d scale;  // Box size/mesh scale
-  double radius;          // Cylinder/sphere radius
-  double length;          // Cylinder length
-  std::string mesh;       // Mesh filename
+  Eigen::Vector3d scale = Eigen::Vector3d::Ones();  // Box size/mesh scale
+  double radius = 0                      ;          // Cylinder/sphere radius
+  double length = 0;                                // Cylinder length
+  std::string mesh;                                 // Mesh filename
 
   operator std::string() const {
     switch (type) {
@@ -44,7 +44,7 @@ struct Material {
 
 struct Graphics {
   std::string name;
-  Eigen::Isometry3d T_to_parent;
+  Eigen::Isometry3d T_to_parent = Eigen::Isometry3d::Identity();
   Geometry geometry;
   Material material;
 };

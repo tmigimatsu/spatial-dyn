@@ -37,7 +37,7 @@ EIGEN_STRONG_INLINE std::string toMatlab() const {
     // [[1],[2],[3],[4]] => "1 2 3 4"
     for (int i = 0; i < derived().rows(); ++i) {
       if (i > 0) ss << " ";
-      ss << derived().coeff(0);
+      ss << derived().coeff(i);
     }
   } else { // matrix
     // [1,2,3,4]     => "1 2 3 4"

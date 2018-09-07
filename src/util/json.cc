@@ -15,8 +15,9 @@ namespace Json {
 nlohmann::json Serialize(const ArticulatedBody& ab) {
   nlohmann::json json;
   json["name"] = ab.name;
-  json["pos_in_world"] = Serialize(ab.T_base_to_world().translation());
-  json["ori_in_world"] = Serialize(Eigen::Quaterniond(ab.T_base_to_world().linear()));
+  json["pos"] = Serialize(ab.T_base_to_world().translation());
+  json["quat"] = Serialize(Eigen::Quaterniond(ab.T_base_to_world().linear()));
+  json["graphics"] = Serialize(ab.graphics);
   nlohmann::json json_rigid_bodies;
   for (const RigidBody& rb : ab.rigid_bodies()) {
     json_rigid_bodies.push_back(Serialize(rb));
@@ -30,8 +31,8 @@ nlohmann::json Serialize(const RigidBody& rb) {
   json["name"] = rb.name;
   json["id"] = rb.id();
   json["id_parent"] = rb.id_parent();
-  json["pos_in_parent"] = Serialize(rb.T_to_parent().translation());
-  json["ori_in_parent"] = Serialize(Eigen::Quaterniond(rb.T_to_parent().linear()));
+  json["pos"] = Serialize(rb.T_to_parent().translation());
+  json["quat"] = Serialize(Eigen::Quaterniond(rb.T_to_parent().linear()));
   json["inertia"] = Serialize(rb.inertia().matrix().flatArray());
   json["joint"] = Serialize(rb.joint());
   if (rb.graphics.geometry.type != GeometryType::UNDEFINED) {
@@ -55,8 +56,8 @@ nlohmann::json Serialize(const Joint& joint) {
 nlohmann::json Serialize(const Graphics& graphics) {
   nlohmann::json json;
   json["name"] = graphics.name;
-  json["pos_in_parent"] = Serialize(graphics.T_to_parent.translation());
-  json["ori_in_parent"] = Serialize(Eigen::Quaterniond(graphics.T_to_parent.linear()));
+  json["pos"] = Serialize(graphics.T_to_parent.translation());
+  json["quat"] = Serialize(Eigen::Quaterniond(graphics.T_to_parent.linear()));
   json["geometry"] = Serialize(graphics.geometry);
   if (!graphics.material.name.empty()) {
     json["material"] = Serialize(graphics.material);

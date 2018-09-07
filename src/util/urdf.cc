@@ -211,6 +211,7 @@ void AddRigidBody(ArticulatedBody& ab,
   int id_new;
   if (name_parent.empty()) {
     ab.set_T_base_to_world(rb.T_to_parent());
+    ab.graphics = rb.graphics;
     id_new = -1;
   } else {
     if (rb_ids.find(name_parent) == rb_ids.end()) {

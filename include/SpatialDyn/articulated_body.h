@@ -11,7 +11,6 @@
 #define SPATIAL_DYN_ARTICULATED_BODY_H_
 
 #include "spatial_math.h"
-#include "joint.h"
 #include "rigid_body.h"
 #include "opspace_dynamics.h"
 
@@ -28,6 +27,7 @@ class ArticulatedBody {
   ArticulatedBody(const std::string& name);
 
   std::string name;
+  Graphics graphics;
 
   size_t dof() const;
 

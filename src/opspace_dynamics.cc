@@ -37,14 +37,18 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
 
     if (N != nullptr) {
       const Eigen::MatrixXd& J_bar = JacobianDynamicInverse(ab, J, svd_epsilon);
-      *N = (Eigen::MatrixXd::Identity(ab.dof(), ab.dof()) - J_bar * J) * (*N);
+      if (N->size() == 0) {
+        *N = Eigen::MatrixXd::Identity(ab.dof(), ab.dof()) - J_bar * J;
+      } else {
+        *N = (Eigen::MatrixXd::Identity(ab.dof(), ab.dof()) - J_bar * J) * (*N);
+      }
     }
   } else {
     Eigen::MatrixXd JN = J * (*N);
     if (!gravity) {
-      tau = J.transpose() * (Inertia(ab, JN, svd_epsilon) * ddx);
+      tau = JN.transpose() * (Inertia(ab, JN, svd_epsilon) * ddx);
     } else {
-      tau = J.transpose() * (Inertia(ab, JN, svd_epsilon) * ddx + Gravity(ab, JN, svd_epsilon));
+      tau = JN.transpose() * (Inertia(ab, JN, svd_epsilon) * ddx + Gravity(ab, JN, svd_epsilon));
     }
 
     const Eigen::MatrixXd& JN_bar = JacobianDynamicInverse(ab, JN, svd_epsilon);

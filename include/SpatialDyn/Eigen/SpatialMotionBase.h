@@ -65,7 +65,9 @@ class SpatialMotionBase : public DenseBase<Derived> {
   typedef CwiseNullaryOp<internal::scalar_identity_op<Scalar>,PlainObject> IdentityReturnType;
 
   typedef Block<const CwiseNullaryOp<internal::scalar_identity_op<Scalar>, SquareMatrixType>,
-                6, internal::traits<Derived>::ColsAtCompileTime> BasisReturnType;
+                6, ColsAtCompileTime> BasisReturnType;
+
+  typedef Block<MatrixWrapper<Derived>, 3, ColsAtCompileTime> CartesianBlockType;
 
   template<typename OtherDerived> struct cross_product_return_type {
     typedef typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,typename internal::traits<OtherDerived>::Scalar>::ReturnType Scalar;
@@ -177,7 +179,14 @@ class SpatialMotionBase : public DenseBase<Derived> {
   ArrayWrapper<Derived> array();
   const ArrayWrapper<const Derived> array() const;
 
-  const Matrix<Scalar, SpatialMotionBase::ColsAtCompileTime, 6> transpose() const;
+  Transpose<MatrixWrapper<Derived>> transpose();
+  const Transpose<MatrixWrapper<const Derived>> transpose() const;
+
+  CartesianBlockType linear();
+  const CartesianBlockType linear() const;
+
+  CartesianBlockType angular();
+  const CartesianBlockType angular() const;
 
  protected:
   SpatialMotionBase() : Base() {}
@@ -495,10 +504,40 @@ inline const ArrayWrapper<const Derived> SpatialMotionBase<Derived>::array() con
 }
 
 template<typename Derived>
-inline const Matrix<typename SpatialMotionBase<Derived>::Scalar,
-                    SpatialMotionBase<Derived>::ColsAtCompileTime, 6>
+inline Transpose<MatrixWrapper<Derived>> SpatialMotionBase<Derived>::transpose() {
+  return MatrixWrapper<Derived>(derived()).transpose();
+}
+
+template<typename Derived>
+// inline const Matrix<typename SpatialMotionBase<Derived>::Scalar,
+//                     SpatialMotionBase<Derived>::ColsAtCompileTime, 6>
+inline const Transpose<MatrixWrapper<const Derived>>
 SpatialMotionBase<Derived>::transpose() const {
   return MatrixWrapper<const Derived>(derived()).transpose();
+}
+
+template<typename Derived>
+inline typename SpatialMotionBase<Derived>::CartesianBlockType
+SpatialMotionBase<Derived>::linear() {
+  return this->matrix().template topRows<3>();
+}
+
+template<typename Derived>
+inline const typename SpatialMotionBase<Derived>::CartesianBlockType
+SpatialMotionBase<Derived>::linear() const {
+  return this->matrix().template topRows<3>();
+}
+
+template<typename Derived>
+inline typename SpatialMotionBase<Derived>::CartesianBlockType
+SpatialMotionBase<Derived>::angular() {
+  return this->matrix().template bottomRows<3>();
+}
+
+template<typename Derived>
+inline const typename SpatialMotionBase<Derived>::CartesianBlockType
+SpatialMotionBase<Derived>::angular() const {
+  return this->matrix().template bottomRows<3>();
 }
 
 }  // namespace Eigen
