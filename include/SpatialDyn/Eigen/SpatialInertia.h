@@ -110,6 +110,11 @@ class SpatialInertiaMatrix : public Matrix<_Scalar,6,6> {
     return *this;
   }
 
+  Eigen::Matrix<_Scalar,6,1> flatArray() const {
+    return Eigen::Matrix<_Scalar,6,1>(this->coeff(0,0), this->coeff(1,1), this->coeff(2,2),
+                                      this->coeff(0,1), this->coeff(0,2), this->coeff(1,2));
+  }
+
 };
 
 template<typename _Scalar>

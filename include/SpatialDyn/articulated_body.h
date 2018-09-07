@@ -43,7 +43,6 @@ class ArticulatedBody {
   const RigidBody& rigid_bodies(int i) const;
   const std::vector<int>& ancestors(int i) const;
 
-
   const Eigen::VectorXd& q() const;
   const double q(int i) const;
   void set_q(const Eigen::VectorXd& q);

@@ -95,6 +95,7 @@ set(SPATIAL_DYN_SRC
     ${SPATIAL_DYN_SRC_DIR}/opspace_dynamics_aba.cc
     ${SPATIAL_DYN_SRC_DIR}/rigid_body.cc
     ${SPATIAL_DYN_SRC_DIR}/simulation.cc
+    ${SPATIAL_DYN_SRC_DIR}/util/json.cc
     ${SPATIAL_DYN_SRC_DIR}/util/timer.cc
     ${SPATIAL_DYN_SRC_DIR}/util/urdf.cc
 )
