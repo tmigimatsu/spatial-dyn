@@ -174,7 +174,7 @@ class ArticulatedBody {
   };
   mutable OpspaceAbaData opspace_aba_data_;
 
-  friend Eigen::VectorXd InverseDynamics(const ArticulatedBody&, const Eigen::VectorXd&, bool);
+  friend Eigen::VectorXd InverseDynamics(const ArticulatedBody&, const Eigen::VectorXd&, bool, bool, bool);
   friend const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody&);
   friend const Eigen::VectorXd& Gravity(const ArticulatedBody&);
   friend const Eigen::MatrixXd& Inertia(const ArticulatedBody&);

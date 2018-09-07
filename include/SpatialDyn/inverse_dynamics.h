@@ -16,7 +16,9 @@
 namespace SpatialDyn {
 
 // RNEA
-Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq, bool cache = false);
+Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq,
+                                bool gravity = true, bool centrifugal_coriolis = false,
+                                bool cache = false);
 const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab);
 const Eigen::VectorXd& Gravity(const ArticulatedBody& ab);
 

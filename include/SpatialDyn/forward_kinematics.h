@@ -26,10 +26,10 @@ Eigen::Quaterniond Orientation(const ArticulatedBody& ab, int link = -1);
 Eigen::Matrix6Xd Jacobian(const ArticulatedBody& ab, int link = -1,
                           const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
 
-Eigen::Matrix3Xd LinearJacobian(const ArticulatedBody& ab, int link,
+Eigen::Matrix3Xd LinearJacobian(const ArticulatedBody& ab, int link = -1,
                                 const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
 
-Eigen::Matrix3Xd AngularJacobian(const ArticulatedBody& ab, int link);
+Eigen::Matrix3Xd AngularJacobian(const ArticulatedBody& ab, int link = -1);
 
 }  // namespace SpatialDyn
 

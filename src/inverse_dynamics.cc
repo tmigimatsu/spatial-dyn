@@ -17,7 +17,8 @@ namespace SpatialDyn {
 // }
 
 // RNEA
-Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq, bool cache) {
+Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq,
+                                bool gravity, bool centrifugal_coriolis, bool cache) {
   if (!cache) {
 
     auto& rnea = ab.rnea_data_;
@@ -29,7 +30,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
       const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
       const int parent = ab.rigid_bodies(i).id_parent();
 
-      if (!vel.is_computed) {
+      if (centrifugal_coriolis && !vel.is_computed) {
         if (parent < 0) {
           vel.v[i] = ab.dq(i) * s;
         } else {
@@ -38,15 +39,27 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
       }
 
       if (parent < 0) {
-        rnea.a[i] = ddq(i) * s - ab.T_to_world(i).inverse() * ab.g();
+        if (gravity) {
+          rnea.a[i] = ddq(i) * s - ab.T_to_world(i).inverse() * ab.g();
+        } else {
+          rnea.a[i] = ddq(i) * s;
+        }
       } else {
-        rnea.a[i] = ab.T_from_parent(i) * rnea.a[parent] + ddq(i) * s +
-                    vel.v[i].cross(ab.dq(i) * s);
+        if (centrifugal_coriolis) {
+          rnea.a[i] = ab.T_from_parent(i) * rnea.a[parent] + ddq(i) * s +
+                      vel.v[i].cross(ab.dq(i) * s);
+        } else {
+          rnea.a[i] = ab.T_from_parent(i) * rnea.a[parent] + ddq(i) * s;
+        }
       }
 
-      rnea.f[i] = I * rnea.a[i] + vel.v[i].cross(I * vel.v[i]);
+      if (centrifugal_coriolis) {
+        rnea.f[i] = I * rnea.a[i] + vel.v[i].cross(I * vel.v[i]);
+      } else {
+        rnea.f[i] = I * rnea.a[i];
+      }
     }
-    vel.is_computed = true;
+    if (centrifugal_coriolis) vel.is_computed = true;
 
     // Backward pass
     Eigen::VectorXd tau(ab.dof());           // Resulting joint torques

@@ -24,38 +24,39 @@ Eigen::Vector3d OrientationError(const Eigen::Quaterniond &quat, const Eigen::Qu
 
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                 const Eigen::VectorXd& ddx, Eigen::MatrixXd *N,
-                                double svd_epsilon, bool centrifugal_coriolis, bool gravity) {
-  // TODO: centrifugal_coriolis
-  Eigen::VectorXd tau;
+                                double svd_epsilon, bool gravity, bool centrifugal_coriolis) {
+  // Project Jacobian in nullspace
+  Eigen::MatrixXd JN;
+  bool use_nullspace = N != nullptr && N->size() > 0;
+  if (use_nullspace) {
+    JN = J * (*N);
+  }
+  const Eigen::MatrixXd& J_x = (use_nullspace) ? JN : J;
 
-  if (N == nullptr || N->size() == 0) {
-    if (!gravity) {
-      tau = J.transpose() * (Inertia(ab, J, svd_epsilon) * ddx);
-    } else {
-      tau = J.transpose() * (Inertia(ab, J, svd_epsilon) * ddx + Gravity(ab, J, svd_epsilon));
-    }
-
-    if (N != nullptr) {
-      const Eigen::MatrixXd& J_bar = JacobianDynamicInverse(ab, J, svd_epsilon);
-      if (N->size() == 0) {
-        *N = Eigen::MatrixXd::Identity(ab.dof(), ab.dof()) - J_bar * J;
-      } else {
-        *N = (Eigen::MatrixXd::Identity(ab.dof(), ab.dof()) - J_bar * J) * (*N);
-      }
-    }
+  // Compute opspace dynamics
+  Eigen::VectorXd F_x;
+  if (gravity) {  // Compute inline for efficiency
+    F_x = Inertia(ab, J_x, svd_epsilon) * ddx + Gravity(ab, J_x, svd_epsilon);
   } else {
-    Eigen::MatrixXd JN = J * (*N);
-    if (!gravity) {
-      tau = JN.transpose() * (Inertia(ab, JN, svd_epsilon) * ddx);
-    } else {
-      tau = JN.transpose() * (Inertia(ab, JN, svd_epsilon) * ddx + Gravity(ab, JN, svd_epsilon));
-    }
-
-    const Eigen::MatrixXd& JN_bar = JacobianDynamicInverse(ab, JN, svd_epsilon);
-    *N = (Eigen::MatrixXd::Identity(ab.dof(), ab.dof()) - JN_bar * JN) * (*N);
+    F_x = Inertia(ab, J_x, svd_epsilon) * ddx;
   }
 
-  return tau;
+  // TODO: Only works for 6d pos_ori tasks
+  if (centrifugal_coriolis && F_x.size() == 6) {
+    F_x += CentrifugalCoriolis(ab, J_x, svd_epsilon);
+  }
+
+  // Update nullspace
+  if (N != nullptr) {
+    const Eigen::MatrixXd& J_bar = JacobianDynamicInverse(ab, J_x, svd_epsilon);
+    if (N->size() == 0) {
+      *N = Eigen::MatrixXd::Identity(ab.dof(), ab.dof()) - J_bar * J_x;
+    } else {
+      *N = (Eigen::MatrixXd::Identity(ab.dof(), ab.dof()) - J_bar * J_x) * (*N);
+    }
+  }
+
+  return J_x.transpose() * F_x;
 }
 
 

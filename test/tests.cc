@@ -197,21 +197,35 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
 
   SECTION("jacobian") {
     Eigen::Matrix6Xd J = SpatialDyn::Jacobian(ab);
+    Eigen::Matrix3Xd J_v = SpatialDyn::LinearJacobian(ab);
+    Eigen::Matrix3Xd J_w = SpatialDyn::AngularJacobian(ab);
     Eigen::MatrixXd J_rbdl = Eigen::MatrixXd::Zero(6, ab.dof());
     RigidBodyDynamics::CalcPointJacobian6D(ab_rbdl, ab.q(), 6, Eigen::Vector3d::Zero(), J_rbdl);
 
     REQUIRE((J.topRows<3>() - J_rbdl.bottomRows<3>()).norm() < 1e-10);
     REQUIRE((J.bottomRows<3>() - J_rbdl.topRows<3>()).norm() < 1e-10);
+    REQUIRE((J.topRows<3>() - J_v).norm() < 1e-10);
+    REQUIRE((J.bottomRows<3>() - J_w).norm() < 1e-10);
   }
 
   SECTION("inverse dynamics") {
     Eigen::VectorXd ddq = Eigen::VectorXd::Ones(ab.dof());
 
-    Eigen::VectorXd tau = SpatialDyn::InverseDynamics(ab, ddq);
+    Eigen::VectorXd tau = SpatialDyn::InverseDynamics(ab, ddq, true, true);
     Eigen::VectorXd tau_rbdl(ab.dof());
     RigidBodyDynamics::InverseDynamics(ab_rbdl, ab.q(), ab.dq(), ddq, tau_rbdl);
 
+    Eigen::VectorXd tau_Aq_g = SpatialDyn::InverseDynamics(ab, ddq, true, false);
+    Eigen::VectorXd tau_Aq_v = SpatialDyn::InverseDynamics(ab, ddq, false, true);
+    Eigen::VectorXd tau_Aq = SpatialDyn::InverseDynamics(ab, ddq, false, false);
+    Eigen::VectorXd tau_crba_Aq_g = SpatialDyn::Inertia(ab) * ddq + SpatialDyn::Gravity(ab);
+    Eigen::VectorXd tau_crba_Aq_v = SpatialDyn::Inertia(ab) * ddq + SpatialDyn::CentrifugalCoriolis(ab);
+    Eigen::VectorXd tau_crba_Aq = SpatialDyn::Inertia(ab) * ddq;
+
     REQUIRE((tau - tau_rbdl).norm() < 1e-10);
+    REQUIRE((tau_Aq_g - tau_crba_Aq_g).norm() < 1e-10);
+    REQUIRE((tau_Aq_v - tau_crba_Aq_v).norm() < 1e-10);
+    REQUIRE((tau_Aq - tau_crba_Aq).norm() < 1e-10);
   }
 
   SECTION("inertia") {
