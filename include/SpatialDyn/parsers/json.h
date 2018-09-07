@@ -7,10 +7,10 @@
  * Authors: Toki Migimatsu
  */
 
-#ifndef SPATIAL_DYN_JSON_H_
-#define SPATIAL_DYN_JSON_H_
+#ifndef SPATIAL_DYN_PARSERS_JSON_H_
+#define SPATIAL_DYN_PARSERS_JSON_H_
 
-#include "articulated_body.h"
+#include "structs/articulated_body.h"
 
 #include "nlohmann/json.hpp"
 
@@ -64,4 +64,4 @@ nlohmann::json Serialize(const Eigen::QuaternionBase<Derived>& quat) {
 }  // namespace Json
 }  // namespace SpatialDyn
 
-#endif  // SPATIAL_DYN_JSON_H_
+#endif  // SPATIAL_DYN_PARSERS_JSON_H_

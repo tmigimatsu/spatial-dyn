@@ -7,7 +7,7 @@
  * Authors: Toki Migimatsu
  */
 
-#include "forward_dynamics.h"
+#include "algorithms/forward_dynamics.h"
 
 namespace SpatialDyn {
 

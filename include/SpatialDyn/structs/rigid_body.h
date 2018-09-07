@@ -7,12 +7,12 @@
  * Authors: Toki Migimatsu
  */
 
-#ifndef SPATIAL_DYN_RIGID_BODY_H_
-#define SPATIAL_DYN_RIGID_BODY_H_
+#ifndef SPATIAL_DYN_STRUCTS_RIGID_BODY_H_
+#define SPATIAL_DYN_STRUCTS_RIGID_BODY_H_
 
-#include "graphics.h"
-#include "joint.h"
-#include "spatial_math.h"
+#include "structs/graphics.h"
+#include "structs/joint.h"
+#include "utils/spatial_math.h"
 
 #include <string>  // std::string
 
@@ -59,4 +59,4 @@ class RigidBody {
 
 }  // namespace SpatialDyn
 
-#endif  // SPATIAL_DYN_RIGID_BODY_H_
+#endif  // SPATIAL_DYN_STRUCTS_RIGID_BODY_H_

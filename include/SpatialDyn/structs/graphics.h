@@ -7,8 +7,8 @@
  * Authors: Toki Migimatsu
  */
 
-#ifndef SPATIAL_DYN_GRAPHICS_H_
-#define SPATIAL_DYN_GRAPHICS_H_
+#ifndef SPATIAL_DYN_STRUCTS_GRAPHICS_H_
+#define SPATIAL_DYN_STRUCTS_GRAPHICS_H_
 
 #include <Eigen/Eigen>
 
@@ -51,4 +51,4 @@ struct Graphics {
 
 }  // namespace SpatialDyn
 
-#endif  // SPATIAL_DYN_RIGID_BODY_H_
+#endif  // SPATIAL_DYN_STRUCTS_RIGID_BODY_H_

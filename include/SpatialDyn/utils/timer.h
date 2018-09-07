@@ -7,8 +7,8 @@
  * Authors: Toki Migimatsu
  */
 
-#ifndef SPATIALDYN_UTIL_TIMER_H_
-#define SPATIALDYN_UTIL_TIMER_H_
+#ifndef SPATIALDYN_UTILS_TIMER_H_
+#define SPATIALDYN_UTILS_TIMER_H_
 
 #include <chrono>  // std::chrono
 
@@ -78,4 +78,4 @@ class Timer {
 
 }  // namespace SpatialDyn
 
-#endif  // SPATIALDYN_UTIL_TIMER_H_
+#endif  // SPATIALDYN_UTILS_TIMER_H_

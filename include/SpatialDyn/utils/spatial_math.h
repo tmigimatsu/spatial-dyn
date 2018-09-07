@@ -7,8 +7,8 @@
  * Authors: Toki Migimatsu
  */
 
-#ifndef SPATIAL_DYN_SPATIAL_MATH_H_
-#define SPATIAL_DYN_SPATIAL_MATH_H_
+#ifndef SPATIAL_DYN_UTILS_SPATIAL_MATH_H_
+#define SPATIAL_DYN_UTILS_SPATIAL_MATH_H_
 
 #include "Eigen/SpatialDyn.h"
 
@@ -35,4 +35,4 @@ typedef Eigen::SpatialInertiaMatrix<double> SpatialInertiaMatrixd;
 
 }  // namespace SpatialDyn
 
-#endif  // SPATIAL_DYN_SPATIAL_MATH_H_
+#endif  // SPATIAL_DYN_UTILS_SPATIAL_MATH_H_

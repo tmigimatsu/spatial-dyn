@@ -7,12 +7,12 @@
  * Authors: Toki Migimatsu
  */
 
-#ifndef SPATIAL_DYN_ARTICULATED_BODY_H_
-#define SPATIAL_DYN_ARTICULATED_BODY_H_
+#ifndef SPATIAL_DYN_STRUCTS_ARTICULATED_BODY_H_
+#define SPATIAL_DYN_STRUCTS_ARTICULATED_BODY_H_
 
-#include "spatial_math.h"
-#include "rigid_body.h"
-#include "opspace_dynamics.h"
+#include "utils/spatial_math.h"
+#include "structs/rigid_body.h"
+#include "algorithms/opspace_dynamics.h"
 
 #include <string>  // std::string
 #include <vector>  // std::vector
@@ -198,4 +198,4 @@ class ArticulatedBody {
 
 }  // namespace SpatialDyn
 
-#endif  // SPATIAL_DYN_ARTICULATED_BODY_H_
+#endif  // SPATIAL_DYN_STRUCTS_ARTICULATED_BODY_H_

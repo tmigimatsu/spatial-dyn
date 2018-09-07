@@ -7,8 +7,8 @@
  * Authors: Toki Migimatsu
  */
 
-#ifndef SPATIAL_DYN_UTIL_REDIS_CLIENT_H_
-#define SPATIAL_DYN_UTIL_REDIS_CLIENT_H_
+#ifndef SPATIAL_DYN_UTILS_REDIS_CLIENT_H_
+#define SPATIAL_DYN_UTILS_REDIS_CLIENT_H_
 
 #include <cpp_redis/cpp_redis>
 
@@ -149,4 +149,4 @@ T RedisClient::sync_get(const std::string &key) {
 
 }  // namespace dex
 
-#endif  // SPATIAL_DYN_UTIL_REDIS_CLIENT_H_
+#endif  // SPATIAL_DYN_UTILS_REDIS_CLIENT_H_

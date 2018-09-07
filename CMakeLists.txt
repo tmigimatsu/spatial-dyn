@@ -86,18 +86,18 @@ include_directories(${SPATIAL_DYN_INCLUDE_DIRS})
 # Create library
 # set(SPATIAL_DYN_LIB spatial-dyn)
 set(SPATIAL_DYN_SRC
-    ${SPATIAL_DYN_SRC_DIR}/articulated_body.cc
-    ${SPATIAL_DYN_SRC_DIR}/forward_dynamics.cc
-    ${SPATIAL_DYN_SRC_DIR}/forward_kinematics.cc
-    ${SPATIAL_DYN_SRC_DIR}/inverse_dynamics.cc
-    ${SPATIAL_DYN_SRC_DIR}/joint.cc
-    ${SPATIAL_DYN_SRC_DIR}/opspace_dynamics.cc
-    ${SPATIAL_DYN_SRC_DIR}/opspace_dynamics_aba.cc
-    ${SPATIAL_DYN_SRC_DIR}/rigid_body.cc
-    ${SPATIAL_DYN_SRC_DIR}/simulation.cc
-    ${SPATIAL_DYN_SRC_DIR}/util/json.cc
-    ${SPATIAL_DYN_SRC_DIR}/util/timer.cc
-    ${SPATIAL_DYN_SRC_DIR}/util/urdf.cc
+    ${SPATIAL_DYN_SRC_DIR}/algorithms/forward_dynamics.cc
+    ${SPATIAL_DYN_SRC_DIR}/algorithms/forward_kinematics.cc
+    ${SPATIAL_DYN_SRC_DIR}/algorithms/inverse_dynamics.cc
+    ${SPATIAL_DYN_SRC_DIR}/algorithms/opspace_dynamics.cc
+    ${SPATIAL_DYN_SRC_DIR}/algorithms/opspace_dynamics_aba.cc
+    ${SPATIAL_DYN_SRC_DIR}/algorithms/simulation.cc
+    ${SPATIAL_DYN_SRC_DIR}/structs/articulated_body.cc
+    ${SPATIAL_DYN_SRC_DIR}/structs/joint.cc
+    ${SPATIAL_DYN_SRC_DIR}/structs/rigid_body.cc
+    ${SPATIAL_DYN_SRC_DIR}/parsers/json.cc
+    ${SPATIAL_DYN_SRC_DIR}/utils/timer.cc
+    ${SPATIAL_DYN_SRC_DIR}/parsers/urdf.cc
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)

@@ -7,7 +7,7 @@
  * Authors: Toki Migimatsu
  */
 
-#include "joint.h"
+#include "structs/joint.h"
 
 #include <exception>  // std::invalid_argument
 #include <map>        // std::map

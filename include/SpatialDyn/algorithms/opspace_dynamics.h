@@ -7,10 +7,10 @@
  * Authors: Toki Migimatsu
  */
 
-#ifndef SPATIAL_DYN_OPSPACE_DYNAMICS_H_
-#define SPATIAL_DYN_OPSPACE_DYNAMICS_H_
+#ifndef SPATIAL_DYN_ALGORITHMS_OPSPACE_DYNAMICS_H_
+#define SPATIAL_DYN_ALGORITHMS_OPSPACE_DYNAMICS_H_
 
-#include "spatial_math.h"
+#include "utils/spatial_math.h"
 
 namespace SpatialDyn {
 
@@ -65,4 +65,4 @@ Eigen::Vector6d GravityAba(const ArticulatedBody& ab,
 }  // namespace Opspace
 }  // namespace SpatialDyn
 
-#endif  // SPATIAL_DYN_OPSPACE_DYNAMICS_H_
+#endif  // SPATIAL_DYN_ALGORITHMS_OPSPACE_DYNAMICS_H_

@@ -7,10 +7,10 @@
  * Authors: Toki Migimatsu
  */
 
-#ifndef SPATIALDYN_UTIL_URDF_H_
-#define SPATIALDYN_UTIL_URDF_H_
+#ifndef SPATIAL_DYN_PARSERS_URDF_H_
+#define SPATIAL_DYN_PARSERS_URDF_H_
 
-#include "articulated_body.h"
+#include "structs/articulated_body.h"
 
 #include <string>  // std::string
 
@@ -22,4 +22,4 @@ ArticulatedBody ParseModel(const std::string& urdf);
 }  // namespace Urdf
 }  // namespace SpatialDyn
 
-#endif  // SPATIALDYN_UTIL_URDF_H_
+#endif  // SPATIAL_DYN_PARSERS_URDF_H_

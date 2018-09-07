@@ -7,11 +7,11 @@
  * Authors: Toki Migimatsu
  */
 
-#ifndef SPATIAL_DYN_FORWARD_DYNAMICS_H_
-#define SPATIAL_DYN_FORWARD_DYNAMICS_H_
+#ifndef SPATIAL_DYN_ALGORITHMS_FORWARD_DYNAMICS_H_
+#define SPATIAL_DYN_ALGORITHMS_FORWARD_DYNAMICS_H_
 
-#include "articulated_body.h"
-#include "spatial_math.h"
+#include "structs/articulated_body.h"
+#include "utils/spatial_math.h"
 
 namespace SpatialDyn {
 
@@ -21,4 +21,4 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab, const Eigen::Vecto
 
 }  // namespace SpatialDyn
 
-#endif  // SPATIAL_DYN_FORWARD_DYNAMICS_H_
+#endif  // SPATIAL_DYN_ALGORITHMS_FORWARD_DYNAMICS_H_

@@ -7,7 +7,7 @@
  * Authors: Toki Migimatsu
  */
 
-#include "articulated_body.h"
+#include "structs/articulated_body.h"
 
 #include <exception>  // std::invalid_argument
 

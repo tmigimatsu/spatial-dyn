@@ -7,10 +7,9 @@
  * Authors: Toki Migimatsu
  */
 
-#include "opspace_dynamics.h"
-#include "articulated_body.h"
-#include "forward_kinematics.h"
-#include "inverse_dynamics.h"
+#include "algorithms/opspace_dynamics.h"
+#include "algorithms/forward_kinematics.h"
+#include "algorithms/inverse_dynamics.h"
 
 namespace SpatialDyn {
 namespace Opspace {

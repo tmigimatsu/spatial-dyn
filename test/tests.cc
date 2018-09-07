@@ -7,12 +7,10 @@
  * Authors: Toki Migimatsu
  */
 
-#include "spatial_math.h"
-#include "articulated_body.h"
-#include "forward_kinematics.h"
-#include "inverse_dynamics.h"
-#include "forward_dynamics.h"
-#include "opspace_dynamics.h"
+#include "algorithms/forward_kinematics.h"
+#include "algorithms/inverse_dynamics.h"
+#include "algorithms/forward_dynamics.h"
+#include "algorithms/opspace_dynamics.h"
 
 #include <rbdl/rbdl.h>
 
@@ -211,21 +209,31 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
   SECTION("inverse dynamics") {
     Eigen::VectorXd ddq = Eigen::VectorXd::Ones(ab.dof());
 
-    Eigen::VectorXd tau = SpatialDyn::InverseDynamics(ab, ddq, true, true);
+    Eigen::VectorXd tau = SpatialDyn::InverseDynamics(ab, ddq, true, true, false);
     Eigen::VectorXd tau_rbdl(ab.dof());
     RigidBodyDynamics::InverseDynamics(ab_rbdl, ab.q(), ab.dq(), ddq, tau_rbdl);
 
-    Eigen::VectorXd tau_Aq_g = SpatialDyn::InverseDynamics(ab, ddq, true, false);
-    Eigen::VectorXd tau_Aq_v = SpatialDyn::InverseDynamics(ab, ddq, false, true);
-    Eigen::VectorXd tau_Aq = SpatialDyn::InverseDynamics(ab, ddq, false, false);
+    Eigen::VectorXd tau_Aq_g = SpatialDyn::InverseDynamics(ab, ddq, true, false, false);
+    Eigen::VectorXd tau_Aq_v = SpatialDyn::InverseDynamics(ab, ddq, false, true, false);
+    Eigen::VectorXd tau_Aq = SpatialDyn::InverseDynamics(ab, ddq, false, false, false);
     Eigen::VectorXd tau_crba_Aq_g = SpatialDyn::Inertia(ab) * ddq + SpatialDyn::Gravity(ab);
     Eigen::VectorXd tau_crba_Aq_v = SpatialDyn::Inertia(ab) * ddq + SpatialDyn::CentrifugalCoriolis(ab);
     Eigen::VectorXd tau_crba_Aq = SpatialDyn::Inertia(ab) * ddq;
+
+    Eigen::VectorXd tau_cache = SpatialDyn::InverseDynamics(ab, ddq, true, true, true);
+    Eigen::VectorXd tau_cache_Aq_g = SpatialDyn::InverseDynamics(ab, ddq, true, false, true);
+    Eigen::VectorXd tau_cache_Aq_v = SpatialDyn::InverseDynamics(ab, ddq, false, true, true);
+    Eigen::VectorXd tau_cache_Aq = SpatialDyn::InverseDynamics(ab, ddq, false, false, true);
 
     REQUIRE((tau - tau_rbdl).norm() < 1e-10);
     REQUIRE((tau_Aq_g - tau_crba_Aq_g).norm() < 1e-10);
     REQUIRE((tau_Aq_v - tau_crba_Aq_v).norm() < 1e-10);
     REQUIRE((tau_Aq - tau_crba_Aq).norm() < 1e-10);
+
+    REQUIRE((tau_cache - tau_rbdl).norm() < 1e-10);
+    REQUIRE((tau_cache_Aq_g - tau_crba_Aq_g).norm() < 1e-10);
+    REQUIRE((tau_cache_Aq_v - tau_crba_Aq_v).norm() < 1e-10);
+    REQUIRE((tau_cache_Aq - tau_crba_Aq).norm() < 1e-10);
   }
 
   SECTION("inertia") {

@@ -7,7 +7,7 @@
  * Authors: Toki Migimatsu
  */
 
-#include "util/urdf.h"
+#include "parsers/urdf.h"
 
 #include "tinyxml2.h"
 

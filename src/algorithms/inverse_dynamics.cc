@@ -7,14 +7,11 @@
  * Authors: Toki Migimatsu
  */
 
-#include "inverse_dynamics.h"
+#include "algorithms/inverse_dynamics.h"
 
 #define CACHE_INVERSE_DYNAMICS
 
 namespace SpatialDyn {
-
-// Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq) {
-// }
 
 // RNEA
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq,
@@ -85,19 +82,19 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
       const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
       const int parent = ab.rigid_bodies(i).id_parent();
 
-      if (!vel.is_computed) {
+      if (centrifugal_coriolis && !vel.is_computed) {
         if (parent < 0) vel.v[i] = ab.dq(i) * s;
         else            vel.v[i] = ab.T_from_parent(i) * vel.v[parent] + ab.dq(i) * s;
       }
 
-      if (!cc.is_computed) {
+      if (centrifugal_coriolis && !cc.is_computed) {
         if (parent < 0) cc.c_c[i].setZero();
         else            cc.c_c[i] = ab.T_from_parent(i) * cc.c_c[parent] + vel.v[i].cross(ab.dq(i) * s);
 
         cc.f_c[i] = I * cc.c_c[i] + vel.v[i].cross(I * vel.v[i]);
       }
 
-      if (!grav.is_computed) {
+      if (gravity && !grav.is_computed) {
         const auto T_from_world = ab.T_to_world(i).inverse();
         grav.f_g[i] = I * (T_from_world * -ab.g());
       }
@@ -107,7 +104,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
 
       rnea.f[i] = I * rnea.a[i];
     }
-    vel.is_computed = true;
+    if (centrifugal_coriolis) vel.is_computed = true;
 
     // Backward pass
     Eigen::VectorXd tau(ab.dof());           // Resulting joint torques
@@ -115,12 +112,17 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
       const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
       const int parent = ab.rigid_bodies(i).id_parent();
 
-      rnea.f[i] += cc.f_c[i] + grav.f_g[i];
+      if (centrifugal_coriolis) {
+        rnea.f[i] += cc.f_c[i];
+      }
+      if (gravity) {
+        rnea.f[i] += grav.f_g[i];
+      }
       tau(i) = s.dot(rnea.f[i]);
       if (parent >= 0) rnea.f[parent] += ab.T_to_parent(i) * rnea.f[i];
     }
-    cc.is_computed = true;
-    grav.is_computed = true;
+    if (centrifugal_coriolis) cc.is_computed = true;
+    if (gravity) grav.is_computed = true;
     return tau;
 
   }

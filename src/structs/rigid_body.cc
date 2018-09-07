@@ -7,7 +7,7 @@
  * Authors: Toki Migimatsu
  */
 
-#include "rigid_body.h"
+#include "structs/rigid_body.h"
 
 namespace SpatialDyn {
 

@@ -7,11 +7,11 @@
  * Authors: Toki Migimatsu
  */
 
-#ifndef SPATIAL_DYN_INVERSE_DYNAMICS_H_
-#define SPATIAL_DYN_INVERSE_DYNAMICS_H_
+#ifndef SPATIAL_DYN_ALGORITHMS_INVERSE_DYNAMICS_H_
+#define SPATIAL_DYN_ALGORITHMS_INVERSE_DYNAMICS_H_
 
-#include "articulated_body.h"
-#include "spatial_math.h"
+#include "structs/articulated_body.h"
+#include "utils/spatial_math.h"
 
 namespace SpatialDyn {
 
@@ -28,4 +28,4 @@ const Eigen::LDLT<Eigen::MatrixXd>& InertiaInverse(const ArticulatedBody& ab);
 
 }  // namespace SpatialDyn
 
-#endif  // SPATIAL_DYN_INVERSE_DYNAMICS_H_
+#endif  // SPATIAL_DYN_ALGORITHMS_INVERSE_DYNAMICS_H_
