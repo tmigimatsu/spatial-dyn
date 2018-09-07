@@ -88,8 +88,11 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
       }
 
       if (centrifugal_coriolis && !cc.is_computed) {
-        if (parent < 0) cc.c_c[i].setZero();
-        else            cc.c_c[i] = ab.T_from_parent(i) * cc.c_c[parent] + vel.v[i].cross(ab.dq(i) * s);
+        if (parent < 0) {
+          cc.c_c[i].setZero();
+        } else {
+          cc.c_c[i] = ab.T_from_parent(i) * cc.c_c[parent] + vel.v[i].cross(ab.dq(i) * s);
+        }
 
         cc.f_c[i] = I * cc.c_c[i] + vel.v[i].cross(I * vel.v[i]);
       }
@@ -112,14 +115,31 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
       const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
       const int parent = ab.rigid_bodies(i).id_parent();
 
-      if (centrifugal_coriolis) {
-        rnea.f[i] += cc.f_c[i];
-      }
-      if (gravity) {
-        rnea.f[i] += grav.f_g[i];
-      }
       tau(i) = s.dot(rnea.f[i]);
-      if (parent >= 0) rnea.f[parent] += ab.T_to_parent(i) * rnea.f[i];
+
+      if (centrifugal_coriolis) {
+        if (!cc.is_computed) {
+          cc.C(i) = s.dot(cc.f_c[i]);
+          if (parent >= 0) {
+            cc.f_c[parent] += ab.T_to_parent(i) * cc.f_c[i];
+          }
+        }
+        tau(i) += cc.C(i);
+      }
+
+      if (gravity) {
+        if (!grav.is_computed) {
+          grav.G(i) = s.dot(grav.f_g[i]);
+          if (parent >= 0) {
+            grav.f_g[parent] += ab.T_to_parent(i) * grav.f_g[i];
+          }
+        }
+        tau(i) += grav.G(i);
+      }
+
+      if (parent >= 0) {
+        rnea.f[parent] += ab.T_to_parent(i) * rnea.f[i];
+      }
     }
     if (centrifugal_coriolis) cc.is_computed = true;
     if (gravity) grav.is_computed = true;
