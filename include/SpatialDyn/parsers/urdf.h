@@ -17,7 +17,7 @@
 namespace SpatialDyn {
 namespace Urdf {
 
-ArticulatedBody ParseModel(const std::string& urdf);
+ArticulatedBody LoadModel(const std::string& urdf);
 
 }  // namespace Urdf
 }  // namespace SpatialDyn

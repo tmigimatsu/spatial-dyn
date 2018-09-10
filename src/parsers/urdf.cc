@@ -225,7 +225,7 @@ void AddRigidBody(ArticulatedBody& ab,
   rb_list.erase(it_rb_list);
 }
 
-ArticulatedBody ParseModel(const std::string& urdf) {
+ArticulatedBody LoadModel(const std::string& urdf) {
   // Open xml document
   tinyxml2::XMLDocument doc;
   doc.LoadFile(urdf.c_str());

@@ -41,6 +41,7 @@ class ArticulatedBody {
 
   const std::vector<RigidBody>& rigid_bodies() const;
   const RigidBody& rigid_bodies(int i) const;
+  // TODO: RigidBody& rigid_bodies(int i);
   const std::vector<int>& ancestors(int i) const;
 
   const Eigen::VectorXd& q() const;
@@ -58,6 +59,7 @@ class ArticulatedBody {
   void set_ddq(const Eigen::VectorXd& ddq);
   void set_ddq(Eigen::VectorXd&& q);
 
+  // Sensor torque
   const Eigen::VectorXd& tau() const;
   const double tau(int i) const;
   void set_tau(const Eigen::VectorXd& tau);

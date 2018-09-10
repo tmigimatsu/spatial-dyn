@@ -68,6 +68,7 @@ class SpatialMotionBase : public DenseBase<Derived> {
                 6, ColsAtCompileTime> BasisReturnType;
 
   typedef Block<MatrixWrapper<Derived>, 3, ColsAtCompileTime> CartesianBlockType;
+  typedef const Block<const MatrixWrapper<const Derived>, 3, ColsAtCompileTime> ConstCartesianBlockType;
 
   template<typename OtherDerived> struct cross_product_return_type {
     typedef typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,typename internal::traits<OtherDerived>::Scalar>::ReturnType Scalar;
@@ -183,10 +184,10 @@ class SpatialMotionBase : public DenseBase<Derived> {
   const Transpose<MatrixWrapper<const Derived>> transpose() const;
 
   CartesianBlockType linear();
-  const CartesianBlockType linear() const;
+  ConstCartesianBlockType linear() const;
 
   CartesianBlockType angular();
-  const CartesianBlockType angular() const;
+  ConstCartesianBlockType angular() const;
 
  protected:
   SpatialMotionBase() : Base() {}
@@ -523,7 +524,7 @@ SpatialMotionBase<Derived>::linear() {
 }
 
 template<typename Derived>
-inline const typename SpatialMotionBase<Derived>::CartesianBlockType
+inline typename SpatialMotionBase<Derived>::ConstCartesianBlockType
 SpatialMotionBase<Derived>::linear() const {
   return this->matrix().template topRows<3>();
 }
@@ -535,7 +536,7 @@ SpatialMotionBase<Derived>::angular() {
 }
 
 template<typename Derived>
-inline const typename SpatialMotionBase<Derived>::CartesianBlockType
+inline typename SpatialMotionBase<Derived>::ConstCartesianBlockType
 SpatialMotionBase<Derived>::angular() const {
   return this->matrix().template bottomRows<3>();
 }

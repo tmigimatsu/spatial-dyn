@@ -40,7 +40,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
     F_x = Inertia(ab, J_x, svd_epsilon) * ddx;
   }
 
-  // TODO: Only works for 6d pos_ori tasks
+  // TODO: Only works for 6d pos_ori tasks at the origin of the ee frame
   if (centrifugal_coriolis && F_x.size() == 6) {
     F_x += CentrifugalCoriolis(ab, J_x, svd_epsilon);
   }
@@ -101,6 +101,7 @@ const Eigen::MatrixXd& JacobianDynamicInverse(const ArticulatedBody& ab, const E
   return ops.J_bar;
 }
 
+// TODO: Fix for compatibility with InverseDynamics (arbitrary Jacobian)
 Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                     int idx_link, const Eigen::Vector3d& offset,
                                     double svd_epsilon) {
