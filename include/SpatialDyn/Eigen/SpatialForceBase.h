@@ -66,6 +66,9 @@ class SpatialForceBase : public DenseBase<Derived> {
   typedef Block<const CwiseNullaryOp<internal::scalar_identity_op<Scalar>, SquareMatrixType>,
                 6, internal::traits<Derived>::ColsAtCompileTime> BasisReturnType;
 
+  typedef Block<MatrixWrapper<Derived>, 3, ColsAtCompileTime> CartesianBlockType;
+  typedef const Block<const MatrixWrapper<const Derived>, 3, ColsAtCompileTime> ConstCartesianBlockType;
+
   template<typename OtherDerived> struct cross_product_return_type {
     typedef typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,typename internal::traits<OtherDerived>::Scalar>::ReturnType Scalar;
     typedef SpatialForce<Scalar,SpatialForceBase::ColsAtCompileTime> type;
@@ -175,6 +178,12 @@ class SpatialForceBase : public DenseBase<Derived> {
   const ArrayWrapper<const Derived> array() const;
 
   const Matrix<Scalar, SpatialForceBase::ColsAtCompileTime, 6> transpose() const;
+
+  CartesianBlockType linear();
+  ConstCartesianBlockType linear() const;
+
+  CartesianBlockType angular();
+  ConstCartesianBlockType angular() const;
 
  protected:
   SpatialForceBase() : Base() {}
@@ -468,6 +477,30 @@ inline const Matrix<typename SpatialForceBase<Derived>::Scalar,
                     SpatialForceBase<Derived>::ColsAtCompileTime, 6>
 SpatialForceBase<Derived>::transpose() const {
   return MatrixWrapper<const Derived>(derived()).transpose();
+}
+
+template<typename Derived>
+inline typename SpatialForceBase<Derived>::CartesianBlockType
+SpatialForceBase<Derived>::linear() {
+  return this->matrix().template topRows<3>();
+}
+
+template<typename Derived>
+inline typename SpatialForceBase<Derived>::ConstCartesianBlockType
+SpatialForceBase<Derived>::linear() const {
+  return this->matrix().template topRows<3>();
+}
+
+template<typename Derived>
+inline typename SpatialForceBase<Derived>::CartesianBlockType
+SpatialForceBase<Derived>::angular() {
+  return this->matrix().template bottomRows<3>();
+}
+
+template<typename Derived>
+inline typename SpatialForceBase<Derived>::ConstCartesianBlockType
+SpatialForceBase<Derived>::angular() const {
+  return this->matrix().template bottomRows<3>();
 }
 
 }  // namespace Eigen
