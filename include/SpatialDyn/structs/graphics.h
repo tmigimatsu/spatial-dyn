@@ -34,6 +34,18 @@ struct Geometry {
       default:                     return "UNDEFINED";
     }
   }
+  static GeometryType FromString(const std::string& type) {
+    static const std::map<std::string, GeometryType> kStringToGeometryType = {
+      {"BOX", GeometryType::BOX}, {"CYLINDER", GeometryType::CYLINDER},
+      {"SPHERE", GeometryType::SPHERE}, {"MESH", GeometryType::MESH},
+      {"UNDEFINED", GeometryType::UNDEFINED}
+    };
+    try {
+      return kStringToGeometryType.at(type);
+    } catch (...) {
+      return GeometryType::UNDEFINED;
+    }
+  }
 };
 
 struct Material {

@@ -33,7 +33,7 @@ nlohmann::json Serialize(const RigidBody& rb) {
   json["id_parent"] = rb.id_parent();
   json["pos"] = Serialize(rb.T_to_parent().translation());
   json["quat"] = Serialize(Eigen::Quaterniond(rb.T_to_parent().linear()));
-  json["inertia"] = Serialize(rb.inertia().matrix().flatArray());
+  json["inertia"] = Serialize(rb.inertia().I_com_flat());
   json["joint"] = Serialize(rb.joint());
   if (rb.graphics.geometry.type != GeometryType::UNDEFINED) {
     json["graphics"] = Serialize(rb.graphics);

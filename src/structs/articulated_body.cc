@@ -168,7 +168,6 @@ int ArticulatedBody::AddRigidBody(RigidBody&& rb, int id_parent) {
   return id;
 }
 int ArticulatedBody::AddRigidBody(const RigidBody& rb_in, int id_parent) {
-  // TODO: Set default state
   int id = rigid_bodies_.size();
   if ((id_parent < 0 || id_parent >= id) && id != 0) {
     throw std::invalid_argument("ArticulatedBody::AddRigidBody(): Parent rigid body with id " + std::to_string(id_parent) + " does not exist.");
@@ -186,9 +185,27 @@ void ArticulatedBody::ExpandDof(int id, int id_parent) {
   T_to_parent_.resize(dof_);
   T_from_parent_.resize(dof_);
   T_to_world_.resize(dof_);
-  if (q_.size() < dof_) q_.resize(dof_); q_.setZero();
-  if (dq_.size() < dof_) dq_.resize(dof_); dq_.setZero();
-  if (ddq_.size() < dof_) ddq_.resize(dof_); ddq_.setZero();
+
+  // Expand state size while leaving old values in place
+  if (q_.size() < dof_) q_.conservativeResize(dof_);
+  if (dq_.size() < dof_) dq_.conservativeResize(dof_);
+  if (ddq_.size() < dof_) ddq_.conservativeResize(dof_);
+
+  // Set default state to zero
+  q_(id) = 0.;
+  dq_(id) = 0.;
+  ddq_(id) = 0.;
+
+  // Compute transforms for added rigid body
+  T_to_parent_[id] = rigid_bodies_[id].T_to_parent();
+  T_from_parent_[id] = T_to_parent_[id].inverse();
+  if (id_parent < 0) {
+    T_to_world_[id] = T_base_to_world_ * T_to_parent_[id];
+  } else {
+    T_to_world_[id] = T_to_world_[id_parent] * T_to_parent_[id];
+  }
+
+  // Update ancestors and subtrees
   if (id_parent < 0) {
     ancestors_.push_back({id});
   } else {
@@ -201,6 +218,7 @@ void ArticulatedBody::ExpandDof(int id, int id_parent) {
   }
   subtrees_.push_back({id});
 
+  // Resize caches
   vel_data_.is_computed = false;
   vel_data_.v.push_back(SpatialMotiond());
 
@@ -246,7 +264,11 @@ void ArticulatedBody::CalculateTransforms() {
     const RigidBody& rb = rigid_bodies_[i];
     T_to_parent_[i] = rb.T_to_parent() * rb.joint().T_joint(q_(i));
     T_from_parent_[i] = T_to_parent_[i].inverse();
-    T_to_world_[i] = (i > 0) ? T_to_world_[i-1] * T_to_parent_[i] : T_to_parent_[i];
+    if (rb.id_parent() < 0) {
+      T_to_world_[i] = T_base_to_world_ * T_to_parent_[i];
+    } else {
+      T_to_world_[i] = T_to_world_[rb.id_parent()] * T_to_parent_[i];
+    }
   }
 }
 

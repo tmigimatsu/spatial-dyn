@@ -57,14 +57,42 @@ PYBIND11_MODULE(spatialdyn, m) {
   // Rigid body
   py::class_<RigidBody>(m, "RigidBody")
       .def_readwrite("name", &RigidBody::name)
-      // TODO: Graphics
+      .def_readwrite("graphics", &RigidBody::graphics)
       .def_property_readonly("id", &RigidBody::id)
       .def_property_readonly("id_parent", &RigidBody::id_parent)
       .def_property("T_to_parent", &RigidBody::T_to_parent,
                     (void (RigidBody::*)(const Eigen::Isometry3d&)) &RigidBody::set_T_to_parent)
-      // TODO: inertia
+      .def_property("inertia", &RigidBody::inertia,
+                    (void (RigidBody::*)(const SpatialInertiad&)) &RigidBody::set_inertia)
       .def_property("joint", &RigidBody::joint,
                     (void (RigidBody::*)(const Joint&)) &RigidBody::set_joint);
+
+  // Graphics
+  py::class_<Graphics>(m, "Graphics")
+      .def_readwrite("name", &Graphics::name)
+      .def_readwrite("T_to_parent", &Graphics::T_to_parent)
+      .def_readwrite("geometry", &Graphics::geometry)
+      .def_readwrite("material", &Graphics::material);
+
+  // Geometry
+  py::class_<Geometry>(m, "Geometry")
+      .def_property("type",
+                    [](const Geometry& geometry) {
+                      return std::string(geometry);
+                    },
+                    [](Geometry& geometry, const std::string& type) {
+                      geometry.type = Geometry::FromString(type);
+                    })
+      .def_readwrite("scale", &Geometry::scale)
+      .def_readwrite("radius", &Geometry::radius)
+      .def_readwrite("length", &Geometry::length)
+      .def_readwrite("mesh", &Geometry::mesh);
+
+  // Material
+  py::class_<Material>(m, "Material")
+      .def_readwrite("name", &Material::name)
+      .def_readwrite("rgba", &Material::rgba)
+      .def_readwrite("texture", &Material::texture);
 
   // Joint
   py::class_<Joint>(m, "Joint")
@@ -93,7 +121,6 @@ PYBIND11_MODULE(spatialdyn, m) {
 
   // Forward kinematics
   m.def("position", &Position, "ab"_a, "link"_a = -1, "offset"_a = Eigen::Vector3d::Zero());
-  // TODO: Eigen::Quaterniond
   m.def("orientation", &Orientation, "ab"_a, "link"_a = -1);
   m.def("jacobian", &Jacobian, "ab"_a, "link"_a = -1, "offset"_a = Eigen::Vector3d::Zero());
   m.def("linear_jacobian", &LinearJacobian, "ab"_a, "link"_a = -1,
@@ -106,17 +133,26 @@ PYBIND11_MODULE(spatialdyn, m) {
   m.def("centrifugal_coriolis", &CentrifugalCoriolis, "ab"_a);
   m.def("gravity", &Gravity, "ab"_a);
   m.def("inertia", &Inertia, "ab"_a);
-  // TODO: Eigen::LDLT<Eigen::MatrixXd>
-  // m.def("inertia_inverse", &InertiaInverse, "ab"_a);
+  m.def("inertia_inverse", &InertiaInverse, "ab"_a);
 
   // Simulation
   m.def("integrate", &Integrate, "ab"_a, "tau"_a, "dt"_a);
 
+  // Spatial inertia
+  py::class_<SpatialInertiad>(m, "SpatialInertiad")
+      .def_readwrite("mass", &SpatialInertiad::mass)
+      .def_readwrite("com", &SpatialInertiad::com)
+      .def_readwrite("I_com", &SpatialInertiad::I_com)
+      .def("__repr__",
+           [](const SpatialInertiad& inertia) {
+             return "<spatialdyn.SpatialInertiad (mass=" + std::to_string(inertia.mass) +
+                    ", com=[" + inertia.com.toMatlab() + "], I_com=[" +
+                    inertia.I_com_flat().toMatlab() + "])>";
+           });
+
   // Opspace dynamics
   py::module m_op = m.def_submodule("opspace");
   m_op.def("orientation_error", &Opspace::OrientationError, "quat"_a, "quat_des"_a);
-  // m_op.def("inverse_dynamics", &Opspace::InverseDynamics, "ab"_a, "J"_a, "ddx"_a, "N"_a,
-  //          "svd_epsilon"_a = 0, "gravity"_a = false, "centrifugal_coriolis"_a = false);
   m_op.def("inverse_dynamics",
            [](const ArticulatedBody& ab, const Eigen::MatrixXd& J,
               const Eigen::VectorXd& ddx, py::EigenDRef<Eigen::MatrixXd> N,

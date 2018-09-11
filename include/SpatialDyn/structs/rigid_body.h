@@ -40,6 +40,8 @@ class RigidBody {
 
   const SpatialInertiad& inertia() const;
   void set_inertia(double mass, const Eigen::Vector3d& com, const Eigen::Vector6d& I_com_flat);
+  void set_inertia(SpatialInertiad&& inertia);
+  void set_inertia(const SpatialInertiad& inertia);
 
   const Joint& joint() const;
   void set_joint(Joint&& joint);

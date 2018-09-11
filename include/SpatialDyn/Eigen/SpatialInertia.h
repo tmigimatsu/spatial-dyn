@@ -66,6 +66,11 @@ class SpatialInertia {
     return *this;
   }
 
+  Eigen::Matrix<_Scalar,6,1> I_com_flat() const {
+    return Eigen::Matrix<_Scalar,6,1>(I_com(0,0), I_com(1,1), I_com(2,2),
+                                      I_com(0,1), I_com(0,2), I_com(1,2));
+  }
+
   double mass;
   Matrix<_Scalar,3,1> com;
   Matrix<_Scalar,3,3> I_com;
@@ -108,11 +113,6 @@ class SpatialInertiaMatrix : public Matrix<_Scalar,6,6> {
   SpatialInertiaMatrix<_Scalar>& operator+=(const MatrixBase<OtherDerived>& other) {
     Matrix<_Scalar,6,6>::operator+=(other);
     return *this;
-  }
-
-  Eigen::Matrix<_Scalar,6,1> flatArray() const {
-    return Eigen::Matrix<_Scalar,6,1>(this->coeff(0,0), this->coeff(1,1), this->coeff(2,2),
-                                      this->coeff(0,1), this->coeff(0,2), this->coeff(1,2));
   }
 
 };

@@ -69,9 +69,9 @@ void Timer::Sleep() {
     return;
   }
 
-  auto t_now = std::chrono::steady_clock::now();
-  if (t_now < t_next_) {
-    std::this_thread::sleep_for(t_next_ - t_now);
+  auto t_curr = std::chrono::steady_clock::now();
+  if (t_curr < t_next_) {
+    std::this_thread::sleep_for(t_next_ - t_curr);
   }
   t_next_ += ns_interval_;
 }

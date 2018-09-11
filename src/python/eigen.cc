@@ -60,6 +60,14 @@ PYBIND11_MODULE(eigen, m) {
                     ", z=" + std::to_string(quat.z()) +
                     ", w=" + std::to_string(quat.z()) + ")>";
            });
+
+  // LDLT<Eigen::MatrixXd>
+  py::class_<LDLT<MatrixXd>>(m, "LdltMatrixXd")
+    .def("solve",
+         [](const LDLT<MatrixXd>& ldlt, const MatrixXd& x) {
+           return ldlt.solve(x);
+         });
+
 }
 
 }  // namespace Eigen
