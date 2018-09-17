@@ -1,0 +1,19 @@
+############################################################
+# CMake config for the SpatialDyn library
+#
+# Copyright 2018. All Rights Reserved.
+#
+# Created: September 16, 2018
+# Authors: Toki Migimatsu
+############################################################
+
+get_filename_component(SPATIAL_DYN_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+include(CMakeFindDependencyMacro)
+
+find_dependency(Eigen3 3.3.5 REQUIRED)
+find_dependency(nlohmann_json 3.2 REQUIRED)
+find_dependency(cpp_redis REQUIRED)
+
+if(NOT TARGET SpatialDyn::SpatialDyn)
+    include("${SPATIAL_DYN_CMAKE_DIR}/SpatialDynTargets.cmake")
+endif()

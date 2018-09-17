@@ -11,12 +11,12 @@
 # Pybind11 #
 #############
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/python)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/spatialdyn)
 
 find_package(pybind11 QUIET)
 if(NOT pybind11_FOUND)
     download_package(pybind11)
-    set(PYBIND11_LIB_DIR ${SPATIAL_DYN_LIB_DIR}/pybind11.git)
+    set(PYBIND11_LIB_DIR ${SPATIAL_DYN_EXT_DIR}/pybind11.git)
     add_subdirectory(${PYBIND11_LIB_DIR} ${CMAKE_CURRENT_BINARY_DIR}/pybind11)
 endif()
 

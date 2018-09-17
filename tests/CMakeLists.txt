@@ -22,13 +22,13 @@ if(NOT Catch2_FOUND)
     download_package(Catch2)
     add_library(Catch2 INTERFACE)
     target_include_directories(Catch2 INTERFACE
-        $<BUILD_INTERFACE:${SPATIAL_DYN_LIB_DIR}/Catch2.git/single_include
+        $<BUILD_INTERFACE:${SPATIAL_DYN_EXT_DIR}/Catch2.git/single_include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
     add_library(Catch2::Catch2 ALIAS Catch2)
 endif()
 
-target_link_libraries(${CMAKE_PROJECT_NAME}_tests
+target_link_libraries(${CMAKE_PROJECT_NAME}_tests PRIVATE
     SpatialDyn::SpatialDyn
     PkgConfig::rbdl
     Catch2::Catch2

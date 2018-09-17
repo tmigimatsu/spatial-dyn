@@ -15,8 +15,8 @@ include(ExternalProject)
 ExternalProject_Add(rbdl
     # Directories
     PREFIX ${CMAKE_BINARY_DIR}/rbdl
-    DOWNLOAD_DIR ${SPATIAL_DYN_LIB_DIR}/rbdl
-    SOURCE_DIR ${SPATIAL_DYN_LIB_DIR}/rbdl
+    DOWNLOAD_DIR ${SPATIAL_DYN_EXT_DIR}/rbdl
+    SOURCE_DIR ${SPATIAL_DYN_EXT_DIR}/rbdl
     BINARY_DIR ${CMAKE_BINARY_DIR}/rbdl/build
     # Download
     URL https://bitbucket.org/rbdl/rbdl/get/v2.6.0.zip

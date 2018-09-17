@@ -15,7 +15,7 @@ include(ExternalProject)
 ExternalProject_Add(cpp_redis
     # Directories
     PREFIX ${CMAKE_BINARY_DIR}/cpp_redis
-    SOURCE_DIR ${SPATIAL_DYN_LIB_DIR}/cpp_redis.git
+    SOURCE_DIR ${SPATIAL_DYN_EXT_DIR}/cpp_redis.git
     BINARY_DIR ${CMAKE_BINARY_DIR}/cpp_redis/build
     # Download
     GIT_REPOSITORY https://github.com/Cylix/cpp_redis.git

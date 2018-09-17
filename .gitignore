@@ -1,6 +1,6 @@
 bin
 build
-lib
+external
 compile_commands.json
 *.so
 *.pyc
