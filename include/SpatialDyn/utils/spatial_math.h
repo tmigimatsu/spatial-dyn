@@ -10,7 +10,7 @@
 #ifndef SPATIAL_DYN_UTILS_SPATIAL_MATH_H_
 #define SPATIAL_DYN_UTILS_SPATIAL_MATH_H_
 
-#include "Eigen/SpatialDyn.h"
+#include "SpatialDyn/eigen/spatial_dyn.h"
 
 namespace SpatialDyn {
 

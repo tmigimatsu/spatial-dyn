@@ -1,5 +1,5 @@
 /**
- * MatrixBasePlugin.h
+ * matrix_base_plugin.h
  *
  * Copyright 2018. All Rights Reserved.
  *

@@ -10,7 +10,7 @@
 #ifndef SPATIAL_DYN_PARSERS_URDF_H_
 #define SPATIAL_DYN_PARSERS_URDF_H_
 
-#include "structs/articulated_body.h"
+#include "SpatialDyn/structs/articulated_body.h"
 
 #include <string>  // std::string
 

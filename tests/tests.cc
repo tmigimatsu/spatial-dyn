@@ -7,10 +7,10 @@
  * Authors: Toki Migimatsu
  */
 
-#include "algorithms/forward_kinematics.h"
-#include "algorithms/inverse_dynamics.h"
-#include "algorithms/forward_dynamics.h"
-#include "algorithms/opspace_dynamics.h"
+#include "SpatialDyn/algorithms/forward_kinematics.h"
+#include "SpatialDyn/algorithms/inverse_dynamics.h"
+#include "SpatialDyn/algorithms/forward_dynamics.h"
+#include "SpatialDyn/algorithms/opspace_dynamics.h"
 
 #include <rbdl/rbdl.h>
 

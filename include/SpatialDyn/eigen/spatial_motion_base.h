@@ -1,5 +1,5 @@
 /**
- * SpatialMotionBase.h
+ * spatial_motion_base.h
  *
  * Copyright 2018. All Rights Reserved.
  *
@@ -10,8 +10,8 @@
 #ifndef EIGEN_SPATIAL_MOTION_BASE_H_
 #define EIGEN_SPATIAL_MOTION_BASE_H_
 
-#include "SpatialDeclarations.h"
-#include "SpatialForceBase.h"
+#include "spatial_declarations.h"
+#include "spatial_force_base.h"
 
 namespace Eigen {
 
@@ -237,7 +237,7 @@ inline Derived& SpatialMotionBase<Derived>::operator+=(const SpatialMotionBase<O
 
 template<typename Derived>
 template<typename OtherDerived>
-inline Derived& SpatialMotionBase<Derived>::operator+=(const SpatialForceBase<OtherDerived>& other) {
+inline Derived& SpatialMotionBase<Derived>::operator+=(const SpatialForceBase<OtherDerived>&) {
   EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_ADD_SPATIAL_MOTION_AND_SPATIAL_FORCE_VECTORS);
   return *this;
 };
@@ -251,7 +251,7 @@ inline Derived& SpatialMotionBase<Derived>::operator-=(const SpatialMotionBase<O
 
 template<typename Derived>
 template<typename OtherDerived>
-inline Derived& SpatialMotionBase<Derived>::operator-=(const SpatialForceBase<OtherDerived>& other) {
+inline Derived& SpatialMotionBase<Derived>::operator-=(const SpatialForceBase<OtherDerived>&) {
   EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_ADD_SPATIAL_MOTION_AND_SPATIAL_FORCE_VECTORS);
   return *this;
 }
@@ -259,7 +259,7 @@ inline Derived& SpatialMotionBase<Derived>::operator-=(const SpatialForceBase<Ot
 template<typename Derived>
 template<typename OtherDerived>
 inline const Product<Derived,OtherDerived>
-SpatialMotionBase<Derived>::operator*(const SpatialMotionBase<OtherDerived>& other) const {
+SpatialMotionBase<Derived>::operator*(const SpatialMotionBase<OtherDerived>&) const {
   EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_MULTIPLY_TWO_SPATIAL_MOTION_VECTORS);
 };
 
@@ -280,7 +280,7 @@ SpatialMotionBase<Derived>::operator*(const MatrixBase<OtherDerived>& other) con
 
 template<typename Derived>
 template<typename OtherDerived>
-inline Derived& SpatialMotionBase<Derived>::operator*=(const SpatialMotionBase<OtherDerived>& other) {
+inline Derived& SpatialMotionBase<Derived>::operator*=(const SpatialMotionBase<OtherDerived>&) {
   EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_MULTIPLY_TWO_SPATIAL_MOTION_VECTORS);
 };
 
@@ -288,7 +288,7 @@ inline Derived& SpatialMotionBase<Derived>::operator*=(const SpatialMotionBase<O
 template<typename Derived>
 template<typename CustomNullaryOp>
 inline const CwiseNullaryOp<CustomNullaryOp, typename SpatialMotionBase<Derived>::PlainObject>
-SpatialMotionBase<Derived>::NullaryExpr(Index rows, Index cols, const CustomNullaryOp& func) {
+SpatialMotionBase<Derived>::NullaryExpr(Index, Index cols, const CustomNullaryOp& func) {
   return CwiseNullaryOp<CustomNullaryOp, PlainObject>(6, cols, func);
 }
 
@@ -417,7 +417,7 @@ template<typename Derived>
 template<typename OtherDerived>
 inline typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,
                                      typename internal::traits<OtherDerived>::Scalar>::ReturnType
-SpatialMotionBase<Derived>::dot(const SpatialMotionBase<OtherDerived>& other) const {
+SpatialMotionBase<Derived>::dot(const SpatialMotionBase<OtherDerived>&) const {
   EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_DOT_TWO_SPATIAL_MOTION_VECTORS);
   return 0;
 }

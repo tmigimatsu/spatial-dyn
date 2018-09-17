@@ -1,5 +1,5 @@
 /**
- * SpatialTransform.h
+ * spatial_transform.h
  *
  * Copyright 2018. All Rights Reserved.
  *

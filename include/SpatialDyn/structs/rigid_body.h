@@ -10,9 +10,9 @@
 #ifndef SPATIAL_DYN_STRUCTS_RIGID_BODY_H_
 #define SPATIAL_DYN_STRUCTS_RIGID_BODY_H_
 
-#include "structs/graphics.h"
-#include "structs/joint.h"
-#include "utils/spatial_math.h"
+#include "SpatialDyn/structs/graphics.h"
+#include "SpatialDyn/structs/joint.h"
+#include "SpatialDyn/utils/spatial_math.h"
 
 #include <string>  // std::string
 

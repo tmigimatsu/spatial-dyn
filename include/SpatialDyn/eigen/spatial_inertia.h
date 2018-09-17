@@ -1,5 +1,5 @@
 /**
- * SpatialInertia.h
+ * spatial_inertia.h
  *
  * Copyright 2018. All Rights Reserved.
  *
@@ -10,8 +10,8 @@
 #ifndef EIGEN_SPATIAL_INERTIA_H_
 #define EIGEN_SPATIAL_INERTIA_H_
 
-#include "SpatialMotionBase.h"
-#include "SpatialForceBase.h"
+#include "spatial_motion_base.h"
+#include "spatial_force_base.h"
 
 #include <utility>  // std::move
 

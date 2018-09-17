@@ -10,7 +10,7 @@
 #ifndef SPATIAL_DYN_PARSERS_JSON_H_
 #define SPATIAL_DYN_PARSERS_JSON_H_
 
-#include "structs/articulated_body.h"
+#include "SpatialDyn/structs/articulated_body.h"
 
 #include "nlohmann/json.hpp"
 
@@ -35,14 +35,14 @@ nlohmann::json Serialize(const Eigen::DenseBase<Derived>& matrix) {
   nlohmann::json json;
   if (matrix.cols() == 1) {
     // Vector
-    for (size_t i = 0; i < matrix.rows(); i++) {
+    for (int i = 0; i < matrix.rows(); i++) {
       json.push_back(matrix(i));
     }
   } else {
     // Matrix
-    for (size_t i = 0; i < matrix.rows(); i++) {
+    for (int i = 0; i < matrix.rows(); i++) {
       nlohmann::json json_row;
-      for (size_t j = 0; j < matrix.cols(); j++) {
+      for (int j = 0; j < matrix.cols(); j++) {
         json_row.push_back(matrix(i,j));
       }
       json.push_back(json_row);

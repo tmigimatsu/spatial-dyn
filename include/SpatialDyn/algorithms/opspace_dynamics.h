@@ -10,7 +10,7 @@
 #ifndef SPATIAL_DYN_ALGORITHMS_OPSPACE_DYNAMICS_H_
 #define SPATIAL_DYN_ALGORITHMS_OPSPACE_DYNAMICS_H_
 
-#include "utils/spatial_math.h"
+#include "SpatialDyn/utils/spatial_math.h"
 
 namespace SpatialDyn {
 

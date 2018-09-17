@@ -43,11 +43,11 @@ const std::vector<int>& ArticulatedBody::ancestors(int i) const {
 const Eigen::VectorXd& ArticulatedBody::q() const {
   return q_;
 }
-const double ArticulatedBody::q(int i) const {
+double ArticulatedBody::q(int i) const {
   return q_(i);
 }
 void ArticulatedBody::set_q(const Eigen::VectorXd& q) {
-  if (q.size() != dof_) {
+  if (q.size() != static_cast<int>(dof_)) {
     throw std::invalid_argument("ArticulatedBody::set_state(): q must be of size " + std::to_string(dof_));
   }
   q_ = q;
@@ -66,7 +66,7 @@ void ArticulatedBody::set_q(const Eigen::VectorXd& q) {
   opspace_aba_data_.is_lambda_inv_computed = false;
 }
 void ArticulatedBody::set_q(Eigen::VectorXd&& q) {
-  if (q.size() != dof_) {
+  if (q.size() != static_cast<int>(dof_)) {
     throw std::invalid_argument("ArticulatedBody::set_state(): q must be of size " + std::to_string(dof_));
   }
   q_ = std::move(q);
@@ -88,11 +88,11 @@ void ArticulatedBody::set_q(Eigen::VectorXd&& q) {
 const Eigen::VectorXd& ArticulatedBody::dq() const {
   return dq_;
 }
-const double ArticulatedBody::dq(int i) const {
+double ArticulatedBody::dq(int i) const {
   return dq_(i);
 }
 void ArticulatedBody::set_dq(const Eigen::VectorXd& dq) {
-  if (dq.size() != dof_) {
+  if (dq.size() != static_cast<int>(dof_)) {
     throw std::invalid_argument("ArticulatedBody::set_state(): q must be of size " + std::to_string(dof_));
   }
   dq_ = dq;
@@ -101,7 +101,7 @@ void ArticulatedBody::set_dq(const Eigen::VectorXd& dq) {
   cc_data_.is_computed = false;
 }
 void ArticulatedBody::set_dq(Eigen::VectorXd&& dq) {
-  if (dq.size() != dof_) {
+  if (dq.size() != static_cast<int>(dof_)) {
     throw std::invalid_argument("ArticulatedBody::set_state(): q must be of size " + std::to_string(dof_));
   }
   dq_ = std::move(dq);
@@ -113,7 +113,7 @@ void ArticulatedBody::set_dq(Eigen::VectorXd&& dq) {
 const Eigen::VectorXd& ArticulatedBody::ddq() const {
   return ddq_;
 }
-const double ArticulatedBody::ddq(int i) const {
+double ArticulatedBody::ddq(int i) const {
   return ddq_(i);
 }
 void ArticulatedBody::set_ddq(const Eigen::VectorXd& ddq) {
@@ -126,7 +126,7 @@ void ArticulatedBody::set_ddq(Eigen::VectorXd&& ddq) {
 const Eigen::VectorXd& ArticulatedBody::tau() const {
   return tau_;
 }
-const double ArticulatedBody::tau(int i) const {
+double ArticulatedBody::tau(int i) const {
   return tau_(i);
 }
 void ArticulatedBody::set_tau(const Eigen::VectorXd& tau) {
@@ -187,9 +187,9 @@ void ArticulatedBody::ExpandDof(int id, int id_parent) {
   T_to_world_.resize(dof_);
 
   // Expand state size while leaving old values in place
-  if (q_.size() < dof_) q_.conservativeResize(dof_);
-  if (dq_.size() < dof_) dq_.conservativeResize(dof_);
-  if (ddq_.size() < dof_) ddq_.conservativeResize(dof_);
+  if (q_.size() < static_cast<int>(dof_)) q_.conservativeResize(dof_);
+  if (dq_.size() < static_cast<int>(dof_)) dq_.conservativeResize(dof_);
+  if (ddq_.size() < static_cast<int>(dof_)) ddq_.conservativeResize(dof_);
 
   // Set default state to zero
   q_(id) = 0.;

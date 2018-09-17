@@ -7,85 +7,77 @@
 # Authors: Toki Migimatsu
 ############################################################
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.6)
 
 # Project definition
-project(spatial_dyn)
+project(spatial_dyn VERSION 1.0.0)
 
-# Compiler flags
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_VERBOSE_MAKEFILE ON)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_CXX_FLAGS "-Wall")
-set(CMAKE_CXX_FLAGS_REL "-O3")
-
+# Cmake flags
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_VERBOSE_MAKEFILE ON) # TODO: Remove
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# TODO: STATIC vs SHARED?
+set(SPATIAL_DYN_LIB SpatialDyn)
+add_library(${SPATIAL_DYN_LIB} SHARED)
+
+target_compile_options(${SPATIAL_DYN_LIB} PRIVATE "-Wall" "-Wextra" "$<$<CONFIG:RELEASE>:-O3>")
+
+include(ExternalProject)
 set(SPATIAL_DYN_LIB_DIR ${PROJECT_SOURCE_DIR}/lib)
-set(SPATIAL_DYN_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
-set(SPATIAL_DYN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
-set(SPATIAL_DYN_INCLUDE_DIRS ${SPATIAL_DYN_INCLUDE_DIR}/SpatialDyn ${SPATIAL_DYN_LIB_DIR})
-set(SPATIAL_DYN_PUBLIC_INCLUDE_DIRS ${SPATIAL_DYN_INCLUDE_DIR})
 
-#########
-# Eigen #
-#########
+function(download_package PACKAGE_NAME)
+    configure_file(${PROJECT_SOURCE_DIR}/cmake/${PACKAGE_NAME}-CMakeLists.txt.in
+        ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}/CMakeLists.txt)
+    execute_process(COMMAND ${CMAKE_COMMAND} -G ${CMAKE_GENERATOR} .
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${PACKAGE_NAME})
+    execute_process(COMMAND ${CMAKE_COMMAND} --build .
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${PACKAGE_NAME})
+endfunction()
 
-set(EIGEN3_INCLUDE_DIR ${SPATIAL_DYN_LIB_DIR}/eigen.git)
-set(SPATIAL_DYN_INCLUDE_DIRS ${SPATIAL_DYN_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
-set(SPATIAL_DYN_PUBLIC_INCLUDE_DIRS ${SPATIAL_DYN_PUBLIC_INCLUDE_DIRS} include/eigen3)
+find_package(Eigen3 3.3.5 REQUIRED)
+if(NOT Eigen3_FOUND)
+    download_package(Eigen3)
+    find_package(Eigen3 3.3.5 REQUIRED PATHS ${CMAKE_BINARY_DIR}/Eigen3/build)
+endif()
 
-########
-# RBDL #
-########
+find_package(PkgConfig)
+pkg_check_modules(cpp_redis QUIET IMPORTED_TARGET cpp_redis)
+if(NOT cpp_redis_FOUND)
+    download_package(cpp_redis)
+    pkg_check_modules(cpp_redis REQUIRED IMPORTED_TARGET
+        ${CMAKE_BINARY_DIR}/cpp_redis/build/lib/pkgconfig/cpp_redis.pc)
+endif()
 
-set(RBDL_LIB_DIR ${SPATIAL_DYN_LIB_DIR}/rbdl)
-# set(RBDL_BUILD_ADDON_URDFREADER ON CACHE BOOL "Build the (experimental) urdf reader")
-set(RBDL_USE_ROS_URDF_LIBRARY OFF CACHE BOOL "Use the URDF library provided by ROS")
-add_subdirectory(${RBDL_LIB_DIR})
-set(RBDL_INCLUDE_DIRS
-    ${RBDL_LIB_DIR}/include
-    ${RBDL_LIB_DIR}/addons
-    ${CMAKE_BINARY_DIR}/lib/rbdl/include)
-# set(SPATIAL_DYN_EXTERNAL_LIBS ${SPATIAL_DYN_EXTERNAL_LIBS} rbdl rbdl_urdfreader)
-set(SPATIAL_DYN_EXTERNAL_LIBS ${SPATIAL_DYN_EXTERNAL_LIBS} rbdl)
-set(SPATIAL_DYN_INCLUDE_DIRS ${SPATIAL_DYN_INCLUDE_DIRS} ${RBDL_INCLUDE_DIRS})
+pkg_check_modules(tinyxml2 QUIET IMPORTED_TARGET tinyxml2>=6.2)
+if(NOT tinyxml2_FOUND)
+    download_package(tinyxml2)
+    pkg_check_modules(tinyxml2 REQUIRED IMPORTED_TARGET
+        ${CMAKE_BINARY_DIR}/tinyxml2/build/tinyxml2.pc>=6.2)
+endif()
 
-#############
-# Cpp_redis #
-#############
+find_package(nlohmann_json 3.2 QUIET) # 3.2
+if(NOT nlohmann_json_FOUND)
+    download_package(nlohmann_json)
+    find_package(nlohmann_json 3.2 REQUIRED PATHS ${CMAKE_BINARY_DIR}/nlohmann_json/build)
+endif()
 
-set(CPP_REDIS_LIB_DIR ${SPATIAL_DYN_LIB_DIR}/cpp_redis.git)
-set(BUILD_EXAMPLES OFF)
-set(BUILD_TESTS OFF)
-add_subdirectory(${CPP_REDIS_LIB_DIR})
-set(CPP_REDIS_INCLUDE_DIRS
-    ${CPP_REDIS_LIB_DIR}/includes
-    ${CPP_REDIS_LIB_DIR}/deps/include
-    ${CPP_REDIS_LIB_DIR}/tacopie/includes)
-set(SPATIAL_DYN_PUBLIC_LIBS ${SPATIAL_DYN_PUBLIC_LIBS} cpp_redis)
-set(SPATIAL_DYN_INCLUDE_DIRS ${SPATIAL_DYN_INCLUDE_DIRS} ${CPP_REDIS_INCLUDE_DIRS})
+target_link_libraries(${SPATIAL_DYN_LIB}
+    Eigen3::Eigen
+    PkgConfig::cpp_redis
+    PkgConfig::tinyxml2
+    nlohmann_json::nlohmann_json
+)
 
-############
-# TinyXML2 #
-############
+target_include_directories(${SPATIAL_DYN_LIB}
+    PUBLIC
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/include/SpatialDyn)
 
-set(TINYXML_LIB_DIR ${SPATIAL_DYN_LIB_DIR}/tinyxml2.git)
-add_subdirectory(${TINYXML_LIB_DIR})
-set(TINYXML_INCLUDE_DIRS ${TINYXML_LIB_DIR})
-set(SPATIAL_DYN_INCLUDE_DIRS ${SPATIAL_DYN_INCLUDE_DIRS} ${TINYXML_INCLUDE_DIRS})
-set(SPATIAL_DYN_EXTERNAL_LIBS ${SPATIAL_DYN_EXTERNAL_LIBS} tinyxml2)
-
-######################
-# SpatialDyn library #
-######################
-
-# Include directories
-include_directories(${SPATIAL_DYN_INCLUDE_DIRS})
-
-# Create library
-# set(SPATIAL_DYN_LIB spatial-dyn)
-set(SPATIAL_DYN_SRC
+set(SPATIAL_DYN_SRC_DIR ${PROJECT_SOURCE_DIR}/src)
+target_sources(${SPATIAL_DYN_LIB} PRIVATE
     ${SPATIAL_DYN_SRC_DIR}/algorithms/forward_dynamics.cc
     ${SPATIAL_DYN_SRC_DIR}/algorithms/forward_kinematics.cc
     ${SPATIAL_DYN_SRC_DIR}/algorithms/inverse_dynamics.cc
@@ -101,51 +93,139 @@ set(SPATIAL_DYN_SRC
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-add_executable(${CMAKE_PROJECT_NAME} ${SPATIAL_DYN_SRC_DIR}/main.cc ${SPATIAL_DYN_SRC})
-add_executable(${CMAKE_PROJECT_NAME}_tests ${CMAKE_CURRENT_SOURCE_DIR}/test/tests.cc ${SPATIAL_DYN_SRC})
 
-# add_library(${SPATIAL_DYN_LIB} SHARED ${SPATIAL_DYN_SRC})
-# target_include_directories(${SPATIAL_DYN_LIB} INTERFACE
-#     $<BUILD_INTERFACE:${SPATIAL_DYN_INCLUDE_DIRS}>
-#     $<INSTALL_INTERFACE:${SPATIAL_DYN_PUBLIC_INCLUDE_DIRS}>)
-target_link_libraries(${CMAKE_PROJECT_NAME}
-    PRIVATE ${SPATIAL_DYN_EXTERNAL_LIBS}
-    PUBLIC ${SPATIAL_DYN_PUBLIC_LIBS})
-target_link_libraries(${CMAKE_PROJECT_NAME}_tests
-    PRIVATE ${SPATIAL_DYN_EXTERNAL_LIBS}
-    PUBLIC ${SPATIAL_DYN_PUBLIC_LIBS})
-# set_target_properties(${SPATIAL_DYN_LIB} PROPERTIES
-#     LIBRARY_OUTPUT_DIRECTORY ${SPATIAL_DYN_LIB_DIR}
-#     SUFFIX ".so")
+# Use GNUInstalDirs to install ibraries into correct locations on all platforms
+include(GNUInstallDirs)
 
-# # Install library
-# set(SPATIAL_DYN_CONFIG spatial-dyn-config)
-# install(TARGETS ${SPATIAL_DYN_LIB}
-#         EXPORT ${SPATIAL_DYN_CONFIG}
-#         LIBRARY DESTINATION lib)
-# install(DIRECTORY ${SPATIAL_DYN_SRC_DIR}/
-#         DESTINATION include
-#         FILES_MATCHING PATTERN "*.h*")
+set(SPATIAL_DYN_EXPORT ${SPATIAL_DYN_LIB}Export)
+install(TARGETS ${SPATIAL_DYN_LIB}
+    EXPORT ${SPATIAL_DYN_EXPORT}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
 
-# # Make library available via find_package
-# set(SPATIAL_DYN_LIBRARIES ${SPATIAL_DYN_LIB} ${SPATIAL_DYN_PUBLIC_LIBS})
-# string(REGEX REPLACE "([^;]+)" "${CMAKE_INSTALL_PREFIX}/\\1"
-#     SPATIAL_DYN_CONF_INCLUDE_DIRS "${SPATIAL_DYN_PUBLIC_INCLUDE_DIRS}")
-# configure_package_config_file(${SPATIAL_DYN_CONFIG}.cmake.in
-#     ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}.cmake
-#     INSTALL_DESTINATION lib/cmake)
-# write_basic_package_version_file(
-#     ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}-version.cmake
-#     VERSION 0.1.0
-#     COMPATIBILITY SameMajorVersion)
-# install(FILES ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}.cmake
-#               ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}-version.cmake
-#         DESTINATION lib/cmake)
-# export(PACKAGE ${SPATIAL_DYN_LIB})
+install(EXPORT ${SPATIAL_DYN_EXPORT}
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${SPATIAL_DYN_LIB}
+    NAMESPACE ${SPATIAL_DYN_LIB}::
+    FILE ${SPATIAL_DYN}Targets.cmake
+)
 
-##################
-# Subdirectories #
-##################
+add_library(${SPATIAL_DYN_LIB}::${SPATIAL_DYN_LIB} ALIAS ${SPATIAL_DYN_LIB})
 
-# add_subdirectory(tests)
+# Make tests
+include(CTest)
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
+
 add_subdirectory(${SPATIAL_DYN_SRC_DIR}/python)
+
+# export(TARGETS ${SPATIAL_DYN_LIB}
+#     FILE ${SPATIAL_DYN_LIB}Config.cmake)
+
+# set(SPATIAL_DYN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+# set(SPATIAL_DYN_INCLUDE_DIRS ${SPATIAL_DYN_INCLUDE_DIR}/SpatialDyn ${SPATIAL_DYN_LIB_DIR})
+# set(SPATIAL_DYN_PUBLIC_INCLUDE_DIRS ${SPATIAL_DYN_INCLUDE_DIR})
+
+# #########
+# # Eigen #
+# #########
+
+# set(EIGEN3_INCLUDE_DIR ${SPATIAL_DYN_LIB_DIR}/eigen.git)
+# set(SPATIAL_DYN_INCLUDE_DIRS ${SPATIAL_DYN_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
+# set(SPATIAL_DYN_PUBLIC_INCLUDE_DIRS ${SPATIAL_DYN_PUBLIC_INCLUDE_DIRS} include/eigen3)
+
+# ########
+# # RBDL #
+# ########
+
+# set(RBDL_LIB_DIR ${SPATIAL_DYN_LIB_DIR}/rbdl)
+# # set(RBDL_BUILD_ADDON_URDFREADER ON CACHE BOOL "Build the (experimental) urdf reader")
+# set(RBDL_USE_ROS_URDF_LIBRARY OFF CACHE BOOL "Use the URDF library provided by ROS")
+# add_subdirectory(${RBDL_LIB_DIR})
+# set(RBDL_INCLUDE_DIRS
+#     ${RBDL_LIB_DIR}/include
+#     ${RBDL_LIB_DIR}/addons
+#     ${CMAKE_BINARY_DIR}/lib/rbdl/include)
+# # set(SPATIAL_DYN_EXTERNAL_LIBS ${SPATIAL_DYN_EXTERNAL_LIBS} rbdl rbdl_urdfreader)
+# set(SPATIAL_DYN_EXTERNAL_LIBS ${SPATIAL_DYN_EXTERNAL_LIBS} rbdl)
+# set(SPATIAL_DYN_INCLUDE_DIRS ${SPATIAL_DYN_INCLUDE_DIRS} ${RBDL_INCLUDE_DIRS})
+
+# #############
+# # Cpp_redis #
+# #############
+
+# set(CPP_REDIS_LIB_DIR ${SPATIAL_DYN_LIB_DIR}/cpp_redis.git)
+# set(BUILD_EXAMPLES OFF)
+# set(BUILD_TESTS OFF)
+# add_subdirectory(${CPP_REDIS_LIB_DIR})
+# set(CPP_REDIS_INCLUDE_DIRS
+#     ${CPP_REDIS_LIB_DIR}/includes
+#     ${CPP_REDIS_LIB_DIR}/deps/include
+#     ${CPP_REDIS_LIB_DIR}/tacopie/includes)
+# set(SPATIAL_DYN_PUBLIC_LIBS ${SPATIAL_DYN_PUBLIC_LIBS} cpp_redis)
+# set(SPATIAL_DYN_INCLUDE_DIRS ${SPATIAL_DYN_INCLUDE_DIRS} ${CPP_REDIS_INCLUDE_DIRS})
+
+# ############
+# # TinyXML2 #
+# ############
+
+# set(TINYXML_LIB_DIR ${SPATIAL_DYN_LIB_DIR}/tinyxml2.git)
+# add_subdirectory(${TINYXML_LIB_DIR})
+# set(TINYXML_INCLUDE_DIRS ${TINYXML_LIB_DIR})
+# set(SPATIAL_DYN_INCLUDE_DIRS ${SPATIAL_DYN_INCLUDE_DIRS} ${TINYXML_INCLUDE_DIRS})
+# set(SPATIAL_DYN_EXTERNAL_LIBS ${SPATIAL_DYN_EXTERNAL_LIBS} tinyxml2)
+
+# ######################
+# # SpatialDyn library #
+# ######################
+
+# # Include directories
+# include_directories(${SPATIAL_DYN_INCLUDE_DIRS})
+
+# # Create library
+# # set(SPATIAL_DYN_LIB spatial-dyn)
+
+# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+# add_executable(${CMAKE_PROJECT_NAME} ${SPATIAL_DYN_SRC_DIR}/main.cc ${SPATIAL_DYN_SRC})
+
+# # target_include_directories(${SPATIAL_DYN_LIB} INTERFACE
+# #     $<BUILD_INTERFACE:${SPATIAL_DYN_INCLUDE_DIRS}>
+# #     $<INSTALL_INTERFACE:${SPATIAL_DYN_PUBLIC_INCLUDE_DIRS}>)
+# target_link_libraries(${CMAKE_PROJECT_NAME}
+#     PRIVATE ${SPATIAL_DYN_EXTERNAL_LIBS}
+#     PUBLIC ${SPATIAL_DYN_PUBLIC_LIBS})
+# # set_target_properties(${SPATIAL_DYN_LIB} PROPERTIES
+# #     LIBRARY_OUTPUT_DIRECTORY ${SPATIAL_DYN_LIB_DIR}
+# #     SUFFIX ".so")
+
+# # # Install library
+# # set(SPATIAL_DYN_CONFIG spatial-dyn-config)
+# # install(TARGETS ${SPATIAL_DYN_LIB}
+# #         EXPORT ${SPATIAL_DYN_CONFIG}
+# #         LIBRARY DESTINATION lib)
+# # install(DIRECTORY ${SPATIAL_DYN_SRC_DIR}/
+# #         DESTINATION include
+# #         FILES_MATCHING PATTERN "*.h*")
+
+# # # Make library available via find_package
+# # set(SPATIAL_DYN_LIBRARIES ${SPATIAL_DYN_LIB} ${SPATIAL_DYN_PUBLIC_LIBS})
+# # string(REGEX REPLACE "([^;]+)" "${CMAKE_INSTALL_PREFIX}/\\1"
+# #     SPATIAL_DYN_CONF_INCLUDE_DIRS "${SPATIAL_DYN_PUBLIC_INCLUDE_DIRS}")
+# # configure_package_config_file(${SPATIAL_DYN_CONFIG}.cmake.in
+# #     ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}.cmake
+# #     INSTALL_DESTINATION lib/cmake)
+# # write_basic_package_version_file(
+# #     ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}-version.cmake
+# #     VERSION 0.1.0
+# #     COMPATIBILITY SameMajorVersion)
+# # install(FILES ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}.cmake
+# #               ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}-version.cmake
+# #         DESTINATION lib/cmake)
+# # export(PACKAGE ${SPATIAL_DYN_LIB})
+
+# ##################
+# # Subdirectories #
+# ##################
+

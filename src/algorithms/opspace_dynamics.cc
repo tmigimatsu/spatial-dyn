@@ -103,7 +103,7 @@ const Eigen::MatrixXd& JacobianDynamicInverse(const ArticulatedBody& ab, const E
 
 // TODO: Fix for compatibility with InverseDynamics (arbitrary Jacobian)
 Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
-                                    int idx_link, const Eigen::Vector3d& offset,
+                                    int idx_link, const Eigen::Vector3d&,
                                     double svd_epsilon) {
   if (idx_link < 0) idx_link += ab.dof();
   auto& cc = ab.cc_data_;

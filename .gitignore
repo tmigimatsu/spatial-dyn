@@ -1,0 +1,7 @@
+bin
+build
+lib
+compile_commands.json
+*.so
+*.pyc
+*.egg-info

@@ -7,11 +7,11 @@
  * Authors: Toki Migimatsu
  */
 
-#include "algorithms/forward_dynamics.h"
-#include "algorithms/forward_kinematics.h"
-#include "algorithms/inverse_dynamics.h"
-#include "algorithms/simulation.h"
-#include "parsers/urdf.h"
+#include "SpatialDyn/algorithms/forward_dynamics.h"
+#include "SpatialDyn/algorithms/forward_kinematics.h"
+#include "SpatialDyn/algorithms/inverse_dynamics.h"
+#include "SpatialDyn/algorithms/simulation.h"
+#include "SpatialDyn/parsers/urdf.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>

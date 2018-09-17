@@ -7,7 +7,7 @@
  * Authors: Toki Migimatsu
  */
 
-#include "Eigen/SpatialDyn.h"
+#include "SpatialDyn/eigen/spatial_dyn.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>

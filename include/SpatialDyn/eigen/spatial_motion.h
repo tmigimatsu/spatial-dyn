@@ -1,5 +1,5 @@
 /**
- * SpatialMotion.h
+ * spatial_motion.h
  *
  * Copyright 2018. All Rights Reserved.
  *
@@ -10,7 +10,7 @@
 #ifndef EIGEN_SPATIAL_MOTION_H_
 #define EIGEN_SPATIAL_MOTION_H_
 
-#include "SpatialMotionBase.h"
+#include "spatial_motion_base.h"
 
 namespace Eigen {
 

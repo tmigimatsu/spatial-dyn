@@ -10,7 +10,7 @@
 #ifndef SPATIAL_DYN_ALGORITHMS_SIMULATION_H_
 #define SPATIAL_DYN_ALGORITHMS_SIMULATION_H_
 
-#include "structs/articulated_body.h"
+#include "SpatialDyn/structs/articulated_body.h"
 
 namespace SpatialDyn {
 

@@ -1,5 +1,5 @@
 /**
- * SpatialDeclarations.h
+ * spatial_declarations.h
  *
  * Copyright 2018. All Rights Reserved.
  *

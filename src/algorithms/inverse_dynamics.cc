@@ -22,7 +22,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
     auto& vel  = ab.vel_data_;
 
     // Forward pass
-    for (int i = 0; i < ab.dof(); i++) {
+    for (size_t i = 0; i < ab.dof(); i++) {
       const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
       const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
       const int parent = ab.rigid_bodies(i).id_parent();
@@ -77,7 +77,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
     auto& grav = ab.grav_data_;
 
     // Forward pass
-    for (int i = 0; i < ab.dof(); i++) {
+    for (size_t i = 0; i < ab.dof(); i++) {
       const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
       const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
       const int parent = ab.rigid_bodies(i).id_parent();
@@ -156,7 +156,7 @@ const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
   }
 
   // Forward pass
-  for (int i = 0; i < ab.dof(); i++) {
+  for (size_t i = 0; i < ab.dof(); i++) {
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
     const int parent = ab.rigid_bodies(i).id_parent();
@@ -197,7 +197,7 @@ const Eigen::VectorXd& Gravity(const ArticulatedBody& ab) {
   }
 
   // Forward pass
-  for (int i = 0; i < ab.dof(); i++) {
+  for (size_t i = 0; i < ab.dof(); i++) {
     const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
     const auto T_from_world = ab.T_to_world(i).inverse();
     grav.f_g[i] = I * (T_from_world * -ab.g());
@@ -225,7 +225,7 @@ const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab) {
   }
 
   // Initialize composite rigid body inertia
-  for (int i = 0; i < ab.dof(); i++) {
+  for (size_t i = 0; i < ab.dof(); i++) {
     crba.I_c[i] = ab.rigid_bodies(i).inertia();
   }
 

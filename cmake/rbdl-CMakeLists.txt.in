@@ -1,0 +1,27 @@
+############################################################
+# CMakeLists to download rbdl
+#
+# Copyright 2018. All Rights Reserved.
+#
+# Created: September 16, 2018
+# Authors: Toki Migimatsu
+############################################################
+
+cmake_minimum_required(VERSION 3.6)
+
+project(cpp_redis-download NONE)
+
+include(ExternalProject)
+ExternalProject_Add(rbdl
+    # Directories
+    PREFIX ${CMAKE_BINARY_DIR}/rbdl
+    DOWNLOAD_DIR ${SPATIAL_DYN_LIB_DIR}/rbdl
+    SOURCE_DIR ${SPATIAL_DYN_LIB_DIR}/rbdl
+    BINARY_DIR ${CMAKE_BINARY_DIR}/rbdl/build
+    # Download
+    URL https://bitbucket.org/rbdl/rbdl/get/v2.6.0.zip
+    # Configure
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/rbdl
+    # Install
+    # INSTALL_COMMAND ""
+)

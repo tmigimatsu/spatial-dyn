@@ -39,9 +39,9 @@ const Eigen::Matrix6d& InertiaInverseAba(const ArticulatedBody& ab, int idx_link
   // TODO: Implement for offset
 
   // Forward pass
-  for (int i = 0; i < ab.dof(); i++) {
+  for (size_t i = 0; i < ab.dof(); i++) {
     if (!aba.is_computed) aba.I_a[i] = ab.rigid_bodies(i).inertia();
-    if (i == idx_link) {
+    if (static_cast<int>(i) == idx_link) {
       ops.p[i] = Eigen::Isometry3d(ab.T_to_world(i).linear().transpose()) * -SpatialForce6d::Identity();
     } else {
       ops.p[i].setZero();
@@ -91,7 +91,7 @@ Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab, int idx_link, 
   auto& vel = ab.vel_data_;
 
   // Forward pass
-  for (int i = 0; i < ab.dof(); i++) {
+  for (size_t i = 0; i < ab.dof(); i++) {
     const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     const int parent = ab.rigid_bodies(i).id_parent();
@@ -157,7 +157,7 @@ Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen:
   auto& aba = ab.aba_data_;
 
   // Forward pass
-  for (int i = 0; i < ab.dof(); i++) {
+  for (size_t i = 0; i < ab.dof(); i++) {
     const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
     if (!aba.is_computed) aba.I_a[i] = I;
 

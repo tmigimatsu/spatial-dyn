@@ -1,5 +1,5 @@
 /**
- * SpatialForce.h
+ * spatial_force.h
  *
  * Copyright 2018. All Rights Reserved.
  *
@@ -10,7 +10,7 @@
 #ifndef EIGEN_SPATIAL_FORCE_H_
 #define EIGEN_SPATIAL_FORCE_H_
 
-#include "SpatialForceBase.h"
+#include "spatial_force_base.h"
 
 namespace Eigen {
 

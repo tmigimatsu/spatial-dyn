@@ -10,7 +10,7 @@
 #ifndef SPATIAL_DYN_STRUCTS_JOINT_H_
 #define SPATIAL_DYN_STRUCTS_JOINT_H_
 
-#include "utils/spatial_math.h"
+#include "SpatialDyn/utils/spatial_math.h"
 
 #include <limits>  // std::numeric_limits
 #include <string>  // std::string

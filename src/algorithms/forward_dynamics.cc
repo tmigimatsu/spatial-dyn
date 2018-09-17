@@ -21,7 +21,7 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab, const Eigen::Vecto
   auto& vel = ab.vel_data_;
 
   // Forward pass
-  for (int i = 0; i < ab.dof(); i++) {
+  for (size_t i = 0; i < ab.dof(); i++) {
     const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     const int parent = ab.rigid_bodies(i).id_parent();
@@ -68,7 +68,7 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab, const Eigen::Vecto
   aba.is_computed = true;
 
   Eigen::VectorXd ddq(ab.dof());
-  for (int i = 0; i < ab.dof(); i++) {
+  for (size_t i = 0; i < ab.dof(); i++) {
     const int parent = ab.rigid_bodies(i).id_parent();
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     if (parent < 0) {

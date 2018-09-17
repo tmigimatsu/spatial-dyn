@@ -10,9 +10,9 @@
 #ifndef SPATIAL_DYN_STRUCTS_ARTICULATED_BODY_H_
 #define SPATIAL_DYN_STRUCTS_ARTICULATED_BODY_H_
 
-#include "utils/spatial_math.h"
-#include "structs/rigid_body.h"
-#include "algorithms/opspace_dynamics.h"
+#include "SpatialDyn/utils/spatial_math.h"
+#include "SpatialDyn/structs/rigid_body.h"
+#include "SpatialDyn/algorithms/opspace_dynamics.h"
 
 #include <string>  // std::string
 #include <vector>  // std::vector
@@ -45,23 +45,23 @@ class ArticulatedBody {
   const std::vector<int>& ancestors(int i) const;
 
   const Eigen::VectorXd& q() const;
-  const double q(int i) const;
+  double q(int i) const;
   void set_q(const Eigen::VectorXd& q);
   void set_q(Eigen::VectorXd&& q);
 
   const Eigen::VectorXd& dq() const;
-  const double dq(int i) const;
+  double dq(int i) const;
   void set_dq(const Eigen::VectorXd& dq);
   void set_dq(Eigen::VectorXd&& q);
 
   const Eigen::VectorXd& ddq() const;
-  const double ddq(int i) const;
+  double ddq(int i) const;
   void set_ddq(const Eigen::VectorXd& ddq);
   void set_ddq(Eigen::VectorXd&& q);
 
   // Sensor torque
   const Eigen::VectorXd& tau() const;
-  const double tau(int i) const;
+  double tau(int i) const;
   void set_tau(const Eigen::VectorXd& tau);
 
   const SpatialMotiond& g() const;

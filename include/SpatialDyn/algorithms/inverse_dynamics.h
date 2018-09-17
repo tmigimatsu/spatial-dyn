@@ -10,8 +10,8 @@
 #ifndef SPATIAL_DYN_ALGORITHMS_INVERSE_DYNAMICS_H_
 #define SPATIAL_DYN_ALGORITHMS_INVERSE_DYNAMICS_H_
 
-#include "structs/articulated_body.h"
-#include "utils/spatial_math.h"
+#include "SpatialDyn/structs/articulated_body.h"
+#include "SpatialDyn/utils/spatial_math.h"
 
 namespace SpatialDyn {
 

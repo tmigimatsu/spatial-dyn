@@ -1,5 +1,5 @@
 /**
- * SpatialDyn.h
+ * spatial_dyn.h
  *
  * Copyright 2018. All Rights Reserved.
  *
@@ -32,12 +32,12 @@ class SpatialInertiaMatrix;
 
 }  // namespace Eigen
 
-#define EIGEN_TRANSFORM_PLUGIN "Eigen/SpatialTransform.h"
-#define EIGEN_MATRIX_PLUGIN "Eigen/MatrixPlugin.h"
-#define EIGEN_MATRIXBASE_PLUGIN "Eigen/MatrixBasePlugin.h"
-#include "SpatialMotion.h"
-#include "SpatialForce.h"
-#include "SpatialInertia.h"
+#define EIGEN_TRANSFORM_PLUGIN "SpatialDyn/eigen/spatial_transform.h"
+#define EIGEN_MATRIX_PLUGIN "SpatialDyn/eigen/matrix_plugin.h"
+#define EIGEN_MATRIXBASE_PLUGIN "SpatialDyn/eigen/matrix_base_plugin.h"
+#include "spatial_motion.h"
+#include "spatial_force.h"
+#include "spatial_inertia.h"
 
 #include <algorithm>  // std::max
 #include <limits>     // std::numeric_limits
@@ -55,8 +55,10 @@ typedef Matrix<float,6,Dynamic> Matrix6Xf;
 template<typename Derived>
 inline typename MatrixBase<Derived>::PlainObject
 PseudoInverse(const MatrixBase<Derived>& A, double svd_epsilon = 0) {
-  Eigen::JacobiSVD<typename MatrixBase<Derived>::PlainObject>
-      svd(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
+  unsigned int options = MatrixBase<Derived>::ColsAtCompileTime == Eigen::Dynamic ?
+                         Eigen::ComputeThinU | Eigen::ComputeThinV :
+                         Eigen::ComputeFullU | Eigen::ComputeFullV;
+  Eigen::JacobiSVD<typename MatrixBase<Derived>::PlainObject> svd(A, options);
   const auto& S = svd.singularValues();
   if (svd_epsilon <= 0) {
     svd_epsilon = std::numeric_limits<typename internal::traits<Derived>::Scalar>::epsilon() *
