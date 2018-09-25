@@ -261,4 +261,57 @@ const Eigen::LDLT<Eigen::MatrixXd>& InertiaInverse(const ArticulatedBody& ab) {
   return crba.A_inv;
 }
 
+const Eigen::MatrixXd& InertiaInverseAba(const ArticulatedBody& ab) {
+  auto& aba = ab.aba_data_;
+  if (aba.is_A_inv_computed) {
+    return aba.A_inv;
+  }
+
+  // Forward pass
+  for (size_t i = 0; i < ab.dof(); i++) {
+    const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
+    if (!aba.is_computed) aba.I_a[i] = I;
+
+    aba.A[i].setZero();
+    aba.P[i].setZero();
+  }
+
+  // Backward pass
+  for (int i = ab.dof() - 1; i >= 0; i--) {
+    const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
+    const int parent = ab.rigid_bodies(i).id_parent();
+    if (!aba.is_computed) {
+      aba.h[i] = aba.I_a[i] * s;
+      aba.d[i] = s.dot(aba.h[i]);
+      if (parent >= 0) {
+        aba.I_a[i] -= aba.h[i].matrix() / aba.d[i] * aba.h[i].transpose();
+        aba.I_a[parent] += ab.T_to_parent(i) * aba.I_a[i];
+      }
+    }
+
+    for (int j : ab.subtree(i)) {
+      aba.U[i](j) = static_cast<double>(i == j) - s.dot(aba.P[i].col(j));
+      if (parent >= 0) {
+        aba.P[parent].col(j) += ab.T_to_parent(i) * (aba.P[i].col(j) + aba.U[i](j) / aba.d[i] * aba.h[i]);
+      }
+    }
+  }
+  aba.is_computed = true;
+
+  for (size_t i = 0; i < ab.dof(); i++) {
+    const int parent = ab.rigid_bodies(i).id_parent();
+    const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
+    for (int j : ab.subtree(i)) {
+      if (parent >= 0) {
+        aba.A[i].col(j) += ab.T_from_parent(i) * aba.A[parent].col(j);
+      }
+      aba.A_inv(i,j) = (aba.U[i](j) - aba.h[i].dot(aba.A[i].col(j))) / aba.d[i];
+      if (i != j) aba.A_inv(j,i) = aba.A_inv(i,j);
+      aba.A[i].col(j) += aba.A_inv(i,j) * s;
+    }
+  }
+  aba.is_A_inv_computed = true;
+  return aba.A_inv;
+}
+
 }  // namespace SpatialDyn

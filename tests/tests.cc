@@ -246,6 +246,13 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
     REQUIRE((A - A_rbdl).norm() < 1e-10);
   }
 
+  SECTION("inertia inverse") {
+    Eigen::MatrixXd A_inv = InertiaInverse(ab).solve(Eigen::MatrixXd::Identity(ab.dof(), ab.dof()));
+    Eigen::MatrixXd A_inv_aba = InertiaInverseAba(ab);
+
+    REQUIRE((A_inv - A_inv_aba).norm() < 1e-10);
+  }
+
   SECTION("forward dynamics") {
     Eigen::VectorXd tau = Eigen::VectorXd::Ones(ab.dof());
 

@@ -59,6 +59,7 @@ void ArticulatedBody::set_q(const Eigen::VectorXd& q) {
   crba_data_.is_computed = false;
   crba_data_.is_inv_computed = false;
   aba_data_.is_computed = false;
+  aba_data_.is_A_inv_computed = false;
   opspace_data_.is_lambda_computed = false;
   opspace_data_.is_lambda_inv_computed = false;
   opspace_data_.is_jbar_computed = false;
@@ -78,6 +79,7 @@ void ArticulatedBody::set_q(Eigen::VectorXd&& q) {
   crba_data_.is_computed = false;
   crba_data_.is_inv_computed = false;
   aba_data_.is_computed = false;
+  aba_data_.is_A_inv_computed = false;
   opspace_data_.is_lambda_computed = false;
   opspace_data_.is_lambda_inv_computed = false;
   opspace_data_.is_jbar_computed = false;
@@ -99,6 +101,7 @@ void ArticulatedBody::set_dq(const Eigen::VectorXd& dq) {
 
   vel_data_.is_computed = false;
   cc_data_.is_computed = false;
+  aba_data_.is_computed = false;
 }
 void ArticulatedBody::set_dq(Eigen::VectorXd&& dq) {
   if (dq.size() != static_cast<int>(dof_)) {
@@ -108,6 +111,7 @@ void ArticulatedBody::set_dq(Eigen::VectorXd&& dq) {
 
   vel_data_.is_computed = false;
   cc_data_.is_computed = false;
+  aba_data_.is_computed = false;
 }
 
 const Eigen::VectorXd& ArticulatedBody::ddq() const {
@@ -248,6 +252,21 @@ void ArticulatedBody::ExpandDof(int id, int id_parent) {
   aba_data_.p.push_back(SpatialForced());
   aba_data_.u.push_back(0);
   aba_data_.a.push_back(SpatialMotiond());
+
+  aba_data_.is_A_inv_computed = false;
+  aba_data_.A_inv.resize(dof_, dof_);
+  aba_data_.P.push_back(SpatialForceXd());
+  aba_data_.U.push_back(Eigen::VectorXd());
+  aba_data_.A.push_back(SpatialMotionXd());
+  for (SpatialForceXd& P_i : aba_data_.P) {
+    P_i.resize(6, dof_);
+  }
+  for (Eigen::VectorXd& U_i : aba_data_.U) {
+    U_i.resize(dof_);
+  }
+  for (SpatialMotionXd& A_i : aba_data_.A) {
+    A_i.resize(6, dof_);
+  }
 
   opspace_data_.is_lambda_computed = false;
   opspace_data_.is_lambda_inv_computed = false;

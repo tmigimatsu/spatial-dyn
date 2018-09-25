@@ -91,7 +91,7 @@ class ArticulatedBody {
   std::vector<Eigen::Isometry3d> T_from_parent_;
   std::vector<Eigen::Isometry3d> T_to_world_;
   std::vector<std::vector<int>> ancestors_;  // Ancestors from base to link i
-  std::vector<std::vector<int>> subtrees_;
+  std::vector<std::vector<int>> subtrees_;   // Descendants of link i including link i
 
 
   struct VelocityData {
@@ -126,7 +126,7 @@ class ArticulatedBody {
     std::vector<SpatialInertiad> I_c;  // Composite inertia
     Eigen::MatrixXd A;                 // Joint space inertia
 
-    bool is_inv_computed = false;    // Reusable with same position
+    bool is_inv_computed = false;        // Reusable with same position
     Eigen::LDLT<Eigen::MatrixXd> A_inv;  // Robust Cholesky decomposition of joint space inertia
   };
   mutable CrbaData crba_data_;
@@ -141,6 +141,12 @@ class ArticulatedBody {
     std::vector<SpatialForced> p;
     std::vector<double> u;
     std::vector<SpatialMotiond> a;
+
+    bool is_A_inv_computed = false;  // Reusable with same position
+    Eigen::MatrixXd A_inv;           // Inverse inertia computed with ABA
+    std::vector<SpatialForceXd> P;
+    std::vector<Eigen::VectorXd> U;
+    std::vector<SpatialMotionXd> A;
   };
   mutable AbaData aba_data_;
 
@@ -181,6 +187,7 @@ class ArticulatedBody {
   friend const Eigen::VectorXd& Gravity(const ArticulatedBody&);
   friend const Eigen::MatrixXd& Inertia(const ArticulatedBody&);
   friend const Eigen::LDLT<Eigen::MatrixXd>& InertiaInverse(const ArticulatedBody&);
+  friend const Eigen::MatrixXd& InertiaInverseAba(const ArticulatedBody&);
 
   friend Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody&, const Eigen::VectorXd&);
 
