@@ -143,6 +143,7 @@ const SpatialMotiond& ArticulatedBody::g() const {
 void ArticulatedBody::set_g(const Eigen::Vector3d& g) {
   g_ << g, Eigen::Vector3d::Zero();
   grav_data_.is_computed = false;
+  aba_data_.is_computed = false;
 }
 
 const Eigen::Isometry3d& ArticulatedBody::T_to_parent(int i) const {
@@ -250,19 +251,14 @@ void ArticulatedBody::ExpandDof(int id, int id_parent) {
   aba_data_.d.push_back(0);
 
   aba_data_.p.push_back(SpatialForced());
-  aba_data_.u.push_back(0);
   aba_data_.a.push_back(SpatialMotiond());
 
   aba_data_.is_A_inv_computed = false;
   aba_data_.A_inv.resize(dof_, dof_);
   aba_data_.P.push_back(SpatialForceXd());
-  aba_data_.U.push_back(Eigen::VectorXd());
   aba_data_.A.push_back(SpatialMotionXd());
   for (SpatialForceXd& P_i : aba_data_.P) {
     P_i.resize(6, dof_);
-  }
-  for (Eigen::VectorXd& U_i : aba_data_.U) {
-    U_i.resize(dof_);
   }
   for (SpatialMotionXd& A_i : aba_data_.A) {
     A_i.resize(6, dof_);

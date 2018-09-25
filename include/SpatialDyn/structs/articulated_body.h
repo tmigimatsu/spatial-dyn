@@ -139,13 +139,11 @@ class ArticulatedBody {
 
     // Not reusable
     std::vector<SpatialForced> p;
-    std::vector<double> u;
     std::vector<SpatialMotiond> a;
 
     bool is_A_inv_computed = false;  // Reusable with same position
     Eigen::MatrixXd A_inv;           // Inverse inertia computed with ABA
     std::vector<SpatialForceXd> P;
-    std::vector<Eigen::VectorXd> U;
     std::vector<SpatialMotionXd> A;
   };
   mutable AbaData aba_data_;

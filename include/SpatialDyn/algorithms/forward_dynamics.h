@@ -16,8 +16,10 @@
 namespace SpatialDyn {
 
 Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& tau);
-
 Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab, const Eigen::VectorXd& tau);
+
+const Eigen::LDLT<Eigen::MatrixXd>& InertiaInverse(const ArticulatedBody& ab);
+const Eigen::MatrixXd& InertiaInverseAba(const ArticulatedBody& ab);
 
 }  // namespace SpatialDyn
 

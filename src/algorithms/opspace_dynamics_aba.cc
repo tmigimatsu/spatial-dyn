@@ -8,6 +8,7 @@
  */
 
 #include "algorithms/opspace_dynamics.h"
+#include "algorithms/forward_dynamics.h"
 #include "algorithms/inverse_dynamics.h"
 
 namespace SpatialDyn {
@@ -117,6 +118,7 @@ Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab, int idx_link, 
   vel.is_computed = true;
 
   // Backward pass
+  Eigen::VectorXd ddq(ab.dof());
   for (int i = ab.dof() - 1; i >= 0; i--) {
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     const int parent = ab.rigid_bodies(i).id_parent();
@@ -129,10 +131,10 @@ Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab, int idx_link, 
       }
     }
 
-    aba.u[i] = -s.dot(aba.p[i]);
+    ddq(i) = -s.dot(aba.p[i]) / aba.d[i];
     if (parent >= 0) {
       aba.p[parent] += ab.T_to_parent(i) *
-          (aba.p[i] + aba.I_a[i] * aba.a[i] + aba.u[i] / aba.d[i] * aba.h[i]);
+                       (aba.p[i] + aba.I_a[i] * aba.a[i] + ddq(i) * aba.h[i]);
     }
   }
   aba.is_computed = true;
@@ -144,8 +146,8 @@ Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab, int idx_link, 
     if (parent >= 0) {
       a = ab.T_from_parent(i) * a + aba.a[i];
     }
-    double ddq = (aba.u[i] - aba.h[i].dot(a)) / aba.d[i];
-    a += ddq * s;
+    ddq(i) -= aba.h[i].dot(a) / aba.d[i];
+    a += ddq(i) * s;
   }
 
   Eigen::Vector6d mu = Eigen::Isometry3d(ab.T_to_world(idx_link).linear()) * a;
@@ -167,6 +169,7 @@ Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen:
   // Backward pass
   // TODO: Find more efficient way to incorporate gravity
   const Eigen::VectorXd& tau = -SpatialDyn::Gravity(ab);
+  Eigen::VectorXd ddq(ab.dof());
   for (int i = ab.dof() - 1; i >= 0; i--) {
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     const int parent = ab.rigid_bodies(i).id_parent();
@@ -179,9 +182,9 @@ Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen:
       }
     }
 
-    aba.u[i] = tau(i) - s.dot(aba.p[i]);
+    ddq(i) = (tau(i) - s.dot(aba.p[i])) / aba.d[i];
     if (parent >= 0) {
-      aba.p[parent] += ab.T_to_parent(i) * (aba.p[i] + aba.u[i] / aba.d[i] * aba.h[i]);
+      aba.p[parent] += ab.T_to_parent(i) * (aba.p[i] + ddq(i) * aba.h[i]);
     }
   }
   aba.is_computed = true;
@@ -193,8 +196,8 @@ Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen:
     if (parent >= 0) {
       a = ab.T_from_parent(i) * a;
     }
-    double ddq = (aba.u[i] - aba.h[i].dot(a)) / aba.d[i];
-    a += ddq * s;
+    ddq(i) -= aba.h[i].dot(a) / aba.d[i];
+    a += ddq(i) * s;
   }
 
   Eigen::Vector6d p = Eigen::Isometry3d(ab.T_to_world(idx_link).linear()) * a;

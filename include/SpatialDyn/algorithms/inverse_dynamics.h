@@ -24,8 +24,7 @@ const Eigen::VectorXd& Gravity(const ArticulatedBody& ab);
 
 // CRBA
 const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab);
-const Eigen::LDLT<Eigen::MatrixXd>& InertiaInverse(const ArticulatedBody& ab);
-const Eigen::MatrixXd& InertiaInverseAba(const ArticulatedBody& ab);
+// NOTE: InertiaInverse in forward_dynamics.h
 
 }  // namespace SpatialDyn
 
