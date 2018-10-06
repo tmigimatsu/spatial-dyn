@@ -13,6 +13,7 @@
 namespace SpatialDyn {
 
 Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& tau) {
+  // TODO: Test against InverseDynamics with ddq = 0
   return InertiaInverse(ab).solve(tau - CentrifugalCoriolis(ab) - Gravity(ab));
 }
 

@@ -34,9 +34,11 @@ const std::vector<RigidBody>& ArticulatedBody::rigid_bodies() const {
   return rigid_bodies_;
 }
 const RigidBody& ArticulatedBody::rigid_bodies(int i) const {
+  if (i < 0) i += dof();
   return rigid_bodies_[i];
 }
 const std::vector<int>& ArticulatedBody::ancestors(int i) const {
+  if (i < 0) i += dof();
   return ancestors_[i];
 }
 
@@ -44,6 +46,7 @@ const Eigen::VectorXd& ArticulatedBody::q() const {
   return q_;
 }
 double ArticulatedBody::q(int i) const {
+  if (i < 0) i += dof();
   return q_(i);
 }
 void ArticulatedBody::set_q(const Eigen::VectorXd& q) {
@@ -91,6 +94,7 @@ const Eigen::VectorXd& ArticulatedBody::dq() const {
   return dq_;
 }
 double ArticulatedBody::dq(int i) const {
+  if (i < 0) i += dof();
   return dq_(i);
 }
 void ArticulatedBody::set_dq(const Eigen::VectorXd& dq) {
@@ -118,6 +122,7 @@ const Eigen::VectorXd& ArticulatedBody::ddq() const {
   return ddq_;
 }
 double ArticulatedBody::ddq(int i) const {
+  if (i < 0) i += dof();
   return ddq_(i);
 }
 void ArticulatedBody::set_ddq(const Eigen::VectorXd& ddq) {
@@ -131,6 +136,7 @@ const Eigen::VectorXd& ArticulatedBody::tau() const {
   return tau_;
 }
 double ArticulatedBody::tau(int i) const {
+  if (i < 0) i += dof();
   return tau_(i);
 }
 void ArticulatedBody::set_tau(const Eigen::VectorXd& tau) {
@@ -147,16 +153,20 @@ void ArticulatedBody::set_g(const Eigen::Vector3d& g) {
 }
 
 const Eigen::Isometry3d& ArticulatedBody::T_to_parent(int i) const {
+  if (i < 0) i += dof();
   return T_to_parent_[i];
 }
 const Eigen::Isometry3d& ArticulatedBody::T_from_parent(int i) const {
+  if (i < 0) i += dof();
   return T_from_parent_[i];
 }
 const Eigen::Isometry3d& ArticulatedBody::T_to_world(int i) const {
+  if (i < 0) i += dof();
   return T_to_world_[i];
 }
 
 const std::vector<int>& ArticulatedBody::subtree(int i) const {
+  if (i < 0) i += dof();
   return subtrees_[i];
 }
 

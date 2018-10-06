@@ -15,7 +15,8 @@ namespace SpatialDyn {
 
 // RNEA
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq,
-                                bool gravity, bool centrifugal_coriolis, bool cache) {
+                                bool gravity, bool centrifugal_coriolis, bool cache,
+                                const std::vector<std::pair<int, SpatialForced>>& f_external) {
   if (!cache) {
 
     auto& rnea = ab.rnea_data_;
@@ -54,6 +55,14 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
         rnea.f[i] = I * rnea.a[i] + vel.v[i].cross(I * vel.v[i]);
       } else {
         rnea.f[i] = I * rnea.a[i];
+      }
+
+      // TODO: Use more efficient data structure for sorting through external forces
+      for (const std::pair<int, SpatialForced>& link_f : f_external) {
+        int idx_link = link_f.first;
+        if (idx_link < 0) idx_link += ab.dof();
+        if (idx_link != i) continue;
+        rnea.f[i] -= ab.T_to_world(i).inverse() * link_f.second;
       }
     }
     if (centrifugal_coriolis) vel.is_computed = true;
