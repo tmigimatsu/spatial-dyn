@@ -64,7 +64,8 @@ const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab, const Eigen::MatrixXd&
                                double svd_epsilon) {
   auto& ops = ab.opspace_data_;
 
-  if (!ops.is_lambda_computed || ops.J != J || ops.svd_epsilon != svd_epsilon) {
+  if (!ops.is_lambda_computed || ops.J.size() != J.size() || ops.J != J ||
+      ops.svd_epsilon != svd_epsilon) {
     ops.Lambda = Eigen::PseudoInverse(InertiaInverse(ab, J), svd_epsilon);
     ops.svd_epsilon = svd_epsilon;
     ops.is_lambda_computed = true;
@@ -76,7 +77,7 @@ const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab, const Eigen::MatrixXd&
 const Eigen::MatrixXd& InertiaInverse(const ArticulatedBody& ab, const Eigen::MatrixXd& J) {
   auto& ops = ab.opspace_data_;
 
-  if (!ops.is_lambda_inv_computed || ops.J != J) {
+  if (!ops.is_lambda_inv_computed || ops.J.size() != J.size() || ops.J != J) {
     ops.A_inv_J_bar_T = SpatialDyn::InertiaInverse(ab).solve(J.transpose());
     ops.Lambda_inv = J * ops.A_inv_J_bar_T;
     ops.J = J;

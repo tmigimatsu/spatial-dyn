@@ -12,6 +12,7 @@
 #include "SpatialDyn/algorithms/inverse_dynamics.h"
 #include "SpatialDyn/algorithms/simulation.h"
 #include "SpatialDyn/parsers/urdf.h"
+#include "SpatialDyn/parsers/json.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
@@ -52,7 +53,15 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def("T_to_parent", &ArticulatedBody::T_to_parent)
       .def("T_from_parent", &ArticulatedBody::T_from_parent)
       .def("T_to_world", &ArticulatedBody::T_to_world)
-      .def("subtree", &ArticulatedBody::subtree);
+      .def("subtree", &ArticulatedBody::subtree)
+      .def("__repr__",
+           [](const ArticulatedBody& ab) {
+             return "<spatialdyn.ArticulatedBody (name=" + ab.name + ")>";
+           })
+      .def("__str__",
+           [](const ArticulatedBody& ab) {
+             return SpatialDyn::Json::Serialize(ab).dump();
+           });
 
   // Rigid body
   py::class_<RigidBody>(m, "RigidBody")

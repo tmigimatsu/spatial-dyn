@@ -87,6 +87,7 @@ const Eigen::LDLT<Eigen::MatrixXd>& InertiaInverse(const ArticulatedBody& ab) {
   auto& crba = ab.crba_data_;
   if (!crba.is_inv_computed) {
     crba.A_inv = Inertia(ab).ldlt();
+    crba.is_inv_computed = true;
   }
   return crba.A_inv;
 }
@@ -126,7 +127,7 @@ const Eigen::MatrixXd& InertiaInverseAba(const ArticulatedBody& ab) {
       }
     }
   }
-  // aba.is_computed = true;
+  aba.is_computed = true;
 
   for (size_t i = 0; i < ab.dof(); i++) {
     const int parent = ab.rigid_bodies(i).id_parent();
@@ -140,7 +141,7 @@ const Eigen::MatrixXd& InertiaInverseAba(const ArticulatedBody& ab) {
       aba.A[i].col(j) += aba.A_inv(i,j) * s;
     }
   }
-  // aba.is_A_inv_computed = true;
+  aba.is_A_inv_computed = true;
   return aba.A_inv;
 }
 
