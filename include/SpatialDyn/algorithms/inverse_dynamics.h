@@ -24,7 +24,8 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
                                 bool cache = false,
                                 const std::vector<std::pair<int, SpatialForced>>& f_external = {});
 const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab);
-const Eigen::VectorXd& Gravity(const ArticulatedBody& ab);
+const Eigen::VectorXd& Gravity(const ArticulatedBody& ab,
+                               const std::vector<std::pair<int, SpatialForced>>& f_external = {});
 
 // CRBA
 const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab);

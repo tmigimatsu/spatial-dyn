@@ -36,7 +36,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
   // Compute opspace dynamics
   Eigen::VectorXd F_x;
   if (gravity) {  // Compute inline for efficiency
-    F_x = Inertia(ab, J_x, svd_epsilon) * ddx + Gravity(ab, J_x, svd_epsilon);
+    F_x = Inertia(ab, J_x, svd_epsilon) * ddx + Gravity(ab, J_x, {}, svd_epsilon);
   } else {
     F_x = Inertia(ab, J_x, svd_epsilon) * ddx;
   }
@@ -119,8 +119,9 @@ Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, const Eigen::Matr
 }
 
 Eigen::VectorXd Gravity(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
+                        const std::vector<std::pair<int, SpatialForced>>& f_external,
                         double svd_epsilon) {
-  return JacobianDynamicInverse(ab, J, svd_epsilon).transpose() * Gravity(ab);
+  return JacobianDynamicInverse(ab, J, svd_epsilon).transpose() * Gravity(ab, f_external);
 }
 
 }  // namespace Opspace

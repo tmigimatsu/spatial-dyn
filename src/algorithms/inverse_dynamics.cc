@@ -199,9 +199,10 @@ const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
   return cc.C;
 }
 
-const Eigen::VectorXd& Gravity(const ArticulatedBody& ab) {
+const Eigen::VectorXd& Gravity(const ArticulatedBody& ab,
+                               const std::vector<std::pair<int, SpatialForced>>& f_external) {
   auto& grav = ab.grav_data_;
-  if (grav.is_computed) {
+  if (grav.is_computed && f_external.empty()) {
     return grav.G;
   }
 
@@ -210,6 +211,14 @@ const Eigen::VectorXd& Gravity(const ArticulatedBody& ab) {
     const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
     const auto T_from_world = ab.T_to_world(i).inverse();
     grav.f_g[i] = I * (T_from_world * -ab.g());
+
+    // TODO: Use more efficient data structure for sorting through external forces
+    for (const std::pair<int, SpatialForced>& link_f : f_external) {
+      int idx_link = link_f.first;
+      if (idx_link < 0) idx_link += ab.dof();
+      if (idx_link != i) continue;
+      grav.f_g[i] -= ab.T_to_world(i).inverse() * link_f.second;
+    }
   }
 
   // Backward pass
@@ -222,7 +231,7 @@ const Eigen::VectorXd& Gravity(const ArticulatedBody& ab) {
       grav.f_g[parent] += ab.T_to_parent(i) * grav.f_g[i];
     }
   }
-  grav.is_computed = true;
+  grav.is_computed = f_external.empty();
   return grav.G;
 }
 

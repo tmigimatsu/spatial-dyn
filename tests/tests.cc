@@ -238,6 +238,9 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
                                      SpatialDyn::CentrifugalCoriolis(ab) +
                                      SpatialDyn::Gravity(ab) -
                                      J.transpose() * f_ext.matrix();
+    Eigen::VectorXd tau_crba_f_ext_2 = SpatialDyn::Inertia(ab) * ddq +
+                                       SpatialDyn::CentrifugalCoriolis(ab) +
+                                       SpatialDyn::Gravity(ab, {{-1, f_ext}});
 
     REQUIRE((tau - tau_crba_Aq_v_g).norm() < 1e-10);
     REQUIRE((tau_Aq_g - tau_crba_Aq_g).norm() < 1e-10);
@@ -250,6 +253,7 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
     REQUIRE((tau_cache_Aq - tau_crba_Aq).norm() < 1e-10);
 
     REQUIRE((tau_f_ext - tau_crba_f_ext).norm() < 1e-10);
+    REQUIRE((tau_f_ext - tau_crba_f_ext_2).norm() < 1e-10);
   }
 
   SECTION("inertia") {

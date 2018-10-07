@@ -182,7 +182,7 @@ class ArticulatedBody {
 
   friend Eigen::VectorXd InverseDynamics(const ArticulatedBody&, const Eigen::VectorXd&, bool, bool, bool, const std::vector<std::pair<int, SpatialForced>>&);
   friend const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody&);
-  friend const Eigen::VectorXd& Gravity(const ArticulatedBody&);
+  friend const Eigen::VectorXd& Gravity(const ArticulatedBody&, const std::vector<std::pair<int, SpatialForced>>&);
   friend const Eigen::MatrixXd& Inertia(const ArticulatedBody&);
   friend const Eigen::LDLT<Eigen::MatrixXd>& InertiaInverse(const ArticulatedBody&);
   friend const Eigen::MatrixXd& InertiaInverseAba(const ArticulatedBody&);
@@ -198,7 +198,7 @@ class ArticulatedBody {
   friend const Eigen::Matrix6d& Opspace::InertiaAba(const ArticulatedBody&, int, const Eigen::Vector3d&, double);
   friend const Eigen::Matrix6d& Opspace::InertiaInverseAba(const ArticulatedBody&, int, const Eigen::Vector3d&);
   friend Eigen::Vector6d Opspace::CentrifugalCoriolisAba(const ArticulatedBody&, int, const Eigen::Vector3d&, double);
-  friend Eigen::Vector6d Opspace::GravityAba(const ArticulatedBody&, int, const Eigen::Vector3d&, double);
+  friend Eigen::Vector6d Opspace::GravityAba(const ArticulatedBody&, int, const Eigen::Vector3d&, const std::vector<std::pair<int, SpatialForced>>&, double);
 
   void ExpandDof(int id, int id_parent);
 

@@ -40,6 +40,7 @@ Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, const Eigen::Matr
                                     double svd_epsilon = 0);
 
 Eigen::VectorXd Gravity(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
+                        const std::vector<std::pair<int, SpatialForced>>& f_external = {},
                         double svd_epsilon = 0);
 
 // ABA
@@ -60,6 +61,7 @@ Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab,
 Eigen::Vector6d GravityAba(const ArticulatedBody& ab,
                            int idx_link = -1,
                            const Eigen::Vector3d& offset = Eigen::Vector3d::Zero(),
+                           const std::vector<std::pair<int, SpatialForced>>& f_external = {},
                            double svd_epsilon = 0);
 
 }  // namespace Opspace

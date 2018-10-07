@@ -154,7 +154,9 @@ Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab, int idx_link, 
   return Opspace::InertiaAba(ab, idx_link, offset, svd_epsilon) * -mu;
 }
 
-Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset, double svd_epsilon) {
+Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset,
+                           const std::vector<std::pair<int, SpatialForced>>& f_external,
+                           double svd_epsilon) {
   if (idx_link < 0) idx_link += ab.dof();
   auto& aba = ab.aba_data_;
 
@@ -163,12 +165,18 @@ Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen:
     const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
     if (!aba.is_computed) aba.I_a[i] = I;
 
-    aba.p[i].setZero();
+    aba.p[i] = aba.I_a[i] * (ab.T_to_world(i).inverse() * ab.g());
+
+    // TODO: Use more efficient data structure for sorting through external forces
+    for (const std::pair<int, SpatialForced>& link_f : f_external) {
+      int idx_link = link_f.first;
+      if (idx_link < 0) idx_link += ab.dof();
+      if (idx_link != i) continue;
+      aba.p[i] -= ab.T_to_world(i).inverse() * link_f.second;
+    }
   }
 
   // Backward pass
-  // TODO: Find more efficient way to incorporate gravity
-  const Eigen::VectorXd& tau = -SpatialDyn::Gravity(ab);
   Eigen::VectorXd ddq(ab.dof());
   for (int i = ab.dof() - 1; i >= 0; i--) {
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
@@ -182,7 +190,7 @@ Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen:
       }
     }
 
-    ddq(i) = (tau(i) - s.dot(aba.p[i])) / aba.d[i];
+    ddq(i) = -s.dot(aba.p[i]) / aba.d[i];
     if (parent >= 0) {
       aba.p[parent] += ab.T_to_parent(i) * (aba.p[i] + ddq(i) * aba.h[i]);
     }
@@ -201,7 +209,7 @@ Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen:
   }
 
   Eigen::Vector6d p = Eigen::Isometry3d(ab.T_to_world(idx_link).linear()) * a;
-  return Opspace::InertiaAba(ab, idx_link, offset, svd_epsilon) * -p;
+  return Opspace::InertiaAba(ab, idx_link, offset, svd_epsilon) * p;
 }
 
 }  // namespace Opspace
