@@ -12,13 +12,17 @@
 
 namespace SpatialDyn {
 
-Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& tau) {
+Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& tau,
+                                const std::vector<std::pair<int, SpatialForced>>& f_external) {
   // TODO: Test against InverseDynamics with ddq = 0
-  return InertiaInverse(ab).solve(tau - CentrifugalCoriolis(ab) - Gravity(ab));
+  // return InertiaInverse(ab).solve(tau - CentrifugalCoriolis(ab) - Gravity(ab));
+  return InertiaInverse(ab).solve(tau - InverseDynamics(ab, Eigen::VectorXd::Zero(ab.dof()),
+                                                        true, true, false, f_external));
 }
 
 // ABA
-Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab, const Eigen::VectorXd& tau) {
+Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab, const Eigen::VectorXd& tau,
+                                   const std::vector<std::pair<int, SpatialForced>>& f_external) {
   auto& aba = ab.aba_data_;
   auto& vel = ab.vel_data_;
 
@@ -45,6 +49,14 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab, const Eigen::Vecto
     if (!aba.is_computed) aba.I_a[i] = I;
 
     aba.p[i] = vel.v[i].cross(I * vel.v[i]);
+
+    // TODO: Use more efficient data structure for sorting through external forces
+    for (const std::pair<int, SpatialForced>& link_f : f_external) {
+      int idx_link = link_f.first;
+      if (idx_link < 0) idx_link += ab.dof();
+      if (idx_link != i) continue;
+      aba.p[i] -= ab.T_to_world(i).inverse() * link_f.second;
+    }
   }
   vel.is_computed = true;
 

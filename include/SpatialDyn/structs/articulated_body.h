@@ -187,7 +187,8 @@ class ArticulatedBody {
   friend const Eigen::LDLT<Eigen::MatrixXd>& InertiaInverse(const ArticulatedBody&);
   friend const Eigen::MatrixXd& InertiaInverseAba(const ArticulatedBody&);
 
-  friend Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody&, const Eigen::VectorXd&);
+  friend Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody&, const Eigen::VectorXd&,
+                                            const std::vector<std::pair<int, SpatialForced>>&);
 
   friend const Eigen::MatrixXd& Opspace::Inertia(const ArticulatedBody&, const Eigen::MatrixXd& J, double);
   friend const Eigen::MatrixXd& Opspace::InertiaInverse(const ArticulatedBody&, const Eigen::MatrixXd& J);

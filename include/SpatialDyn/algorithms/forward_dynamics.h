@@ -13,10 +13,15 @@
 #include "SpatialDyn/structs/articulated_body.h"
 #include "SpatialDyn/utils/spatial_math.h"
 
+#include <vector>   // std::vector
+#include <utility>  // std::pair
+
 namespace SpatialDyn {
 
-Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& tau);
-Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab, const Eigen::VectorXd& tau);
+Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& tau,
+                                const std::vector<std::pair<int, SpatialForced>>& f_external = {});
+Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab, const Eigen::VectorXd& tau,
+                                   const std::vector<std::pair<int, SpatialForced>>& f_external = {});
 
 const Eigen::LDLT<Eigen::MatrixXd>& InertiaInverse(const ArticulatedBody& ab);
 const Eigen::MatrixXd& InertiaInverseAba(const ArticulatedBody& ab);
