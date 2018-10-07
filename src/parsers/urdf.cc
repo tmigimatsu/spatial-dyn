@@ -290,11 +290,12 @@ ArticulatedBody LoadModel(const std::string& urdf) {
     }
 
     // Parse dynamics
-    double f_coulomb = 0., f_stiction = 0.;
+    double f_coulomb = 0., f_stiction = 0., f_viscous = 0.;
     const tinyxml2::XMLElement* xml_dynamics = xml_joint->FirstChildElement("dynamics");
     if (xml_dynamics != nullptr) {
-      xml_dynamics->QueryDoubleAttribute("damping", &f_coulomb);
+      xml_dynamics->QueryDoubleAttribute("damping", &f_viscous);
       xml_dynamics->QueryDoubleAttribute("friction", &f_stiction);
+      xml_dynamics->QueryDoubleAttribute("coulomb", &f_coulomb);
     }
 
     // Parse limits
@@ -348,6 +349,7 @@ ArticulatedBody LoadModel(const std::string& urdf) {
       joint.set_fq_max(fq_max);
       joint.set_f_coulomb(f_coulomb);
       joint.set_f_stiction(f_stiction);
+      joint.set_f_viscous(f_viscous);
 
       rb.set_joint(std::move(joint));
       rb.set_T_to_parent(ori, pos);

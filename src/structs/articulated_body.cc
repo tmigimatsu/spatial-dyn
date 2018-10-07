@@ -104,6 +104,7 @@ void ArticulatedBody::set_dq(const Eigen::VectorXd& dq) {
   dq_ = dq;
 
   vel_data_.is_computed = false;
+  grav_data_.is_friction_computed = false;
   cc_data_.is_computed = false;
   aba_data_.is_computed = false;
 }
@@ -114,6 +115,7 @@ void ArticulatedBody::set_dq(Eigen::VectorXd&& dq) {
   dq_ = std::move(dq);
 
   vel_data_.is_computed = false;
+  grav_data_.is_friction_computed = false;
   cc_data_.is_computed = false;
   aba_data_.is_computed = false;
 }
@@ -245,6 +247,8 @@ void ArticulatedBody::ExpandDof(int id, int id_parent) {
   grav_data_.is_computed = false;
   grav_data_.f_g.push_back(SpatialForced());
   grav_data_.G.resize(dof_);
+  grav_data_.is_friction_computed = false;
+  grav_data_.F.resize(dof_);
 
   rnea_data_.a.push_back(SpatialMotiond());
   rnea_data_.f.push_back(SpatialForced());

@@ -7,10 +7,11 @@
  * Authors: Toki Migimatsu
  */
 
-#include "SpatialDyn/eigen/spatial_dyn.h"
+#include "SpatialDyn/utils/spatial_math.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
+#include <pybind11/operators.h>
 
 #include <string>  // std::to_string
 
@@ -33,7 +34,15 @@ PYBIND11_MODULE(eigen, m) {
            py::return_value_policy::reference_internal)
       .def("translation", (Block<Matrix<double,4,4>,3,1,true> (Isometry3d::*)(void)) &Isometry3d::translation,
            py::return_value_policy::reference_internal)
-      .def("inverse", &Isometry3d::inverse);
+      .def("inverse", &Isometry3d::inverse)
+      .def("fdot",
+           [](const Isometry3d& T, const SpatialDyn::SpatialForced& f) {
+             return T * f;
+           })
+      .def("mdot",
+           [](const Isometry3d& T, const SpatialDyn::SpatialMotiond& m) {
+             return T * m;
+           });
 
   // Quaterniond
   py::class_<Quaterniond>(m, "Quaterniond")
@@ -58,7 +67,7 @@ PYBIND11_MODULE(eigen, m) {
              return "<eigen.Quaterniond (x=" + std::to_string(quat.x()) +
                     ", y=" + std::to_string(quat.y()) +
                     ", z=" + std::to_string(quat.z()) +
-                    ", w=" + std::to_string(quat.z()) + ")>";
+                    ", w=" + std::to_string(quat.w()) + ")>";
            });
 
   // LDLT<Eigen::MatrixXd>
@@ -67,20 +76,6 @@ PYBIND11_MODULE(eigen, m) {
          [](const LDLT<MatrixXd>& ldlt, const MatrixXd& x) {
            return ldlt.solve(x);
          });
-
-  // SpatialForced
-  py::class_<SpatialForce<double,1,0,1>>(m, "SpatialForced")
-      .def(py::init<const SpatialForce<double,1>&>())
-      .def(py::init<const double&, const double&, const double&, const double&, const double&, const double&>())
-      .def("__repr__",
-          [](const SpatialForce<double,1,0,1>& f) {
-            return "<eigen.SpatialForced (lin=[" + std::to_string(f(0)) +
-                   ", " + std::to_string(f(1)) +
-                   ", " + std::to_string(f(2)) +
-                   "], ang=[" + std::to_string(f(3)) +
-                   ", " + std::to_string(f(4)) +
-                   ", " + std::to_string(f(5)) + "])>";
-          });
 
 }
 

@@ -12,9 +12,14 @@
 
 #include "SpatialDyn/structs/articulated_body.h"
 
+#include <vector>   // std::vector
+#include <utility>  // std::pair
+
 namespace SpatialDyn {
 
-void Integrate(ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt);
+void Integrate(ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt,
+               const std::vector<std::pair<int, SpatialForced>> f_external = {},
+               bool gravity = true, bool centrifugal_coriolis = true, bool friction = false);
 
 }  // namespace SpatialDyn
 

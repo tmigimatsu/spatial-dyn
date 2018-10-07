@@ -209,10 +209,10 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
   SECTION("inverse dynamics") {
     Eigen::VectorXd ddq = Eigen::VectorXd::Ones(ab.dof());
 
-    Eigen::VectorXd tau = SpatialDyn::InverseDynamics(ab, ddq, true, true);
-    Eigen::VectorXd tau_Aq_g = SpatialDyn::InverseDynamics(ab, ddq, true, false);
-    Eigen::VectorXd tau_Aq_v = SpatialDyn::InverseDynamics(ab, ddq, false, true);
-    Eigen::VectorXd tau_Aq = SpatialDyn::InverseDynamics(ab, ddq, false, false);
+    Eigen::VectorXd tau = SpatialDyn::InverseDynamics(ab, ddq, {}, true, true);
+    Eigen::VectorXd tau_Aq_g = SpatialDyn::InverseDynamics(ab, ddq, {}, true, false);
+    Eigen::VectorXd tau_Aq_v = SpatialDyn::InverseDynamics(ab, ddq, {}, false, true);
+    Eigen::VectorXd tau_Aq = SpatialDyn::InverseDynamics(ab, ddq, {}, false, false);
 
     Eigen::VectorXd tau_crba_Aq_v_g = SpatialDyn::Inertia(ab) * ddq +
                                       SpatialDyn::CentrifugalCoriolis(ab) +
@@ -223,7 +223,7 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
     Eigen::VectorXd tau_crba_Aq = SpatialDyn::Inertia(ab) * ddq;
 
     SpatialDyn::SpatialForced f_ext = SpatialDyn::SpatialForced::Ones();
-    Eigen::VectorXd tau_f_ext = SpatialDyn::InverseDynamics(ab, ddq, true, true, {{-1, f_ext}});
+    Eigen::VectorXd tau_f_ext = SpatialDyn::InverseDynamics(ab, ddq, {{-1, f_ext}}, true, true);
 
     Eigen::Matrix6Xd J = Eigen::Matrix6Xd::Zero(6, ab.dof());
     for (const int i : ab.ancestors(-1)) {
@@ -271,8 +271,12 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
     Eigen::VectorXd ddq_f_ext = SpatialDyn::ForwardDynamics(ab, tau, {{-1, f_ext}});
     Eigen::VectorXd ddq_aba_f_ext = SpatialDyn::ForwardDynamicsAba(ab, tau, {{-1, f_ext}});
 
+    Eigen::VectorXd ddq_fr = SpatialDyn::ForwardDynamics(ab, tau, {}, true);
+    Eigen::VectorXd ddq_aba_fr = SpatialDyn::ForwardDynamics(ab, tau, {}, true);
+
     REQUIRE((ddq - ddq_aba).norm() < 1e-10);
     REQUIRE((ddq_f_ext - ddq_aba_f_ext).norm() < 1e-10);
+    REQUIRE((ddq_fr - ddq_aba_fr).norm() < 1e-10);
   }
 
   SECTION("centrifugal coriolis") {

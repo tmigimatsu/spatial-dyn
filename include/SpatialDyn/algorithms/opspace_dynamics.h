@@ -22,8 +22,9 @@ Eigen::Vector3d OrientationError(const Eigen::Quaterniond &quat, const Eigen::Qu
 
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                 const Eigen::VectorXd& ddx, Eigen::MatrixXd *N = nullptr,
-                                double svd_epsilon = 0, bool gravity = false,
-                                bool centrifugal_coriolis = false);
+                                const std::vector<std::pair<int, SpatialForced>>& f_external = {},
+                                bool gravity = false, bool centrifugal_coriolis = false,
+                                bool friction = false, double svd_epsilon = 0);
 
 const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                double svd_epsilon = 0);
@@ -42,6 +43,9 @@ Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, const Eigen::Matr
 Eigen::VectorXd Gravity(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                         const std::vector<std::pair<int, SpatialForced>>& f_external = {},
                         double svd_epsilon = 0);
+
+Eigen::VectorXd Friction(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
+                         double svd_epsilon = 0);
 
 // ABA
 const Eigen::Matrix6d& InertiaAba(const ArticulatedBody& ab,

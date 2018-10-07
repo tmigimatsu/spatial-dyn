@@ -8,6 +8,7 @@
  */
 
 #include "algorithms/inverse_dynamics.h"
+#include "utils/math.h"
 
 #define CACHE_INVERSE_DYNAMICS
 
@@ -15,8 +16,8 @@ namespace SpatialDyn {
 
 // RNEA
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq,
-                                bool gravity, bool centrifugal_coriolis,
-                                const std::vector<std::pair<int, SpatialForced>>& f_external) {
+                                const std::vector<std::pair<int, SpatialForced>>& f_external,
+                                bool gravity, bool centrifugal_coriolis, bool friction) {
   auto& rnea = ab.rnea_data_;
   auto& vel  = ab.vel_data_;
 
@@ -68,10 +69,14 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
   // Backward pass
   Eigen::VectorXd tau(ab.dof());           // Resulting joint torques
   for (int i = ab.dof() - 1; i >= 0; i--) {
-    const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
+    const Joint& joint = ab.rigid_bodies(i).joint();
+    const SpatialMotiond& s = joint.subspace();
     const int parent = ab.rigid_bodies(i).id_parent();
 
     tau(i) = s.dot(rnea.f[i]);
+    if (friction) {
+      tau(i) += joint.f_coulomb() * signum(ab.dq(i)) + joint.f_viscous() * ab.dq(i);
+    }
     if (parent >= 0) rnea.f[parent] += ab.T_to_parent(i) * rnea.f[i];
   }
   return tau;
@@ -154,6 +159,20 @@ const Eigen::VectorXd& Gravity(const ArticulatedBody& ab,
   }
   grav.is_computed = f_external.empty();
   return grav.G;
+}
+
+const Eigen::VectorXd& Friction(const ArticulatedBody& ab) {
+  auto& grav = ab.grav_data_;
+  if (grav.is_friction_computed) {
+    return grav.F;
+  }
+
+  for (size_t i = 0; i < ab.dof(); i++) {
+    const Joint& joint = ab.rigid_bodies(i).joint();
+    grav.F(i) = joint.f_coulomb() * signum(ab.dq(i)) + joint.f_viscous() * ab.dq(i);
+  }
+  grav.is_friction_computed = true;
+  return grav.F;
 }
 
 // CRBA

@@ -24,7 +24,9 @@ Eigen::Vector3d OrientationError(const Eigen::Quaterniond &quat, const Eigen::Qu
 
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                 const Eigen::VectorXd& ddx, Eigen::MatrixXd *N,
-                                double svd_epsilon, bool gravity, bool centrifugal_coriolis) {
+                                const std::vector<std::pair<int, SpatialForced>>& f_external,
+                                bool gravity, bool centrifugal_coriolis, bool friction,
+                                double svd_epsilon) {
   // Project Jacobian in nullspace
   Eigen::MatrixXd JN;
   bool use_nullspace = N != nullptr && N->size() > 0;
@@ -36,7 +38,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
   // Compute opspace dynamics
   Eigen::VectorXd F_x;
   if (gravity) {  // Compute inline for efficiency
-    F_x = Inertia(ab, J_x, svd_epsilon) * ddx + Gravity(ab, J_x, {}, svd_epsilon);
+    F_x = Inertia(ab, J_x, svd_epsilon) * ddx + Gravity(ab, J_x, f_external, svd_epsilon);
   } else {
     F_x = Inertia(ab, J_x, svd_epsilon) * ddx;
   }
@@ -44,6 +46,10 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
   // TODO: Only works for 6d pos_ori tasks at the origin of the ee frame
   if (centrifugal_coriolis && F_x.size() == 6) {
     F_x += CentrifugalCoriolis(ab, J_x, svd_epsilon);
+  }
+
+  if (friction) {
+    F_x += Friction(ab, J_x, svd_epsilon);
   }
 
   // Update nullspace
@@ -122,6 +128,11 @@ Eigen::VectorXd Gravity(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                         const std::vector<std::pair<int, SpatialForced>>& f_external,
                         double svd_epsilon) {
   return JacobianDynamicInverse(ab, J, svd_epsilon).transpose() * Gravity(ab, f_external);
+}
+
+Eigen::VectorXd Friction(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
+                         double svd_epsilon) {
+  return JacobianDynamicInverse(ab, J, svd_epsilon).transpose() * Friction(ab);
 }
 
 }  // namespace Opspace

@@ -12,7 +12,9 @@
 
 namespace SpatialDyn {
 
-void Integrate(ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt) {
+void Integrate(ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt,
+               const std::vector<std::pair<int, SpatialForced>> f_external,
+               bool gravity, bool centrifugal_coriolis, bool friction) {
   Eigen::VectorXd q  = ab.q();
   Eigen::VectorXd dq = ab.dq();
   Eigen::VectorXd ddq = ab.ddq();
@@ -20,14 +22,14 @@ void Integrate(ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt) {
   // Forward Euler
   ab.set_q(q + dq * dt);
   ab.set_dq(dq + ddq * dt);
-  ddq = ForwardDynamics(ab, tau);
+  ddq = ForwardDynamics(ab, tau, f_external, gravity, centrifugal_coriolis, friction);
 
   q  += 0.5 * (ab.dq()  + dq)  * dt;
   dq += 0.5 * (ab.ddq() + ddq) * dt;
 
   ab.set_q(q + dq * dt);
   ab.set_dq(dq + ddq * dt);
-  ddq = ForwardDynamics(ab, tau);
+  ddq = ForwardDynamics(ab, tau, f_external, gravity, centrifugal_coriolis, friction);
 }
 
 }  // namespace SpatialDyn

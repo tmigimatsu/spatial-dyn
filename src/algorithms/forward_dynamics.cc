@@ -9,20 +9,21 @@
 
 #include "algorithms/forward_dynamics.h"
 #include "algorithms/inverse_dynamics.h"
+#include "utils/math.h"
 
 namespace SpatialDyn {
 
 Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& tau,
-                                const std::vector<std::pair<int, SpatialForced>>& f_external) {
-  // TODO: Test against InverseDynamics with ddq = 0
-  // return InertiaInverse(ab).solve(tau - CentrifugalCoriolis(ab) - Gravity(ab));
-  return InertiaInverse(ab).solve(tau - InverseDynamics(ab, Eigen::VectorXd::Zero(ab.dof()),
-                                                        true, true, f_external));
+                                const std::vector<std::pair<int, SpatialForced>>& f_external,
+                                bool gravity, bool centrifugal_coriolis, bool friction) {
+  return InertiaInverse(ab).solve(tau - InverseDynamics(ab,
+      Eigen::VectorXd::Zero(ab.dof()), f_external, gravity, centrifugal_coriolis, friction));
 }
 
 // ABA
 Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab, const Eigen::VectorXd& tau,
-                                   const std::vector<std::pair<int, SpatialForced>>& f_external) {
+                                   const std::vector<std::pair<int, SpatialForced>>& f_external,
+                                   bool friction) {
   auto& aba = ab.aba_data_;
   auto& vel = ab.vel_data_;
   auto& rnea = ab.rnea_data_;
@@ -76,6 +77,10 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab, const Eigen::Vecto
     }
 
     ddq(i) = (tau(i) - s.dot(rnea.f[i])) / aba.d[i];
+    if (friction) {
+      const Joint& joint = ab.rigid_bodies(i).joint();
+      ddq(i) -= joint.f_coulomb() * signum(ab.dq(i)) + joint.f_viscous() * ab.dq(i);
+    }
     if (parent >= 0) {
       rnea.f[parent] += ab.T_to_parent(i) *
                        (rnea.f[i] + aba.I_a[i] * rnea.a[i] + ddq(i) * aba.h[i]);

@@ -115,6 +115,17 @@ void Joint::set_f_coulomb(double f_coulomb) {
   f_coulomb_ = f_coulomb;
 }
 
+double Joint::f_viscous() const {
+  return f_viscous_;
+}
+void Joint::set_f_viscous(double f_viscous) {
+  if (f_viscous < 0.) {
+    throw std::invalid_argument("Joint::set_f_viscous(): f_viscous (" + std::to_string(f_viscous) +
+                                ") cannot be negative.");
+  }
+  f_viscous_ = f_viscous;
+}
+
 double Joint::f_stiction() const {
   return f_stiction_;
 }

@@ -57,6 +57,8 @@ class SpatialForce : public PlainObjectBase<SpatialForce<_Scalar, _Cols, _Option
 
   SpatialForce& operator=(const Scalar& value);
 
+  SpatialForce& operator*=(const Isometry3d& T);
+
   Index innerStride() const;
   Index outerStride() const;
 
@@ -144,8 +146,15 @@ SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::operator=(const ReturnByValue<
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>&
-SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::operator=(const Scalar &value) {
+SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::operator=(const Scalar& value) {
   Base::setConstant(value);
+  return *this;
+}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>&
+SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::operator*=(const Isometry3d& T) {
+  *this = T * (*this);
   return *this;
 }
 

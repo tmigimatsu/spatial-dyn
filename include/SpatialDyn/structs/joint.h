@@ -52,6 +52,9 @@ class Joint {
   double f_coulomb() const;
   void set_f_coulomb(double f_coulomb);
 
+  double f_viscous() const;
+  void set_f_viscous(double f_viscous);
+
   double f_stiction() const;
   void set_f_stiction(double f_stiction);
 
@@ -71,8 +74,9 @@ class Joint {
   double q_max_  = std::numeric_limits<double>::infinity();
   double dq_max_ = std::numeric_limits<double>::infinity();
   double fq_max_ = std::numeric_limits<double>::infinity();
-  double f_coulomb_  = 0;
-  double f_stiction_ = 0;
+  double f_coulomb_  = 0.;
+  double f_viscous_  = 0.;
+  double f_stiction_ = 0.;
 
 };
 

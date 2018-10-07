@@ -115,6 +115,9 @@ class ArticulatedBody {
     bool is_computed = false;        // Reusable with same position, gravity
     std::vector<SpatialForced> f_g;  // Rigid body gravity force
     Eigen::VectorXd G;               // Joint space gravity
+
+    bool is_friction_computed = false;
+    Eigen::VectorXd F;
   };
   mutable GravityData grav_data_;
 
@@ -183,15 +186,17 @@ class ArticulatedBody {
   };
   mutable OpspaceAbaData opspace_aba_data_;
 
-  friend Eigen::VectorXd InverseDynamics(const ArticulatedBody&, const Eigen::VectorXd&, bool, bool, const std::vector<std::pair<int, SpatialForced>>&);
+  friend Eigen::VectorXd InverseDynamics(const ArticulatedBody&, const Eigen::VectorXd&, const std::vector<std::pair<int, SpatialForced>>&, bool, bool, bool);
   friend const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody&);
   friend const Eigen::VectorXd& Gravity(const ArticulatedBody&, const std::vector<std::pair<int, SpatialForced>>&);
+  friend const Eigen::VectorXd& Friction(const ArticulatedBody&);
   friend const Eigen::MatrixXd& Inertia(const ArticulatedBody&);
   friend const Eigen::LDLT<Eigen::MatrixXd>& InertiaInverse(const ArticulatedBody&);
   friend const Eigen::MatrixXd& InertiaInverseAba(const ArticulatedBody&);
 
   friend Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody&, const Eigen::VectorXd&,
-                                            const std::vector<std::pair<int, SpatialForced>>&);
+                                            const std::vector<std::pair<int, SpatialForced>>&,
+                                            bool);
 
   friend const Eigen::MatrixXd& Opspace::Inertia(const ArticulatedBody&, const Eigen::MatrixXd& J, double);
   friend const Eigen::MatrixXd& Opspace::InertiaInverse(const ArticulatedBody&, const Eigen::MatrixXd& J);

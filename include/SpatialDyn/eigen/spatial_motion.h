@@ -57,6 +57,8 @@ class SpatialMotion : public PlainObjectBase<SpatialMotion<_Scalar, _Cols, _Opti
 
   SpatialMotion& operator=(const Scalar &value);
 
+  SpatialMotion& operator*=(const Isometry3d& T);
+
   Index innerStride() const;
   Index outerStride() const;
 
@@ -146,6 +148,13 @@ template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>&
 SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator=(const Scalar& value) {
   Base::setConstant(value);
+  return *this;
+}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>&
+SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator*=(const Isometry3d& T) {
+  *this = T * (*this);
   return *this;
 }
 

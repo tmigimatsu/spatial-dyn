@@ -20,11 +20,13 @@ namespace SpatialDyn {
 
 // RNEA
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq,
+                                const std::vector<std::pair<int, SpatialForced>>& f_external = {},
                                 bool gravity = true, bool centrifugal_coriolis = false,
-                                const std::vector<std::pair<int, SpatialForced>>& f_external = {});
+                                bool friction = false);
 const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab);
 const Eigen::VectorXd& Gravity(const ArticulatedBody& ab,
                                const std::vector<std::pair<int, SpatialForced>>& f_external = {});
+const Eigen::VectorXd& Friction(const ArticulatedBody& ab);
 
 // CRBA
 const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab);
