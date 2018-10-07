@@ -125,8 +125,10 @@ PYBIND11_MODULE(spatialdyn, m) {
            });
 
   // Forward dynamics
-  m.def("forward_dynamics", &ForwardDynamics);
-  m.def("forward_dynamics_aba", &ForwardDynamicsAba);
+  m.def("forward_dynamics", &ForwardDynamics, "ab"_a, "tau"_a,
+        "f_external"_a = std::vector<std::pair<int, SpatialForced>>());
+  m.def("forward_dynamics_aba", &ForwardDynamicsAba, "ab"_a, "tau"_a,
+        "f_external"_a = std::vector<std::pair<int, SpatialForced>>());
 
   // Forward kinematics
   m.def("position", &Position, "ab"_a, "link"_a = -1, "offset"_a = Eigen::Vector3d::Zero());
@@ -138,9 +140,9 @@ PYBIND11_MODULE(spatialdyn, m) {
 
   // Inverse dynamics
   m.def("inverse_dynamics", &InverseDynamics, "ab"_a, "ddq"_a, "gravity"_a = true,
-        "centrifugal_coriolis"_a = false, "cache"_a = false);
+        "centrifugal_coriolis"_a = false, "f_external"_a = std::vector<std::pair<int, SpatialForced>>());
   m.def("centrifugal_coriolis", &CentrifugalCoriolis, "ab"_a);
-  m.def("gravity", &Gravity, "ab"_a);
+  m.def("gravity", &Gravity, "ab"_a, "f_external"_a = std::vector<std::pair<int, SpatialForced>>());
   m.def("inertia", &Inertia, "ab"_a);
   m.def("inertia_inverse", &InertiaInverse, "ab"_a);
 
@@ -178,7 +180,8 @@ PYBIND11_MODULE(spatialdyn, m) {
            "svd_epsilon"_a = 0);
   m_op.def("centrifugal_coriolis", &Opspace::CentrifugalCoriolis, "ab"_a, "J"_a,
            "idx_link"_a = -1, "offset"_a = Eigen::Vector3d::Zero(), "svd_epsilon"_a = 0);
-  m_op.def("gravity", &Opspace::Gravity, "ab"_a, "J"_a, "svd_epsilon"_a = 0);
+  m_op.def("gravity", &Opspace::Gravity, "ab"_a, "J"_a,
+           "f_external"_a = std::vector<std::pair<int, SpatialForced>>(), "svd_epsilon"_a = 0);
 
   m_op.def("inertia_aba", &Opspace::InertiaAba, "ab"_a, "idx_link"_a = -1,
            "offset"_a = Eigen::Vector3d::Zero(), "svd_epsilon"_a = 0);
@@ -187,7 +190,8 @@ PYBIND11_MODULE(spatialdyn, m) {
   m_op.def("centrifugal_coriolis_aba", &Opspace::CentrifugalCoriolisAba, "ab"_a,
            "idx_link"_a = -1, "offset"_a = Eigen::Vector3d::Zero(), "svd_epsilon"_a = 0);
   m_op.def("gravity_aba", &Opspace::GravityAba, "ab"_a, "idx_link"_a = -1,
-           "offset"_a = Eigen::Vector3d::Zero(), "svd_epsilon"_a = 0);
+           "offset"_a = Eigen::Vector3d::Zero(),
+           "f_external"_a = std::vector<std::pair<int, SpatialForced>>(), "svd_epsilon"_a = 0);
 
   // Urdf parser
   py::module m_urdf = m.def_submodule("urdf");

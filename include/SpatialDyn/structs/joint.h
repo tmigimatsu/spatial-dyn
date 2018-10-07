@@ -22,6 +22,7 @@ enum class JointType { UNDEFINED, RX, RY, RZ, PX, PY, PZ };
 class Joint {
 
  public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   Joint() {}
   Joint(JointType type);

@@ -17,7 +17,7 @@ Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
   // TODO: Test against InverseDynamics with ddq = 0
   // return InertiaInverse(ab).solve(tau - CentrifugalCoriolis(ab) - Gravity(ab));
   return InertiaInverse(ab).solve(tau - InverseDynamics(ab, Eigen::VectorXd::Zero(ab.dof()),
-                                                        true, true, false, f_external));
+                                                        true, true, f_external));
 }
 
 // ABA
@@ -25,6 +25,7 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab, const Eigen::Vecto
                                    const std::vector<std::pair<int, SpatialForced>>& f_external) {
   auto& aba = ab.aba_data_;
   auto& vel = ab.vel_data_;
+  auto& rnea = ab.rnea_data_;
 
   // Forward pass
   for (size_t i = 0; i < ab.dof(); i++) {
@@ -41,21 +42,21 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab, const Eigen::Vecto
     }
 
     if (parent < 0) {
-      aba.a[i].setZero();
+      rnea.a[i].setZero();
     } else {
-      aba.a[i] = vel.v[i].cross(ab.dq(i) * s);
+      rnea.a[i] = vel.v[i].cross(ab.dq(i) * s);
     }
 
     if (!aba.is_computed) aba.I_a[i] = I;
 
-    aba.p[i] = vel.v[i].cross(I * vel.v[i]);
+    rnea.f[i] = vel.v[i].cross(I * vel.v[i]);
 
     // TODO: Use more efficient data structure for sorting through external forces
     for (const std::pair<int, SpatialForced>& link_f : f_external) {
       int idx_link = link_f.first;
       if (idx_link < 0) idx_link += ab.dof();
       if (idx_link != i) continue;
-      aba.p[i] -= ab.T_to_world(i).inverse() * link_f.second;
+      rnea.f[i] -= ab.T_to_world(i).inverse() * link_f.second;
     }
   }
   vel.is_computed = true;
@@ -74,10 +75,10 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab, const Eigen::Vecto
       }
     }
 
-    ddq(i) = (tau(i) - s.dot(aba.p[i])) / aba.d[i];
+    ddq(i) = (tau(i) - s.dot(rnea.f[i])) / aba.d[i];
     if (parent >= 0) {
-      aba.p[parent] += ab.T_to_parent(i) *
-                       (aba.p[i] + aba.I_a[i] * aba.a[i] + ddq(i) * aba.h[i]);
+      rnea.f[parent] += ab.T_to_parent(i) *
+                       (rnea.f[i] + aba.I_a[i] * rnea.a[i] + ddq(i) * aba.h[i]);
     }
   }
   aba.is_computed = true;
@@ -86,12 +87,12 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab, const Eigen::Vecto
     const int parent = ab.rigid_bodies(i).id_parent();
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     if (parent < 0) {
-      aba.a[i] = ab.T_from_parent(i) * -ab.g();
+      rnea.a[i] = ab.T_from_parent(i) * -ab.g();
     } else {
-      aba.a[i] += ab.T_from_parent(i) * aba.a[parent];
+      rnea.a[i] += ab.T_from_parent(i) * rnea.a[parent];
     }
-    ddq(i) -= aba.h[i].dot(aba.a[i]) / aba.d[i];
-    aba.a[i] += ddq(i) * s;
+    ddq(i) -= aba.h[i].dot(rnea.a[i]) / aba.d[i];
+    rnea.a[i] += ddq(i) * s;
   }
   return ddq;
 }

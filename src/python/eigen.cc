@@ -68,6 +68,20 @@ PYBIND11_MODULE(eigen, m) {
            return ldlt.solve(x);
          });
 
+  // SpatialForced
+  py::class_<SpatialForce<double,1,0,1>>(m, "SpatialForced")
+      .def(py::init<const SpatialForce<double,1>&>())
+      .def(py::init<const double&, const double&, const double&, const double&, const double&, const double&>())
+      .def("__repr__",
+          [](const SpatialForce<double,1,0,1>& f) {
+            return "<eigen.SpatialForced (lin=[" + std::to_string(f(0)) +
+                   ", " + std::to_string(f(1)) +
+                   ", " + std::to_string(f(2)) +
+                   "], ang=[" + std::to_string(f(3)) +
+                   ", " + std::to_string(f(4)) +
+                   ", " + std::to_string(f(5)) + "])>";
+          });
+
 }
 
 }  // namespace Eigen

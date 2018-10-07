@@ -19,6 +19,7 @@ namespace SpatialDyn {
 enum class GeometryType { UNDEFINED, BOX, CYLINDER, SPHERE, MESH };
 
 struct Geometry {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   GeometryType type = GeometryType::UNDEFINED;
   Eigen::Vector3d scale = Eigen::Vector3d::Ones();  // Box size/mesh scale
   double radius = 0                      ;          // Cylinder/sphere radius
@@ -49,12 +50,14 @@ struct Geometry {
 };
 
 struct Material {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   std::string name;
   Eigen::Vector4d rgba = Eigen::Vector4d::Ones();
   std::string texture;  // Texture filename
 };
 
 struct Graphics {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   std::string name;
   Eigen::Isometry3d T_to_parent = Eigen::Isometry3d::Identity();
   Geometry geometry;

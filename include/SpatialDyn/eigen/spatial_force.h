@@ -28,6 +28,8 @@ class SpatialForce : public PlainObjectBase<SpatialForce<_Scalar, _Cols, _Option
 
   SpatialForce();
 
+  SpatialForce(double rows, double cols);
+
   SpatialForce(const SpatialForce& other);
 
   SpatialForce(SpatialForce&& other)
@@ -68,6 +70,12 @@ inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::SpatialForce()
     : SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::Base() {
   Base::_check_template_params();
   EIGEN_INITIALIZE_COEFFS_IF_THAT_OPTION_IS_ENABLED
+}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::SpatialForce(double rows, double cols)
+    : SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::Base() {
+  Base::resize(rows, cols);
 }
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>

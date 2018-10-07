@@ -28,6 +28,8 @@ class SpatialMotion : public PlainObjectBase<SpatialMotion<_Scalar, _Cols, _Opti
 
   SpatialMotion();
 
+  SpatialMotion(double rows, double cols);
+
   SpatialMotion(const SpatialMotion& other);
 
   SpatialMotion(SpatialMotion&& other)
@@ -68,6 +70,12 @@ inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::SpatialMotion()
     : SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::Base() {
   Base::_check_template_params();
   EIGEN_INITIALIZE_COEFFS_IF_THAT_OPTION_IS_ENABLED
+}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::SpatialMotion(double rows, double cols)
+    : SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::Base() {
+  Base::resize(rows, cols);
 }
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>

@@ -23,6 +23,7 @@ class ArticulatedBody;
 class RigidBody {
 
  public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   RigidBody() {}
   RigidBody(const std::string& name);

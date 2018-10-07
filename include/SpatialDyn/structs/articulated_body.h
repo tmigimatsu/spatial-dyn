@@ -23,6 +23,7 @@ namespace SpatialDyn {
 class ArticulatedBody {
 
  public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   ArticulatedBody(const std::string& name);
 
@@ -101,6 +102,7 @@ class ArticulatedBody {
   mutable VelocityData vel_data_;
 
   struct CentrifugalCoriolisData {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     bool is_computed = false;    // Reusable with same position, velocity
     std::vector<SpatialMotiond> c_c;   // Composite centrifugal accelerations
     std::vector<SpatialForced> f_c;    // Rigid body centrifugal and Coriolis forces
@@ -109,6 +111,7 @@ class ArticulatedBody {
   mutable CentrifugalCoriolisData cc_data_;
 
   struct GravityData {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     bool is_computed = false;        // Reusable with same position, gravity
     std::vector<SpatialForced> f_g;  // Rigid body gravity force
     Eigen::VectorXd G;               // Joint space gravity
@@ -122,6 +125,7 @@ class ArticulatedBody {
   mutable RneaData rnea_data_;
 
   struct CrbaData {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     bool is_computed = false;          // Reusable with same position
     std::vector<SpatialInertiad> I_c;  // Composite inertia
     Eigen::MatrixXd A;                 // Joint space inertia
@@ -132,14 +136,11 @@ class ArticulatedBody {
   mutable CrbaData crba_data_;
 
   struct AbaData {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     bool is_computed = false;  // Reusable with same position
     std::vector<SpatialInertiaMatrixd> I_a;
     std::vector<SpatialForced> h;
     std::vector<double> d;
-
-    // Not reusable
-    std::vector<SpatialForced> p;
-    std::vector<SpatialMotiond> a;
 
     bool is_A_inv_computed = false;  // Reusable with same position
     Eigen::MatrixXd A_inv;           // Inverse inertia computed with ABA
@@ -149,6 +150,7 @@ class ArticulatedBody {
   mutable AbaData aba_data_;
 
   struct OpspaceData {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     Eigen::MatrixXd J;
     double svd_epsilon;
 
@@ -165,6 +167,7 @@ class ArticulatedBody {
   mutable OpspaceData opspace_data_;
 
   struct OpspaceAbaData {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     int idx_link;
     Eigen::Vector3d offset;
     double svd_epsilon;
@@ -180,7 +183,7 @@ class ArticulatedBody {
   };
   mutable OpspaceAbaData opspace_aba_data_;
 
-  friend Eigen::VectorXd InverseDynamics(const ArticulatedBody&, const Eigen::VectorXd&, bool, bool, bool, const std::vector<std::pair<int, SpatialForced>>&);
+  friend Eigen::VectorXd InverseDynamics(const ArticulatedBody&, const Eigen::VectorXd&, bool, bool, const std::vector<std::pair<int, SpatialForced>>&);
   friend const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody&);
   friend const Eigen::VectorXd& Gravity(const ArticulatedBody&, const std::vector<std::pair<int, SpatialForced>>&);
   friend const Eigen::MatrixXd& Inertia(const ArticulatedBody&);

@@ -260,9 +260,6 @@ void ArticulatedBody::ExpandDof(int id, int id_parent) {
   aba_data_.h.push_back(SpatialForced());
   aba_data_.d.push_back(0);
 
-  aba_data_.p.push_back(SpatialForced());
-  aba_data_.a.push_back(SpatialMotiond());
-
   aba_data_.is_A_inv_computed = false;
   aba_data_.A_inv.resize(dof_, dof_);
   aba_data_.P.push_back(SpatialForceXd());

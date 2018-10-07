@@ -209,15 +209,10 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
   SECTION("inverse dynamics") {
     Eigen::VectorXd ddq = Eigen::VectorXd::Ones(ab.dof());
 
-    Eigen::VectorXd tau = SpatialDyn::InverseDynamics(ab, ddq, true, true, false);
-    Eigen::VectorXd tau_Aq_g = SpatialDyn::InverseDynamics(ab, ddq, true, false, false);
-    Eigen::VectorXd tau_Aq_v = SpatialDyn::InverseDynamics(ab, ddq, false, true, false);
-    Eigen::VectorXd tau_Aq = SpatialDyn::InverseDynamics(ab, ddq, false, false, false);
-
-    Eigen::VectorXd tau_cache = SpatialDyn::InverseDynamics(ab, ddq, true, true, true);
-    Eigen::VectorXd tau_cache_Aq_g = SpatialDyn::InverseDynamics(ab, ddq, true, false, true);
-    Eigen::VectorXd tau_cache_Aq_v = SpatialDyn::InverseDynamics(ab, ddq, false, true, true);
-    Eigen::VectorXd tau_cache_Aq = SpatialDyn::InverseDynamics(ab, ddq, false, false, true);
+    Eigen::VectorXd tau = SpatialDyn::InverseDynamics(ab, ddq, true, true);
+    Eigen::VectorXd tau_Aq_g = SpatialDyn::InverseDynamics(ab, ddq, true, false);
+    Eigen::VectorXd tau_Aq_v = SpatialDyn::InverseDynamics(ab, ddq, false, true);
+    Eigen::VectorXd tau_Aq = SpatialDyn::InverseDynamics(ab, ddq, false, false);
 
     Eigen::VectorXd tau_crba_Aq_v_g = SpatialDyn::Inertia(ab) * ddq +
                                       SpatialDyn::CentrifugalCoriolis(ab) +
@@ -228,7 +223,7 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
     Eigen::VectorXd tau_crba_Aq = SpatialDyn::Inertia(ab) * ddq;
 
     SpatialDyn::SpatialForced f_ext = SpatialDyn::SpatialForced::Ones();
-    Eigen::VectorXd tau_f_ext = SpatialDyn::InverseDynamics(ab, ddq, true, true, false, {{-1, f_ext}});
+    Eigen::VectorXd tau_f_ext = SpatialDyn::InverseDynamics(ab, ddq, true, true, {{-1, f_ext}});
 
     Eigen::Matrix6Xd J = Eigen::Matrix6Xd::Zero(6, ab.dof());
     for (const int i : ab.ancestors(-1)) {
@@ -246,11 +241,6 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
     REQUIRE((tau_Aq_g - tau_crba_Aq_g).norm() < 1e-10);
     REQUIRE((tau_Aq_v - tau_crba_Aq_v).norm() < 1e-10);
     REQUIRE((tau_Aq - tau_crba_Aq).norm() < 1e-10);
-
-    REQUIRE((tau_cache - tau_crba_Aq_v_g).norm() < 1e-10);
-    REQUIRE((tau_cache_Aq_g - tau_crba_Aq_g).norm() < 1e-10);
-    REQUIRE((tau_cache_Aq_v - tau_crba_Aq_v).norm() < 1e-10);
-    REQUIRE((tau_cache_Aq - tau_crba_Aq).norm() < 1e-10);
 
     REQUIRE((tau_f_ext - tau_crba_f_ext).norm() < 1e-10);
     REQUIRE((tau_f_ext - tau_crba_f_ext_2).norm() < 1e-10);
