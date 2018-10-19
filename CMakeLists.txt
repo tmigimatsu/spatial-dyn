@@ -51,7 +51,7 @@ function(download_package PACKAGE_NAME)
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${PACKAGE_NAME})
 endfunction()
 
-find_package(Eigen3 3.3.5 REQUIRED)
+find_package(Eigen3 3.3.5 QUIET)
 if(NOT Eigen3_FOUND)
     download_package(Eigen3)
     find_package(Eigen3 3.3.5 REQUIRED PATHS ${CMAKE_BINARY_DIR}/Eigen3/build)
@@ -65,11 +65,10 @@ if(NOT cpp_redis_FOUND)
         ${CMAKE_BINARY_DIR}/cpp_redis/build/lib/pkgconfig/cpp_redis.pc)
 endif()
 
-find_package(tinyxml2 QUIET)
-# pkg_check_modules(tinyxml2 QUIET IMPORTED_TARGET tinyxml2>=6.2)
+pkg_check_modules(tinyxml2 QUIET IMPORTED_TARGET tinyxml2>=6.2)
 if(NOT tinyxml2_FOUND)
     download_package(tinyxml2)
-    find_package(tinyxml2 REQUIRED PATHS ${CMAKE_BINARY_DIR}/tinyxml2/build)
+    find_package(tinyxml2 QUIET PATHS ${CMAKE_BINARY_DIR}/tinyxml2/build)
     # pkg_check_modules(tinyxml2 REQUIRED IMPORTED_TARGET
     #     ${CMAKE_BINARY_DIR}/tinyxml2/build/tinyxml2.pc>=6.2)
 endif()
@@ -88,7 +87,6 @@ target_link_libraries(${SPATIAL_DYN_LIB}
         PkgConfig::cpp_redis
     PRIVATE
         tinyxml2_static
-        # PkgConfig::tinyxml2
 )
 
 # Set include directories
@@ -169,7 +167,14 @@ endif()
 add_subdirectory(${SPATIAL_DYN_SRC_DIR}/python)
 
 # Export for build tree
-export(TARGETS ${SPATIAL_DYN_LIB_TARGETS}
+configure_file(${SPATIAL_DYN_CMAKE_DIR}/Findcpp_redis.cmake.in
+    ${CMAKE_BINARY_DIR}/Findcpp_redis.cmake)
+configure_file(${SPATIAL_DYN_CMAKE_DIR}/FindEigen3.cmake.in
+    ${CMAKE_BINARY_DIR}/FindEigen3.cmake)
+configure_file(${SPATIAL_DYN_CMAKE_DIR}/Findnlohmann_json.cmake.in
+    ${CMAKE_BINARY_DIR}/Findnlohmann_json.cmake)
+
+export(TARGETS ${SPATIAL_DYN_LIB}
     NAMESPACE ${SPATIAL_DYN_LIB}::
     FILE ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_TARGETS}.cmake)
 

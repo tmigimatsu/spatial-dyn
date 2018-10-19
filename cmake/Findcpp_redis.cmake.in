@@ -1,0 +1,13 @@
+############################################################
+# Finds the cpp_redis library built inside SpatialDyn
+#
+# Copyright 2018. All Rights Reserved.
+#
+# Created: October 19, 2018
+# Authors: Toki Migimatsu
+############################################################
+
+
+find_package(PkgConfig)
+pkg_check_modules(cpp_redis REQUIRED IMPORTED_TARGET
+    ${CMAKE_BINARY_DIR}/cpp_redis/build/lib/pkgconfig/cpp_redis.pc)

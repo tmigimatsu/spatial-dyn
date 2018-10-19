@@ -177,7 +177,8 @@ class SpatialForceBase : public DenseBase<Derived> {
   ArrayWrapper<Derived> array();
   const ArrayWrapper<const Derived> array() const;
 
-  const Matrix<Scalar, SpatialForceBase::ColsAtCompileTime, 6> transpose() const;
+  const Matrix<typename internal::traits<Derived>::Scalar,
+               internal::traits<Derived>::ColsAtCompileTime, 6> transpose() const;
 
   CartesianBlockType linear();
   ConstCartesianBlockType linear() const;
@@ -473,8 +474,8 @@ inline const ArrayWrapper<const Derived> SpatialForceBase<Derived>::array() cons
 }
 
 template<typename Derived>
-inline const Matrix<typename SpatialForceBase<Derived>::Scalar,
-                    SpatialForceBase<Derived>::ColsAtCompileTime, 6>
+inline const Matrix<typename internal::traits<Derived>::Scalar,
+                    internal::traits<Derived>::ColsAtCompileTime, 6>
 SpatialForceBase<Derived>::transpose() const {
   return MatrixWrapper<const Derived>(derived()).transpose();
 }

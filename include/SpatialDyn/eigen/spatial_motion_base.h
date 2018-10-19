@@ -504,6 +504,7 @@ inline const ArrayWrapper<const Derived> SpatialMotionBase<Derived>::array() con
   return ArrayWrapper<const Derived>(derived());
 }
 
+// TODO: Make identical to spatial_force_base transpose
 template<typename Derived>
 inline Transpose<MatrixWrapper<Derived>> SpatialMotionBase<Derived>::transpose() {
   return MatrixWrapper<Derived>(derived()).transpose();

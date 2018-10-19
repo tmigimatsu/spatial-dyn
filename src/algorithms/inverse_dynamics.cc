@@ -60,7 +60,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
     for (const std::pair<int, SpatialForced>& link_f : f_external) {
       int idx_link = link_f.first;
       if (idx_link < 0) idx_link += ab.dof();
-      if (idx_link != i) continue;
+      if (idx_link != static_cast<int>(i)) continue;
       rnea.f[i] -= ab.T_to_world(i).inverse() * link_f.second;
     }
   }
@@ -127,7 +127,6 @@ const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
 const Eigen::VectorXd& Gravity(const ArticulatedBody& ab,
                                const std::vector<std::pair<int, SpatialForced>>& f_external) {
   auto& grav = ab.grav_data_;
-  auto& rnea = ab.rnea_data_;
   if (grav.is_computed && f_external.empty()) {
     return grav.G;
   }
@@ -142,7 +141,7 @@ const Eigen::VectorXd& Gravity(const ArticulatedBody& ab,
     for (const std::pair<int, SpatialForced>& link_f : f_external) {
       int idx_link = link_f.first;
       if (idx_link < 0) idx_link += ab.dof();
-      if (idx_link != i) continue;
+      if (idx_link != static_cast<int>(i)) continue;
       grav.f_g[i] -= ab.T_to_world(i).inverse() * link_f.second;
     }
   }

@@ -56,7 +56,7 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab, const Eigen::Vecto
     for (const std::pair<int, SpatialForced>& link_f : f_external) {
       int idx_link = link_f.first;
       if (idx_link < 0) idx_link += ab.dof();
-      if (idx_link != i) continue;
+      if (idx_link != static_cast<int>(i)) continue;
       rnea.f[i] -= ab.T_to_world(i).inverse() * link_f.second;
     }
   }
@@ -156,7 +156,7 @@ const Eigen::MatrixXd& InertiaInverseAba(const ArticulatedBody& ab) {
         aba.A[i].col(j) += ab.T_from_parent(i) * aba.A[parent].col(j);
       }
       aba.A_inv(i,j) -= aba.h[i].dot(aba.A[i].col(j)) / aba.d[i];
-      if (i != j) aba.A_inv(j,i) = aba.A_inv(i,j);
+      if (static_cast<int>(i) != j) aba.A_inv(j,i) = aba.A_inv(i,j);
       aba.A[i].col(j) += aba.A_inv(i,j) * s;
     }
   }

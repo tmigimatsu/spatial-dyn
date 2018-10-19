@@ -173,7 +173,7 @@ Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen:
     for (const std::pair<int, SpatialForced>& link_f : f_external) {
       int idx_link = link_f.first;
       if (idx_link < 0) idx_link += ab.dof();
-      if (idx_link != i) continue;
+      if (idx_link != static_cast<int>(i)) continue;
       rnea.f[i] -= ab.T_to_world(i).inverse() * link_f.second;
     }
   }
