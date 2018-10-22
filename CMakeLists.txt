@@ -51,28 +51,34 @@ function(download_package PACKAGE_NAME)
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${PACKAGE_NAME})
 endfunction()
 
+# Export for build tree
+configure_file(${SPATIAL_DYN_CMAKE_DIR}/Findcpp_redis.cmake.in
+    ${CMAKE_BINARY_DIR}/Findcpp_redis.cmake @ONLY)
+configure_file(${SPATIAL_DYN_CMAKE_DIR}/FindEigen3.cmake.in
+    ${CMAKE_BINARY_DIR}/FindEigen3.cmake)
+configure_file(${SPATIAL_DYN_CMAKE_DIR}/Findnlohmann_json.cmake.in
+    ${CMAKE_BINARY_DIR}/Findnlohmann_json.cmake)
+
+
 find_package(Eigen3 3.3.5 QUIET)
 if(NOT Eigen3_FOUND)
     download_package(Eigen3)
     find_package(Eigen3 3.3.5 REQUIRED PATHS ${CMAKE_BINARY_DIR}/Eigen3/build)
 endif()
 
-find_package(PkgConfig)
-pkg_check_modules(cpp_redis QUIET IMPORTED_TARGET cpp_redis)
+find_package(cpp_redis 4.3.1 QUIET)
 if(NOT cpp_redis_FOUND)
     download_package(cpp_redis)
-    pkg_check_modules(cpp_redis REQUIRED IMPORTED_TARGET
-        ${CMAKE_BINARY_DIR}/cpp_redis/build/lib/pkgconfig/cpp_redis.pc)
+    list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_BINARY_DIR})
+    find_package(cpp_redis 4.3.1 MODULE REQUIRED)
+    list(REMOVE_AT CMAKE_MODULE_PATH 0)
 endif()
 
 find_package(tinyxml2 6.2 QUIET)
-# pkg_check_modules(tinyxml2 QUIET IMPORTED_TARGET tinyxml2>=6.2)
 if(NOT tinyxml2_FOUND)
     download_package(tinyxml2)
     set(tinyxml2_DIR "${CMAKE_BINARY_DIR}/tinyxml2/build")
     find_package(tinyxml2 QUIET NO_DEFAULT_PATH)
-    # pkg_check_modules(tinyxml2 REQUIRED IMPORTED_TARGET
-    #     ${CMAKE_BINARY_DIR}/tinyxml2/build/tinyxml2.pc>=6.2)
 endif()
 
 find_package(nlohmann_json 3.2 QUIET)
@@ -86,10 +92,9 @@ target_link_libraries(${SPATIAL_DYN_LIB}
         Eigen3::Eigen
         nlohmann_json::nlohmann_json
     INTERFACE
-        PkgConfig::cpp_redis
+        cpp_redis::cpp_redis
     PRIVATE
         tinyxml2_static
-        # PkgConfig::tinyxml2
 )
 
 # Set include directories
@@ -168,14 +173,6 @@ endif()
 
 # Build python wrapper
 add_subdirectory(${SPATIAL_DYN_SRC_DIR}/python)
-
-# Export for build tree
-configure_file(${SPATIAL_DYN_CMAKE_DIR}/Findcpp_redis.cmake.in
-    ${CMAKE_BINARY_DIR}/Findcpp_redis.cmake)
-configure_file(${SPATIAL_DYN_CMAKE_DIR}/FindEigen3.cmake.in
-    ${CMAKE_BINARY_DIR}/FindEigen3.cmake)
-configure_file(${SPATIAL_DYN_CMAKE_DIR}/Findnlohmann_json.cmake.in
-    ${CMAKE_BINARY_DIR}/Findnlohmann_json.cmake)
 
 export(TARGETS ${SPATIAL_DYN_LIB}
     NAMESPACE ${SPATIAL_DYN_LIB}::
