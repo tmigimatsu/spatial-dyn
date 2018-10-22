@@ -65,10 +65,12 @@ if(NOT cpp_redis_FOUND)
         ${CMAKE_BINARY_DIR}/cpp_redis/build/lib/pkgconfig/cpp_redis.pc)
 endif()
 
-pkg_check_modules(tinyxml2 QUIET IMPORTED_TARGET tinyxml2>=6.2)
+find_package(tinyxml2 6.2 QUIET)
+# pkg_check_modules(tinyxml2 QUIET IMPORTED_TARGET tinyxml2>=6.2)
 if(NOT tinyxml2_FOUND)
     download_package(tinyxml2)
-    find_package(tinyxml2 QUIET PATHS ${CMAKE_BINARY_DIR}/tinyxml2/build)
+    set(tinyxml2_DIR "${CMAKE_BINARY_DIR}/tinyxml2/build")
+    find_package(tinyxml2 QUIET NO_DEFAULT_PATH)
     # pkg_check_modules(tinyxml2 REQUIRED IMPORTED_TARGET
     #     ${CMAKE_BINARY_DIR}/tinyxml2/build/tinyxml2.pc>=6.2)
 endif()
@@ -87,6 +89,7 @@ target_link_libraries(${SPATIAL_DYN_LIB}
         PkgConfig::cpp_redis
     PRIVATE
         tinyxml2_static
+        # PkgConfig::tinyxml2
 )
 
 # Set include directories

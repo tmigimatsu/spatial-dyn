@@ -22,6 +22,13 @@ Eigen::Vector3d OrientationError(const Eigen::Quaterniond &quat, const Eigen::Qu
   return 2 * angle * aa_err.axis();
 }
 
+Eigen::Vector3d LookatError(const Eigen::Vector3d &vec, const Eigen::Vector3d &vec_des) {
+  Eigen::Quaterniond quat_err = Eigen::Quaterniond::FromTwoVectors(vec_des, vec);
+  Eigen::AngleAxisd aa_err(quat_err);
+  double angle = (quat_err.w() < 0) ? aa_err.angle() - 2 * M_PI : aa_err.angle();
+  return 2 * angle * aa_err.axis();
+}
+
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                 const Eigen::VectorXd& ddx, Eigen::MatrixXd *N,
                                 const std::vector<std::pair<int, SpatialForced>>& f_external,
