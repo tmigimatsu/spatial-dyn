@@ -133,8 +133,8 @@ PYBIND11_MODULE(spatialdyn, m) {
         "friction"_a = false);
 
   // Forward kinematics
-  m.def("position", &Position, "ab"_a, "link"_a = -1, "offset"_a = Eigen::Vector3d::Zero());
-  m.def("orientation", &Orientation, "ab"_a, "link"_a = -1);
+  m.def("position", (Eigen::Vector3d (*)(const ArticulatedBody&, int, const Eigen::Vector3d&)) &Position, "ab"_a, "link"_a = -1, "offset"_a = Eigen::Vector3d::Zero());
+  m.def("orientation", (Eigen::Quaterniond (*)(const ArticulatedBody&, int)) &Orientation, "ab"_a, "link"_a = -1);
   m.def("jacobian", &Jacobian, "ab"_a, "link"_a = -1, "offset"_a = Eigen::Vector3d::Zero());
   m.def("linear_jacobian", &LinearJacobian, "ab"_a, "link"_a = -1,
         "offset"_a = Eigen::Vector3d::Zero());

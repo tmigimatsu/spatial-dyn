@@ -17,8 +17,16 @@ namespace SpatialDyn {
 
 Eigen::Vector3d Position(const ArticulatedBody& ab, int link = -1,
                          const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
+Eigen::Vector3d Position(const ArticulatedBody& ab, const Eigen::VectorXd& q, int link = -1,
+                         const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
 
 Eigen::Quaterniond Orientation(const ArticulatedBody& ab, int link = -1);
+Eigen::Quaterniond Orientation(const ArticulatedBody& ab, const Eigen::VectorXd& q, int link = -1);
+
+Eigen::Quaterniond NearQuaternion(const Eigen::Quaterniond& quat,
+                                  const Eigen::Quaterniond& quat_reference);
+Eigen::Quaterniond FarQuaternion(const Eigen::Quaterniond& quat,
+                                 const Eigen::Quaterniond& quat_reference);
 
 // Eigen::Quaterniond Orientation(const ArticulatedBody& ab, int link = -1,
 //                                 const Eigen::Quaterniond& near, bool near = true);

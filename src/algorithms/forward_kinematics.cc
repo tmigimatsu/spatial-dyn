@@ -16,10 +16,43 @@ Eigen::Vector3d Position(const ArticulatedBody& ab, int link,
   if (link < 0) link += ab.dof();
   return ab.T_to_world(link) * offset;
 }
+Eigen::Vector3d Position(const ArticulatedBody& ab, const Eigen::VectorXd& q,
+                         int link, const Eigen::Vector3d& offset) {
+  if (link < 0) link += ab.dof();
+  Eigen::Vector3d pos = offset;
+  for (int i = link; i != -1; i = ab.rigid_bodies(i).id_parent()) {
+    const RigidBody& rb = ab.rigid_bodies(i);
+    pos = rb.T_to_parent() * (rb.joint().T_joint(q(i)) * pos);
+  }
+  return ab.T_base_to_world() * pos;
+}
 
 Eigen::Quaterniond Orientation(const ArticulatedBody& ab, int link) {
   if (link < 0) link += ab.dof();
   return Eigen::Quaterniond(ab.T_to_world(link).linear());
+}
+Eigen::Quaterniond Orientation(const ArticulatedBody& ab, const Eigen::VectorXd& q,
+                               int link) {
+  if (link < 0) link += ab.dof();
+  Eigen::Matrix3d ori = Eigen::Matrix3d::Identity();
+  for (int i = link; i != -1; i = ab.rigid_bodies(i).id_parent()) {
+    const RigidBody& rb = ab.rigid_bodies(i);
+    ori = rb.T_to_parent().linear() * rb.joint().T_joint(q(i)).linear() * ori;
+  }
+  return Eigen::Quaterniond(ab.T_base_to_world().linear() * ori);
+}
+
+Eigen::Quaterniond NearQuaternion(const Eigen::Quaterniond& quat,
+                                  const Eigen::Quaterniond& quat_reference) {
+  Eigen::Quaterniond result = quat;
+  if (quat.dot(quat_reference) < 0) result.coeffs() *= -1;
+  return result;
+}
+Eigen::Quaterniond FarQuaternion(const Eigen::Quaterniond& quat,
+                                 const Eigen::Quaterniond& quat_reference) {
+  Eigen::Quaterniond result = quat;
+  if (quat.dot(quat_reference) > 0) result.coeffs() *= -1;
+  return result;
 }
 
 // Eigen::Quaterniond Orientation(const ArticulatedBody& ab, int link = -1,
