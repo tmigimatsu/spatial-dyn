@@ -47,23 +47,20 @@ class ArticulatedBody {
 
   const Eigen::VectorXd& q() const;
   double q(int i) const;
-  void set_q(const Eigen::VectorXd& q);
-  void set_q(Eigen::VectorXd&& q);
+  void set_q(Eigen::Ref<const Eigen::VectorXd> q);
 
   const Eigen::VectorXd& dq() const;
   double dq(int i) const;
-  void set_dq(const Eigen::VectorXd& dq);
-  void set_dq(Eigen::VectorXd&& q);
+  void set_dq(Eigen::Ref<const Eigen::VectorXd> dq);
 
   const Eigen::VectorXd& ddq() const;
   double ddq(int i) const;
-  void set_ddq(const Eigen::VectorXd& ddq);
-  void set_ddq(Eigen::VectorXd&& q);
+  void set_ddq(Eigen::Ref<const Eigen::VectorXd> ddq);
 
   // Sensor torque
   const Eigen::VectorXd& tau() const;
   double tau(int i) const;
-  void set_tau(const Eigen::VectorXd& tau);
+  void set_tau(Eigen::Ref<const Eigen::VectorXd> tau);
 
   const SpatialMotiond& g() const;
   void set_g(const Eigen::Vector3d& g);
@@ -194,7 +191,8 @@ class ArticulatedBody {
   friend const Eigen::LDLT<Eigen::MatrixXd>& InertiaInverse(const ArticulatedBody&);
   friend const Eigen::MatrixXd& InertiaInverseAba(const ArticulatedBody&);
 
-  friend Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody&, const Eigen::VectorXd&,
+  friend Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody&,
+                                            Eigen::Ref<const Eigen::VectorXd>,
                                             const std::vector<std::pair<int, SpatialForced>>&,
                                             bool);
 

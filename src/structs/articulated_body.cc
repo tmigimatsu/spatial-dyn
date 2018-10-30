@@ -49,31 +49,11 @@ double ArticulatedBody::q(int i) const {
   if (i < 0) i += dof();
   return q_(i);
 }
-void ArticulatedBody::set_q(const Eigen::VectorXd& q) {
+void ArticulatedBody::set_q(Eigen::Ref<const Eigen::VectorXd> q) {
   if (q.size() != static_cast<int>(dof_)) {
     throw std::invalid_argument("ArticulatedBody::set_state(): q must be of size " + std::to_string(dof_));
   }
   q_ = q;
-
-  CalculateTransforms();
-  vel_data_.is_computed = false;
-  cc_data_.is_computed = false;
-  grav_data_.is_computed = false;
-  crba_data_.is_computed = false;
-  crba_data_.is_inv_computed = false;
-  aba_data_.is_computed = false;
-  aba_data_.is_A_inv_computed = false;
-  opspace_data_.is_lambda_computed = false;
-  opspace_data_.is_lambda_inv_computed = false;
-  opspace_data_.is_jbar_computed = false;
-  opspace_aba_data_.is_lambda_computed = false;
-  opspace_aba_data_.is_lambda_inv_computed = false;
-}
-void ArticulatedBody::set_q(Eigen::VectorXd&& q) {
-  if (q.size() != static_cast<int>(dof_)) {
-    throw std::invalid_argument("ArticulatedBody::set_state(): q must be of size " + std::to_string(dof_));
-  }
-  q_ = std::move(q);
 
   CalculateTransforms();
   vel_data_.is_computed = false;
@@ -97,22 +77,11 @@ double ArticulatedBody::dq(int i) const {
   if (i < 0) i += dof();
   return dq_(i);
 }
-void ArticulatedBody::set_dq(const Eigen::VectorXd& dq) {
+void ArticulatedBody::set_dq(Eigen::Ref<const Eigen::VectorXd> dq) {
   if (dq.size() != static_cast<int>(dof_)) {
     throw std::invalid_argument("ArticulatedBody::set_state(): q must be of size " + std::to_string(dof_));
   }
   dq_ = dq;
-
-  vel_data_.is_computed = false;
-  grav_data_.is_friction_computed = false;
-  cc_data_.is_computed = false;
-  aba_data_.is_computed = false;
-}
-void ArticulatedBody::set_dq(Eigen::VectorXd&& dq) {
-  if (dq.size() != static_cast<int>(dof_)) {
-    throw std::invalid_argument("ArticulatedBody::set_state(): q must be of size " + std::to_string(dof_));
-  }
-  dq_ = std::move(dq);
 
   vel_data_.is_computed = false;
   grav_data_.is_friction_computed = false;
@@ -127,11 +96,8 @@ double ArticulatedBody::ddq(int i) const {
   if (i < 0) i += dof();
   return ddq_(i);
 }
-void ArticulatedBody::set_ddq(const Eigen::VectorXd& ddq) {
+void ArticulatedBody::set_ddq(Eigen::Ref<const Eigen::VectorXd> ddq) {
   ddq_ = ddq;
-}
-void ArticulatedBody::set_ddq(Eigen::VectorXd&& ddq) {
-  ddq_ = std::move(ddq);
 }
 
 const Eigen::VectorXd& ArticulatedBody::tau() const {
@@ -141,7 +107,7 @@ double ArticulatedBody::tau(int i) const {
   if (i < 0) i += dof();
   return tau_(i);
 }
-void ArticulatedBody::set_tau(const Eigen::VectorXd& tau) {
+void ArticulatedBody::set_tau(Eigen::Ref<const Eigen::VectorXd> tau) {
   tau_ = tau;
 }
 

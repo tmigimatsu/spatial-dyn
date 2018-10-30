@@ -18,11 +18,15 @@
 
 namespace SpatialDyn {
 
-Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& tau,
+Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab,
+                                Eigen::Ref<const Eigen::VectorXd> tau,
                                 const std::vector<std::pair<int, SpatialForced>>& f_external = {},
-                                bool gravity = true, bool centrifugal_coriolis = true,
+                                bool gravity = true,
+                                bool centrifugal_coriolis = true,
                                 bool friction = false);
-Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab, const Eigen::VectorXd& tau,
+
+Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
+                                   Eigen::Ref<const Eigen::VectorXd> tau,
                                    const std::vector<std::pair<int, SpatialForced>>& f_external = {},
                                    bool friction = false);
 

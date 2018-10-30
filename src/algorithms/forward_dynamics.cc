@@ -13,7 +13,8 @@
 
 namespace SpatialDyn {
 
-Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& tau,
+Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab,
+                                Eigen::Ref<const Eigen::VectorXd> tau,
                                 const std::vector<std::pair<int, SpatialForced>>& f_external,
                                 bool gravity, bool centrifugal_coriolis, bool friction) {
   return InertiaInverse(ab).solve(tau - InverseDynamics(ab,
@@ -21,7 +22,8 @@ Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
 }
 
 // ABA
-Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab, const Eigen::VectorXd& tau,
+Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
+                                   Eigen::Ref<const Eigen::VectorXd> tau,
                                    const std::vector<std::pair<int, SpatialForced>>& f_external,
                                    bool friction) {
   auto& aba = ab.aba_data_;

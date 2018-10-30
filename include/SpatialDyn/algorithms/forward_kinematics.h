@@ -17,11 +17,13 @@ namespace SpatialDyn {
 
 Eigen::Vector3d Position(const ArticulatedBody& ab, int link = -1,
                          const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
-Eigen::Vector3d Position(const ArticulatedBody& ab, const Eigen::VectorXd& q, int link = -1,
+Eigen::Vector3d Position(const ArticulatedBody& ab,
+                         Eigen::Ref<const Eigen::VectorXd> q, int link = -1,
                          const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
 
 Eigen::Quaterniond Orientation(const ArticulatedBody& ab, int link = -1);
-Eigen::Quaterniond Orientation(const ArticulatedBody& ab, const Eigen::VectorXd& q, int link = -1);
+Eigen::Quaterniond Orientation(const ArticulatedBody& ab,
+                               Eigen::Ref<const Eigen::VectorXd> q, int link = -1);
 
 Eigen::Quaterniond NearQuaternion(const Eigen::Quaterniond& quat,
                                   const Eigen::Quaterniond& quat_reference);
@@ -33,11 +35,19 @@ Eigen::Quaterniond FarQuaternion(const Eigen::Quaterniond& quat,
 
 Eigen::Matrix6Xd Jacobian(const ArticulatedBody& ab, int link = -1,
                           const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
+Eigen::Matrix6Xd Jacobian(const ArticulatedBody& ab,
+                          Eigen::Ref<const Eigen::VectorXd> q, int link = -1,
+                          const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
 
 Eigen::Matrix3Xd LinearJacobian(const ArticulatedBody& ab, int link = -1,
                                 const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
+Eigen::Matrix3Xd LinearJacobian(const ArticulatedBody& ab,
+                                Eigen::Ref<const Eigen::VectorXd> q, int link = -1,
+                                const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
 
 Eigen::Matrix3Xd AngularJacobian(const ArticulatedBody& ab, int link = -1);
+Eigen::Matrix3Xd AngularJacobian(const ArticulatedBody& ab,
+                                 Eigen::Ref<const Eigen::VectorXd> q, int link = -1);
 
 }  // namespace SpatialDyn
 

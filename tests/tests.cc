@@ -189,21 +189,36 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
           0.1879, Eigen::Vector3d(0, 0, 0), Eigen::Vector6d(0.0171364731454, 0.0171364731454, 0.033822, 0, 0, 0),
           SpatialDyn::JointType::RY);
 
-  ab.set_q(Eigen::VectorXd::Ones(ab.dof()));
+  Eigen::VectorXd q = Eigen::VectorXd::Ones(ab.dof());
+  ab.set_q(q);
   ab.set_dq(Eigen::VectorXd::Ones(ab.dof()));
   ab_rbdl.gravity = -9.81 * Eigen::Vector3d::UnitZ();
+
+  SECTION("forward_kinematics") {
+    Eigen::Vector3d x = SpatialDyn::Position(ab);
+    Eigen::Quaterniond quat = SpatialDyn::Orientation(ab);
+    ab.set_q(Eigen::VectorXd::Zero(ab.dof()));
+    Eigen::Vector3d x_q = SpatialDyn::Position(ab, q);
+    Eigen::Quaterniond quat_q = SpatialDyn::Orientation(ab, q);
+
+    REQUIRE((x - x_q).norm() < 1e-10);
+    REQUIRE((quat.coeffs() - quat_q.coeffs()).norm() < 1e-10);
+  }
 
   SECTION("jacobian") {
     Eigen::Matrix6Xd J = SpatialDyn::Jacobian(ab);
     Eigen::Matrix3Xd J_v = SpatialDyn::LinearJacobian(ab);
     Eigen::Matrix3Xd J_w = SpatialDyn::AngularJacobian(ab);
+    ab.set_q(Eigen::VectorXd::Zero(ab.dof()));
+    Eigen::Matrix6Xd J_q = SpatialDyn::Jacobian(ab, q);
     Eigen::MatrixXd J_rbdl = Eigen::MatrixXd::Zero(6, ab.dof());
-    RigidBodyDynamics::CalcPointJacobian6D(ab_rbdl, ab.q(), 6, Eigen::Vector3d::Zero(), J_rbdl);
+    RigidBodyDynamics::CalcPointJacobian6D(ab_rbdl, q, 6, Eigen::Vector3d::Zero(), J_rbdl);
 
     REQUIRE((J.topRows<3>() - J_rbdl.bottomRows<3>()).norm() < 1e-10);
     REQUIRE((J.bottomRows<3>() - J_rbdl.topRows<3>()).norm() < 1e-10);
     REQUIRE((J.topRows<3>() - J_v).norm() < 1e-10);
     REQUIRE((J.bottomRows<3>() - J_w).norm() < 1e-10);
+    REQUIRE((J - J_q).norm() < 1e-10);
   }
 
   SECTION("inverse dynamics") {

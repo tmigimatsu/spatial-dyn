@@ -22,7 +22,8 @@ if(PC_cpp_redis_FOUND AND NOT TARGET cpp_redis::cpp_redis)
     set(cpp_redis_LIBRARIES ${cpp_redis_LIB} ${tacopie_LIB} pthread)
     set_target_properties(cpp_redis::cpp_redis PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${cpp_redis_INCLUDE_DIRS}"
-        INTERFACE_LINK_LIBRARIES "${cpp_redis_LIBRARIES}")
+        INTERFACE_LINK_LIBRARIES "${cpp_redis_LIBRARIES}"
+    )
 endif()
 
 mark_as_advanced(cpp_redis_VERSION cpp_redis_INCLUDE_DIRS cpp_redis_LIB tacopie_LIB)
