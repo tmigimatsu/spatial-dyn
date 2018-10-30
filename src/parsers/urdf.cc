@@ -105,17 +105,17 @@ Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual) {
   Geometry& geometry = graphics.geometry;
   std::string str_type = xml_type->Name();
   if (str_type == "box") {
-    geometry.type = GeometryType::BOX;
+    geometry.type = Geometry::Type::BOX;
     geometry.scale = Eigen::Vector3d::FromMatlab(ParseAttribute(xml_type, "size"));
   } else if (str_type == "cylinder") {
-    geometry.type = GeometryType::CYLINDER;
+    geometry.type = Geometry::Type::CYLINDER;
     geometry.radius = ParseDoubleAttribute(xml_type, "radius");
     geometry.length = ParseDoubleAttribute(xml_type, "length");
   } else if (str_type == "sphere") {
-    geometry.type = GeometryType::SPHERE;
+    geometry.type = Geometry::Type::SPHERE;
     geometry.radius = ParseDoubleAttribute(xml_type, "radius");
   } else if (str_type == "mesh") {
-    geometry.type = GeometryType::MESH;
+    geometry.type = Geometry::Type::MESH;
     geometry.mesh = ParseAttribute(xml_type, "filename");
 
     const char* attr_scale = xml_type->Attribute("scale");
@@ -317,20 +317,20 @@ ArticulatedBody LoadModel(const std::string& urdf) {
     std::string attr_name = ParseAttribute(xml_joint, "name");  // TODO: Add to joint
     std::string attr_type = ParseAttribute(xml_joint, "type");
     if (attr_type == "revolute" || attr_type == "continuous" || attr_type == "prismatic") {
-      JointType type;
+      Joint::Type type;
       if (attr_type == "prismatic") {
         switch (axis_num) {
-          case 0: type = JointType::PX; break;
-          case 1: type = JointType::PY; break;
-          case 2: type = JointType::PZ; break;
-          default: type = JointType::UNDEFINED; break;
+          case 0: type = Joint::Type::PX; break;
+          case 1: type = Joint::Type::PY; break;
+          case 2: type = Joint::Type::PZ; break;
+          default: type = Joint::Type::UNDEFINED; break;
         }
       } else {
         switch (axis_num) {
-          case 0: type = JointType::RX; break;
-          case 1: type = JointType::RY; break;
-          case 2: type = JointType::RZ; break;
-          default: type = JointType::UNDEFINED; break;
+          case 0: type = Joint::Type::RX; break;
+          case 1: type = Joint::Type::RY; break;
+          case 2: type = Joint::Type::RZ; break;
+          default: type = Joint::Type::UNDEFINED; break;
         }
       }
       if (attr_type == "revolute" || attr_type == "prismatic") {

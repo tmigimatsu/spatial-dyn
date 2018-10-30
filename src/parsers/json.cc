@@ -35,7 +35,7 @@ nlohmann::json Serialize(const RigidBody& rb) {
   json["quat"] = Serialize(Eigen::Quaterniond(rb.T_to_parent().linear()));
   json["inertia"] = Serialize(rb.inertia().I_com_flat());
   json["joint"] = Serialize(rb.joint());
-  if (rb.graphics.geometry.type != GeometryType::UNDEFINED) {
+  if (rb.graphics.geometry.type != Geometry::Type::UNDEFINED) {
     json["graphics"] = Serialize(rb.graphics);
   }
   return json;
@@ -69,17 +69,17 @@ nlohmann::json Serialize(const Geometry& geometry) {
   nlohmann::json json;
   json["type"] = std::string(geometry);
   switch (geometry.type) {
-    case GeometryType::BOX:
+    case Geometry::Type::BOX:
       json["scale"] = Serialize(geometry.scale);
       break;
-    case GeometryType::CYLINDER:
+    case Geometry::Type::CYLINDER:
       json["radius"] = geometry.radius;
       json["length"] = geometry.length;
       break;
-    case GeometryType::SPHERE:
+    case Geometry::Type::SPHERE:
       json["radius"] = geometry.radius;
       break;
-    case GeometryType::MESH:
+    case Geometry::Type::MESH:
       json["mesh"] = geometry.mesh;
       json["scale"] = Serialize(geometry.scale);
       break;

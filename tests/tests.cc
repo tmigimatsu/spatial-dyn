@@ -108,7 +108,7 @@ void AddBody(SpatialDyn::ArticulatedBody *ab, RigidBodyDynamics::Model *ab_rbdl,
              int id_parent, const std::string& name,
              const Eigen::AngleAxisd& aa, const Eigen::Vector3d& trans,
              double mass, const Eigen::Vector3d& com, const Eigen::Vector6d& I_com,
-             const SpatialDyn::JointType& joint_type) {
+             const SpatialDyn::Joint::Type& joint_type) {
     SpatialDyn::RigidBody rb(name);
     rb.set_T_to_parent(Eigen::Quaterniond(aa), trans);
     rb.set_inertia(mass, com, I_com);
@@ -124,27 +124,27 @@ void AddBody(SpatialDyn::ArticulatedBody *ab, RigidBodyDynamics::Model *ab_rbdl,
     RigidBodyDynamics::JointType joint_type_rbdl;
     RigidBodyDynamics::Math::Vector3d joint_axis_rbdl;
     switch (joint_type) {
-      case SpatialDyn::JointType::RX:
+      case SpatialDyn::Joint::Type::RX:
         joint_type_rbdl = RigidBodyDynamics::JointTypeRevolute;
         joint_axis_rbdl = Eigen::Vector3d::UnitX();
         break;
-      case SpatialDyn::JointType::RY:
+      case SpatialDyn::Joint::Type::RY:
         joint_type_rbdl = RigidBodyDynamics::JointTypeRevolute;
         joint_axis_rbdl = Eigen::Vector3d::UnitY();
         break;
-      case SpatialDyn::JointType::RZ:
+      case SpatialDyn::Joint::Type::RZ:
         joint_type_rbdl = RigidBodyDynamics::JointTypeRevolute;
         joint_axis_rbdl = Eigen::Vector3d::UnitZ();
         break;
-      case SpatialDyn::JointType::PX:
+      case SpatialDyn::Joint::Type::PX:
         joint_type_rbdl = RigidBodyDynamics::JointTypePrismatic;
         joint_axis_rbdl = Eigen::Vector3d::UnitX();
         break;
-      case SpatialDyn::JointType::PY:
+      case SpatialDyn::Joint::Type::PY:
         joint_type_rbdl = RigidBodyDynamics::JointTypePrismatic;
         joint_axis_rbdl = Eigen::Vector3d::UnitY();
         break;
-      case SpatialDyn::JointType::PZ:
+      case SpatialDyn::Joint::Type::PZ:
         joint_type_rbdl = RigidBodyDynamics::JointTypePrismatic;
         joint_axis_rbdl = Eigen::Vector3d::UnitZ();
         break;
@@ -162,32 +162,32 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
   AddBody(&ab, &ab_rbdl, -1, "shoulder_pan",
           Eigen::AngleAxisd::Identity(), Eigen::Vector3d(0, 0, 0.089159),
           3.7, Eigen::Vector3d(0, 0, 0.14), Eigen::Vector6d(0.010267495893, 0.010267495893, 0.00666, 0, 0, 0),
-          SpatialDyn::JointType::RZ);
+          SpatialDyn::Joint::Type::RZ);
 
   AddBody(&ab, &ab_rbdl, 0, "shoulder_lift",
           Eigen::AngleAxisd(M_PI/2, Eigen::Vector3d::UnitY()), Eigen::Vector3d(0, 0.13585, 0),
           8.393, Eigen::Vector3d(0, 0, 0.28), Eigen::Vector6d(0.22689067591, 0.22689067591, 0.0151074, 0, 0, 0),
-          SpatialDyn::JointType::RY);
+          SpatialDyn::Joint::Type::RY);
 
   AddBody(&ab, &ab_rbdl, 1, "forearm",
           Eigen::AngleAxisd::Identity(), Eigen::Vector3d(0, -0.1197, 0.425),
           2.275, Eigen::Vector3d(0, 0, 0.25), Eigen::Vector6d(0.049443313556, 0.049443313556, 0.004095, 0, 0, 0),
-          SpatialDyn::JointType::RY);
+          SpatialDyn::Joint::Type::RY);
 
   AddBody(&ab, &ab_rbdl, 2, "wrist_1",
           Eigen::AngleAxisd(M_PI/2, Eigen::Vector3d::UnitY()), Eigen::Vector3d(0, 0, 0.39225),
           1.219, Eigen::Vector3d(0, 0, 0), Eigen::Vector6d(0.111172755531, 0.111172755531, 0.21942, 0, 0, 0),
-          SpatialDyn::JointType::RY);
+          SpatialDyn::Joint::Type::RY);
 
   AddBody(&ab, &ab_rbdl, 3, "wrist_2",
           Eigen::AngleAxisd::Identity(), Eigen::Vector3d(0, 0.093, 0),
           1.219, Eigen::Vector3d(0, 0, 0), Eigen::Vector6d(0.111172755531, 0.111172755531, 0.21942, 0, 0, 0),
-          SpatialDyn::JointType::RZ);
+          SpatialDyn::Joint::Type::RZ);
 
   AddBody(&ab, &ab_rbdl, 4, "wrist_3",
           Eigen::AngleAxisd(M_PI/2, Eigen::Vector3d::UnitY()), Eigen::Vector3d(0, 0, 0.09465),
           0.1879, Eigen::Vector3d(0, 0, 0), Eigen::Vector6d(0.0171364731454, 0.0171364731454, 0.033822, 0, 0, 0),
-          SpatialDyn::JointType::RY);
+          SpatialDyn::Joint::Type::RY);
 
   Eigen::VectorXd q = Eigen::VectorXd::Ones(ab.dof());
   ab.set_q(q);

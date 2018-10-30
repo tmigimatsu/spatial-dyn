@@ -16,35 +16,36 @@
 
 namespace SpatialDyn {
 
-enum class GeometryType { UNDEFINED, BOX, CYLINDER, SPHERE, MESH };
-
 struct Geometry {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  GeometryType type = GeometryType::UNDEFINED;
+
+  enum class Type { UNDEFINED, BOX, CYLINDER, SPHERE, MESH };
+
+  Type type = Type::UNDEFINED;
   Eigen::Vector3d scale = Eigen::Vector3d::Ones();  // Box size/mesh scale
-  double radius = 0                      ;          // Cylinder/sphere radius
+  double radius = 0;                                // Cylinder/sphere radius
   double length = 0;                                // Cylinder length
   std::string mesh;                                 // Mesh filename
 
   operator std::string() const {
     switch (type) {
-      case GeometryType::BOX:      return "BOX";
-      case GeometryType::CYLINDER: return "CYLINDER";
-      case GeometryType::SPHERE:   return "SPHERE";
-      case GeometryType::MESH:     return "MESH";
+      case Type::BOX:      return "BOX";
+      case Type::CYLINDER: return "CYLINDER";
+      case Type::SPHERE:   return "SPHERE";
+      case Type::MESH:     return "MESH";
       default:                     return "UNDEFINED";
     }
   }
-  static GeometryType FromString(const std::string& type) {
-    static const std::map<std::string, GeometryType> kStringToGeometryType = {
-      {"BOX", GeometryType::BOX}, {"CYLINDER", GeometryType::CYLINDER},
-      {"SPHERE", GeometryType::SPHERE}, {"MESH", GeometryType::MESH},
-      {"UNDEFINED", GeometryType::UNDEFINED}
+  static Type FromString(const std::string& type) {
+    static const std::map<std::string, Type> kStringToType = {
+      {"BOX", Type::BOX}, {"CYLINDER", Type::CYLINDER},
+      {"SPHERE", Type::SPHERE}, {"MESH", Type::MESH},
+      {"UNDEFINED", Type::UNDEFINED}
     };
     try {
-      return kStringToGeometryType.at(type);
+      return kStringToType.at(type);
     } catch (...) {
-      return GeometryType::UNDEFINED;
+      return Type::UNDEFINED;
     }
   }
 };

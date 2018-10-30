@@ -14,32 +14,32 @@
 
 namespace SpatialDyn {
 
-Joint::Joint(JointType type) {
+Joint::Joint(Joint::Type type) {
   set_type(type);
 }
 
-JointType Joint::type() const {
+Joint::Type Joint::type() const {
   return type_;
 }
-void Joint::set_type(JointType type) {
+void Joint::set_type(Joint::Type type) {
   type_ = type;
   switch (type_) {
-    case JointType::RX:
+    case Joint::Type::RX:
       subspace_ = SpatialMotiond::UnitAngX();
       break;
-    case JointType::RY:
+    case Joint::Type::RY:
       subspace_ = SpatialMotiond::UnitAngY();
       break;
-    case JointType::RZ:
+    case Joint::Type::RZ:
       subspace_ = SpatialMotiond::UnitAngZ();
       break;
-    case JointType::PX:
+    case Joint::Type::PX:
       subspace_ = SpatialMotiond::UnitLinX();
       break;
-    case JointType::PY:
+    case Joint::Type::PY:
       subspace_ = SpatialMotiond::UnitLinY();
       break;
-    case JointType::PZ:
+    case Joint::Type::PZ:
       subspace_ = SpatialMotiond::UnitLinZ();
       break;
     default:
@@ -139,17 +139,17 @@ void Joint::set_f_stiction(double f_stiction) {
 
 Eigen::Isometry3d Joint::T_joint(double q) const {
   switch (type_) {
-    case JointType::RX:
+    case Joint::Type::RX:
       return Eigen::Isometry3d(Eigen::RotationX(q));
-    case JointType::RY:
+    case Joint::Type::RY:
       return Eigen::Isometry3d(Eigen::RotationY(q));
-    case JointType::RZ:
+    case Joint::Type::RZ:
       return Eigen::Isometry3d(Eigen::RotationZ(q));
-    case JointType::PX:
+    case Joint::Type::PX:
       return Eigen::Isometry3d(Eigen::Translation3d(q * Eigen::Vector3d::UnitX()));
-    case JointType::PY:
+    case Joint::Type::PY:
       return Eigen::Isometry3d(Eigen::Translation3d(q * Eigen::Vector3d::UnitY()));
-    case JointType::PZ:
+    case Joint::Type::PZ:
       return Eigen::Isometry3d(Eigen::Translation3d(q * Eigen::Vector3d::UnitZ()));
     default:
       return Eigen::Isometry3d::Identity();
@@ -158,34 +158,34 @@ Eigen::Isometry3d Joint::T_joint(double q) const {
 
 Joint::operator std::string() const {
   switch (type_) {
-    case JointType::RX:
+    case Joint::Type::RX:
       return "RX";
-    case JointType::RY:
+    case Joint::Type::RY:
       return "RY";
-    case JointType::RZ:
+    case Joint::Type::RZ:
       return "RZ";
-    case JointType::PX:
+    case Joint::Type::PX:
       return "PX";
-    case JointType::PY:
+    case Joint::Type::PY:
       return "PY";
-    case JointType::PZ:
+    case Joint::Type::PZ:
       return "PZ";
     default:
       return "UNDEFINED";
   }
 }
 
-static const std::map<std::string, JointType> kStringToJointType = {
-  {"RX", JointType::RX}, {"RY", JointType::RY}, {"RZ", JointType::RZ},
-  {"PX", JointType::PX}, {"PY", JointType::PY}, {"PZ", JointType::PZ},
-  {"UNDEFINED", JointType::UNDEFINED}
+static const std::map<std::string, Joint::Type> kStringToJointType = {
+  {"RX", Joint::Type::RX}, {"RY", Joint::Type::RY}, {"RZ", Joint::Type::RZ},
+  {"PX", Joint::Type::PX}, {"PY", Joint::Type::PY}, {"PZ", Joint::Type::PZ},
+  {"UNDEFINED", Joint::Type::UNDEFINED}
 };
 
-JointType Joint::FromString(const std::string& type) {
+Joint::Type Joint::FromString(const std::string& type) {
   try {
     return kStringToJointType.at(type);
   } catch (...) {
-    return JointType::UNDEFINED;
+    return Joint::Type::UNDEFINED;
   }
 }
 

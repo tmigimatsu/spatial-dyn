@@ -17,18 +17,18 @@
 
 namespace SpatialDyn {
 
-enum class JointType { UNDEFINED, RX, RY, RZ, PX, PY, PZ };
-
 class Joint {
 
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  Joint() {}
-  Joint(JointType type);
+  enum class Type { UNDEFINED, RX, RY, RZ, PX, PY, PZ };
 
-  JointType type() const;
-  void set_type(JointType type);
+  Joint() {}
+  Joint(Type type);
+
+  Type type() const;
+  void set_type(Type type);
 
   // Motion subspace
   const SpatialMotiond& subspace() const;
@@ -63,11 +63,11 @@ class Joint {
 
   // String
   operator std::string() const;
-  static JointType FromString(const std::string& type);
+  static Type FromString(const std::string& type);
 
  protected:
 
-  JointType type_ = JointType::UNDEFINED;
+  Type type_ = Type::UNDEFINED;
   SpatialMotiond subspace_ = SpatialMotiond::Zero();
 
   double q_min_  = -std::numeric_limits<double>::infinity();
