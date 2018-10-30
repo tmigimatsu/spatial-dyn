@@ -138,6 +138,14 @@ const std::vector<int>& ArticulatedBody::subtree(int i) const {
   return subtrees_[i];
 }
 
+Eigen::VectorXd ArticulatedBody::Map(const std::function<double(const RigidBody& rb)>& rb_function) const {
+  Eigen::VectorXd result(dof());
+  for (size_t i = 0; i < dof(); i++) {
+    result(i) = rb_function(rigid_bodies(i));
+  }
+  return result;
+}
+
 int ArticulatedBody::AddRigidBody(RigidBody&& rb, int id_parent) {
   // TODO: Set default state
   int id = rigid_bodies_.size();

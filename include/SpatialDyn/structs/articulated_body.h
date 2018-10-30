@@ -14,8 +14,9 @@
 #include "SpatialDyn/structs/rigid_body.h"
 #include "SpatialDyn/algorithms/opspace_dynamics.h"
 
-#include <string>  // std::string
-#include <vector>  // std::vector
+#include <functional>  // std::function
+#include <string>      // std::string
+#include <vector>      // std::vector
 #include <iostream> // TODO: Remove
 
 namespace SpatialDyn {
@@ -70,6 +71,8 @@ class ArticulatedBody {
   const Eigen::Isometry3d& T_to_world(int i) const;
 
   const std::vector<int>& subtree(int i) const;
+
+  Eigen::VectorXd Map(const std::function<double(const RigidBody& rb)>& rb_function) const;
 
   void CalculateTransforms();
 
