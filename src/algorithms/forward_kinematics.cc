@@ -42,33 +42,37 @@ Eigen::Quaterniond Orientation(const ArticulatedBody& ab, Eigen::Ref<const Eigen
   return Eigen::Quaterniond(ab.T_base_to_world().linear() * ori);
 }
 
-Eigen::Quaterniond NearQuaternion(const Eigen::Quaterniond& quat,
-                                  const Eigen::Quaterniond& quat_reference) {
-  Eigen::Quaterniond result = quat;
-  if (quat.dot(quat_reference) < 0) result.coeffs() *= -1;
-  return result;
+Eigen::Isometry3d CartesianPose(const ArticulatedBody& ab, int link, const Eigen::Vector3d& offset) {
+  if (link < 0) link += ab.dof();
+  return ab.T_to_world(link) * Eigen::Translation3d(offset);
 }
-Eigen::Quaterniond FarQuaternion(const Eigen::Quaterniond& quat,
-                                 const Eigen::Quaterniond& quat_reference) {
-  Eigen::Quaterniond result = quat;
-  if (quat.dot(quat_reference) > 0) result.coeffs() *= -1;
-  return result;
+Eigen::Isometry3d CartesianPose(const ArticulatedBody& ab, Eigen::Ref<const Eigen::VectorXd> q,
+                                int link, const Eigen::Vector3d& offset) {
+  if (link < 0) link += ab.dof();
+  Eigen::Isometry3d T_to_base = Eigen::Isometry3d::Identity();
+  for (int i = link; i != -1; i = ab.rigid_bodies(i).id_parent()) {
+    const RigidBody& rb = ab.rigid_bodies(i);
+    T_to_base = rb.T_to_parent() * rb.joint().T_joint(q(i)) * T_to_base;
+  }
+  return ab.T_base_to_world() * T_to_base;
 }
 
-// Eigen::Quaterniond Orientation(const ArticulatedBody& ab, int link = -1,
-//                                 const Eigen::Quaterniond& near, bool near = true);
+const Eigen::Matrix6Xd& Jacobian(const ArticulatedBody& ab, int link,
+                                 const Eigen::Vector3d& offset) {
+  auto& jac = ab.jac_data_;
+  if (jac.is_computed && jac.link == link && jac.offset == offset) {
+    return jac.J;
+  }
 
-Eigen::Matrix6Xd Jacobian(const ArticulatedBody& ab, int link,
-                          const Eigen::Vector3d& offset) {
-  Eigen::Matrix6Xd J = Eigen::Matrix6Xd::Zero(6, ab.dof());
+  jac.J.setZero();
   if (link < 0) link += ab.dof();
   const Eigen::Vector3d p_0n = ab.T_to_world(link) * offset;
   for (const int i : ab.ancestors(link)) {
     auto T_i_to_point = Eigen::Translation3d(ab.T_to_world(i).translation() - p_0n) *
                         ab.T_to_world(i).linear();
-    J.col(i) = (T_i_to_point * ab.rigid_bodies(i).joint().subspace()).matrix();
+    jac.J.col(i) = (T_i_to_point * ab.rigid_bodies(i).joint().subspace()).matrix();
   }
-  return J;
+  return jac.J;
 }
 Eigen::Matrix6Xd Jacobian(const ArticulatedBody& ab, Eigen::Ref<const Eigen::VectorXd> q,
                           int link, const Eigen::Vector3d& offset) {
@@ -168,5 +172,36 @@ Eigen::Matrix3Xd AngularJacobian(const ArticulatedBody& ab, Eigen::Ref<const Eig
   return J;
 }
 
+Eigen::Tensor3d Hessian(const ArticulatedBody& ab, int link,
+                        const Eigen::Vector3d& offset) {
+
+  if (link < 0) link += ab.dof();
+
+  SpatialMotionXd J = Jacobian(ab, link, offset);
+
+  Eigen::Tensor3d H(ab.dof(), ab.dof(), 6);
+  H.setZero();
+
+  const std::vector<int>& ancestors = ab.ancestors(link);
+  for (size_t a = 0; a < ancestors.size(); a++) {
+    int i = ancestors[a];
+    const Joint& joint_i = ab.rigid_bodies(i).joint();
+    if (joint_i.is_prismatic()) continue;
+
+    Eigen::Vector3d a_i = ab.T_to_world(i).linear() * joint_i.subspace().angular();
+
+    for (size_t b = a; b < ancestors.size(); b++) {
+      int j = ancestors[b];
+
+      Eigen::Vector6d H_ij;
+      H_ij.head<3>() = a_i.cross(J.col(j).linear());
+      H_ij.tail<3>() = a_i.cross(J.col(j).angular());
+      H.chip(i, 0).chip(j, 0) = Eigen::TensorMap<Eigen::Tensor1d>(&H_ij(0), 6);
+      H.chip(j, 0).chip(i, 0) = Eigen::TensorMap<Eigen::Tensor1d>(&H_ij(0), 6);
+    }
+  }
+
+  return H;
+}
 
 }  // namespace SpatialDyn

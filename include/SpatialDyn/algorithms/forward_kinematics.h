@@ -25,16 +25,14 @@ Eigen::Quaterniond Orientation(const ArticulatedBody& ab, int link = -1);
 Eigen::Quaterniond Orientation(const ArticulatedBody& ab,
                                Eigen::Ref<const Eigen::VectorXd> q, int link = -1);
 
-Eigen::Quaterniond NearQuaternion(const Eigen::Quaterniond& quat,
-                                  const Eigen::Quaterniond& quat_reference);
-Eigen::Quaterniond FarQuaternion(const Eigen::Quaterniond& quat,
-                                 const Eigen::Quaterniond& quat_reference);
+Eigen::Isometry3d CartesianPose(const ArticulatedBody& ab, int link = -1,
+                                const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
+Eigen::Isometry3d CartesianPose(const ArticulatedBody& ab,
+                                Eigen::Ref<const Eigen::VectorXd> q, int link = -1,
+                                const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
 
-// Eigen::Quaterniond Orientation(const ArticulatedBody& ab, int link = -1,
-//                                 const Eigen::Quaterniond& near, bool near = true);
-
-Eigen::Matrix6Xd Jacobian(const ArticulatedBody& ab, int link = -1,
-                          const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
+const Eigen::Matrix6Xd& Jacobian(const ArticulatedBody& ab, int link = -1,
+                                 const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
 Eigen::Matrix6Xd Jacobian(const ArticulatedBody& ab,
                           Eigen::Ref<const Eigen::VectorXd> q, int link = -1,
                           const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
@@ -48,6 +46,9 @@ Eigen::Matrix3Xd LinearJacobian(const ArticulatedBody& ab,
 Eigen::Matrix3Xd AngularJacobian(const ArticulatedBody& ab, int link = -1);
 Eigen::Matrix3Xd AngularJacobian(const ArticulatedBody& ab,
                                  Eigen::Ref<const Eigen::VectorXd> q, int link = -1);
+
+Eigen::Tensor3d Hessian(const ArticulatedBody& ab, int link = -1,
+                        const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
 
 }  // namespace SpatialDyn
 

@@ -29,6 +29,24 @@ doubleCrossMatrix() const {
 }
 
 EIGEN_DEVICE_FUNC
+EIGEN_STRONG_INLINE Matrix<typename internal::traits<Derived>::Scalar,3,3>
+crossMatrix() const {
+  typedef typename internal::traits<Derived>::Scalar Scalar;
+  typename internal::nested_eval<Derived,2>::type x(derived());
+  Matrix<Scalar,3,3> result;
+  result(0,0) = 0;
+  result(1,0) = -x.coeff(2);
+  result(2,0) = x.coeff(1);
+  result(0,1) = x.coeff(2);
+  result(1,1) = 0;
+  result(2,1) = -x.coeff(0);
+  result(0,2) = -x.coeff(1);
+  result(1,2) = x.coeff(0);
+  result(2,2) = 0;
+  return result;
+}
+
+EIGEN_DEVICE_FUNC
 EIGEN_STRONG_INLINE std::string toMatlab() const {
   typedef typename internal::traits<Derived>::Scalar Scalar;
   std::stringstream ss;

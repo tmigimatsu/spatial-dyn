@@ -86,7 +86,6 @@ class ArticulatedBody {
   Eigen::VectorXd dq_;
   Eigen::VectorXd ddq_;
   Eigen::VectorXd tau_;
-  SpatialMotionXd J_;
   SpatialMotiond g_ = -9.81 * SpatialMotiond::UnitLinZ();
   std::vector<Eigen::Isometry3d> T_to_parent_;
   std::vector<Eigen::Isometry3d> T_from_parent_;
@@ -100,6 +99,16 @@ class ArticulatedBody {
     std::vector<SpatialMotiond> v;  // Rigid body velocities
   };
   mutable VelocityData vel_data_;
+
+  struct JacobianData {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    int link;
+    Eigen::Vector3d offset;
+
+    bool is_computed = false;
+    Eigen::Matrix6Xd J;
+  };
+  mutable JacobianData jac_data_;
 
   struct CentrifugalCoriolisData {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -185,6 +194,8 @@ class ArticulatedBody {
     std::vector<Eigen::Matrix<double,1,6>> u;
   };
   mutable OpspaceAbaData opspace_aba_data_;
+
+  friend const Eigen::Matrix6Xd& Jacobian(const ArticulatedBody&, int link, const Eigen::Vector3d& offset);
 
   friend Eigen::VectorXd InverseDynamics(const ArticulatedBody&, const Eigen::VectorXd&, const std::vector<std::pair<int, SpatialForced>>&, bool, bool, bool);
   friend const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody&);

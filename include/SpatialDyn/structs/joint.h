@@ -12,8 +12,9 @@
 
 #include "SpatialDyn/utils/spatial_math.h"
 
-#include <limits>  // std::numeric_limits
-#include <string>  // std::string
+#include <limits>   // std::numeric_limits
+#include <string>   // std::string
+#include <ostream>  // std::ostream
 
 namespace SpatialDyn {
 
@@ -29,6 +30,9 @@ class Joint {
 
   Type type() const;
   void set_type(Type type);
+
+  bool is_prismatic() const;
+  bool is_revolute() const;
 
   // Motion subspace
   const SpatialMotiond& subspace() const;

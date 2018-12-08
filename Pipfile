@@ -9,6 +9,7 @@ name = "pypi"
 redis = "*"
 numpy = "*"
 "e1839a8" = {path = ".", editable = true}
+spatialdyn = {editable = true, path = "."}
 
 [requires]
-python_version = "3.6"
+python_version = "3.5"

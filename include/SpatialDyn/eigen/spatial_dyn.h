@@ -35,9 +35,12 @@ class SpatialInertiaMatrix;
 #define EIGEN_TRANSFORM_PLUGIN "SpatialDyn/eigen/spatial_transform.h"
 #define EIGEN_MATRIX_PLUGIN "SpatialDyn/eigen/matrix_plugin.h"
 #define EIGEN_MATRIXBASE_PLUGIN "SpatialDyn/eigen/matrix_base_plugin.h"
+#define EIGEN_QUATERNIONBASE_PLUGIN "SpatialDyn/eigen/quaternion_base_plugin.h"
 #include "spatial_motion.h"
 #include "spatial_force.h"
 #include "spatial_inertia.h"
+
+#include <unsupported/Eigen/CXX11/Tensor>
 
 #include <algorithm>  // std::max
 #include <limits>     // std::numeric_limits
@@ -51,6 +54,14 @@ typedef Matrix<double,6,Dynamic> Matrix6Xd;
 typedef Matrix<float,6,1> Vector6f;
 typedef Matrix<float,6,6> Matrix6f;
 typedef Matrix<float,6,Dynamic> Matrix6Xf;
+
+typedef Tensor<double,1> Tensor1d;
+typedef Tensor<double,2> Tensor2d;
+typedef Tensor<double,3> Tensor3d;
+
+typedef Tensor<float,1> Tensor1f;
+typedef Tensor<float,2> Tensor2f;
+typedef Tensor<float,3> Tensor3f;
 
 template<typename Derived>
 inline typename MatrixBase<Derived>::PlainObject

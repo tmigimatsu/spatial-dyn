@@ -53,10 +53,14 @@ void ArticulatedBody::set_q(Eigen::Ref<const Eigen::VectorXd> q) {
   if (q.size() != static_cast<int>(dof_)) {
     throw std::invalid_argument("ArticulatedBody::set_state(): q must be of size " + std::to_string(dof_));
   }
+
+  // Return early if q has already been set
+  if (q_ == q) return;
   q_ = q;
 
   CalculateTransforms();
   vel_data_.is_computed = false;
+  jac_data_.is_computed = false;
   cc_data_.is_computed = false;
   grav_data_.is_computed = false;
   crba_data_.is_computed = false;
@@ -81,6 +85,9 @@ void ArticulatedBody::set_dq(Eigen::Ref<const Eigen::VectorXd> dq) {
   if (dq.size() != static_cast<int>(dof_)) {
     throw std::invalid_argument("ArticulatedBody::set_state(): q must be of size " + std::to_string(dof_));
   }
+
+  // Return early if q has already been set
+  if (dq_ == dq) return;
   dq_ = dq;
 
   vel_data_.is_computed = false;
@@ -212,6 +219,9 @@ void ArticulatedBody::ExpandDof(int id, int id_parent) {
   // Resize caches
   vel_data_.is_computed = false;
   vel_data_.v.push_back(SpatialMotiond());
+
+  jac_data_.is_computed = false;
+  jac_data_.J.resize(6, dof_);
 
   cc_data_.is_computed = false;
   cc_data_.c_c.push_back(SpatialMotiond());

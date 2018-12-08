@@ -47,6 +47,13 @@ void Joint::set_type(Joint::Type type) {
   }
 }
 
+bool Joint::is_prismatic() const {
+  return type_ == Joint::Type::PX || type_ == Joint::Type::PY || type_ == Joint::Type::PZ;
+}
+bool Joint::is_revolute() const {
+  return type_ == Joint::Type::RX || type_ == Joint::Type::RY || type_ == Joint::Type::RZ;
+}
+
 const SpatialMotiond& Joint::subspace() const {
   return subspace_;
 }
