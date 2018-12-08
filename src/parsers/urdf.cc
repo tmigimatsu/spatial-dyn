@@ -102,20 +102,20 @@ Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual) {
   if (xml_type == nullptr) {
     throw std::runtime_error("ParseGraphics(): <box>|<cylinder>|<sphere>|<mesh> element missing from <geometry> element.");
   }
-  Geometry& geometry = graphics.geometry;
+  Graphics::Geometry& geometry = graphics.geometry;
   std::string str_type = xml_type->Name();
   if (str_type == "box") {
-    geometry.type = Geometry::Type::BOX;
+    geometry.type = Graphics::Geometry::Type::BOX;
     geometry.scale = Eigen::Vector3d::FromMatlab(ParseAttribute(xml_type, "size"));
   } else if (str_type == "cylinder") {
-    geometry.type = Geometry::Type::CYLINDER;
+    geometry.type = Graphics::Geometry::Type::CYLINDER;
     geometry.radius = ParseDoubleAttribute(xml_type, "radius");
     geometry.length = ParseDoubleAttribute(xml_type, "length");
   } else if (str_type == "sphere") {
-    geometry.type = Geometry::Type::SPHERE;
+    geometry.type = Graphics::Geometry::Type::SPHERE;
     geometry.radius = ParseDoubleAttribute(xml_type, "radius");
   } else if (str_type == "mesh") {
-    geometry.type = Geometry::Type::MESH;
+    geometry.type = Graphics::Geometry::Type::MESH;
     geometry.mesh = ParseAttribute(xml_type, "filename");
 
     const char* attr_scale = xml_type->Attribute("scale");
@@ -129,7 +129,7 @@ Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual) {
   }
 
   // Parse material
-  Material& material = graphics.material;
+  Graphics::Material& material = graphics.material;
   const tinyxml2::XMLElement* xml_material = xml_geometry->FirstChildElement("material");
   if (xml_material != nullptr) {
     material.name = ParseAttribute(xml_material, "name");

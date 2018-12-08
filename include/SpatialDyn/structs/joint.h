@@ -84,6 +84,8 @@ class Joint {
 
 };
 
+std::ostream& operator<<(std::ostream& os, const Joint& j);
+
 }  // namespace SpatialDyn
 
 #endif  // SPATIAL_DYN_STRUCTS_JOINT_H_

@@ -68,4 +68,10 @@ void RigidBody::set_joint(const Joint& joint) {
   joint_ = joint;
 }
 
+std::ostream& operator<<(std::ostream& os, const RigidBody& rb) {
+  os << "RigidBody(name=\"" << rb.name << "\", id=" << rb.id() << ", id_parent=" << rb.id_parent()
+     << ", joint=" << std::string(rb.joint()) << ")";
+  return os;
+}
+
 }  // namespace SpatialDyn

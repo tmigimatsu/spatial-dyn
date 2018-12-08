@@ -84,24 +84,24 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def_readwrite("material", &Graphics::material);
 
   // Geometry
-  py::class_<Geometry>(m, "Geometry")
+  py::class_<Graphics::Geometry>(m, "Geometry")
       .def_property("type",
-                    [](const Geometry& geometry) {
+                    [](const Graphics::Geometry& geometry) {
                       return std::string(geometry);
                     },
-                    [](Geometry& geometry, const std::string& type) {
-                      geometry.type = Geometry::FromString(type);
+                    [](Graphics::Geometry& geometry, const std::string& type) {
+                      geometry.type = Graphics::Geometry::FromString(type);
                     })
-      .def_readwrite("scale", &Geometry::scale)
-      .def_readwrite("radius", &Geometry::radius)
-      .def_readwrite("length", &Geometry::length)
-      .def_readwrite("mesh", &Geometry::mesh);
+      .def_readwrite("scale", &Graphics::Geometry::scale)
+      .def_readwrite("radius", &Graphics::Geometry::radius)
+      .def_readwrite("length", &Graphics::Geometry::length)
+      .def_readwrite("mesh", &Graphics::Geometry::mesh);
 
   // Material
-  py::class_<Material>(m, "Material")
-      .def_readwrite("name", &Material::name)
-      .def_readwrite("rgba", &Material::rgba)
-      .def_readwrite("texture", &Material::texture);
+  py::class_<Graphics::Material>(m, "Material")
+      .def_readwrite("name", &Graphics::Material::name)
+      .def_readwrite("rgba", &Graphics::Material::rgba)
+      .def_readwrite("texture", &Graphics::Material::texture);
 
   // Joint
   py::class_<Joint>(m, "Joint")

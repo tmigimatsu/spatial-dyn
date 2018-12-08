@@ -21,8 +21,8 @@ nlohmann::json Serialize(const ArticulatedBody& ab);
 nlohmann::json Serialize(const RigidBody& rb);
 nlohmann::json Serialize(const Joint& joint);
 nlohmann::json Serialize(const Graphics& graphics);
-nlohmann::json Serialize(const Geometry& geometry);
-nlohmann::json Serialize(const Material& material);
+nlohmann::json Serialize(const Graphics::Geometry& geometry);
+nlohmann::json Serialize(const Graphics::Material& material);
 
 template<typename Derived>
 nlohmann::json Serialize(const Eigen::DenseBase<Derived>& matrix);

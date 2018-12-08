@@ -17,7 +17,7 @@
 #include <functional>  // std::function
 #include <string>      // std::string
 #include <vector>      // std::vector
-#include <iostream> // TODO: Remove
+#include <ostream>     // std::ostream
 
 namespace SpatialDyn {
 
@@ -223,6 +223,8 @@ class ArticulatedBody {
   void ExpandDof(int id, int id_parent);
 
 };
+
+std::ostream& operator<<(std::ostream& os, const ArticulatedBody& ab);
 
 }  // namespace SpatialDyn
 

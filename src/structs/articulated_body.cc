@@ -282,4 +282,19 @@ void ArticulatedBody::CalculateTransforms() {
   }
 }
 
+std::ostream& operator<<(std::ostream& os, const ArticulatedBody& ab) {
+  os << "ArticulatedBody(name=\"" << ab.name << "\", dof=" << ab.dof() << ")" << std::endl;
+  os << "             q: " << ab.q().transpose() << std::endl;
+  os << "            dq: " << ab.dq().transpose() << std::endl;
+  os << "           ddq: " << ab.dq().transpose() << std::endl;
+  os << "           tau: " << ab.dq().transpose() << std::endl;
+  os << "             g: " << ab.g().linear().transpose() << std::endl;
+  bool first = true;
+  for (const RigidBody& rb : ab.rigid_bodies()) {
+    os << (first ? "  rigid_bodies: " : "                ") << rb << std::endl;
+    first = false;
+  }
+  return os;
+}
+
 }  // namespace SpatialDyn

@@ -196,5 +196,11 @@ Joint::Type Joint::FromString(const std::string& type) {
   }
 }
 
+std::ostream& operator<<(std::ostream& os, const Joint& j) {
+  os << "Joint(type=" << std::string(j) << ", q_lim=[" << j.q_min() << " " << j.q_max() 
+     << "], dq_max=" << j.dq_max() << ", fq_max=" << j.fq_max() << ", f_coulomb="
+     << j.f_coulomb() << ", f_viscous=" << j.f_viscous() << ", f_stiction=" << j.f_stiction() << ")";
+  return os;
+}
 
 }  // namespace SpatialDyn

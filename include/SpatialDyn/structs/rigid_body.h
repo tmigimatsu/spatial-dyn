@@ -61,6 +61,8 @@ class RigidBody {
 
 };
 
+std::ostream& operator<<(std::ostream& os, const RigidBody& rb);
+
 }  // namespace SpatialDyn
 
 #endif  // SPATIAL_DYN_STRUCTS_RIGID_BODY_H_
