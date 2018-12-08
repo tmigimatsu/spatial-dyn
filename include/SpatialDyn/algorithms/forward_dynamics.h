@@ -10,11 +10,11 @@
 #ifndef SPATIAL_DYN_ALGORITHMS_FORWARD_DYNAMICS_H_
 #define SPATIAL_DYN_ALGORITHMS_FORWARD_DYNAMICS_H_
 
+#include <utility>  // std::pair
+#include <vector>   // std::vector
+
 #include "SpatialDyn/structs/articulated_body.h"
 #include "SpatialDyn/utils/spatial_math.h"
-
-#include <vector>   // std::vector
-#include <utility>  // std::pair
 
 namespace SpatialDyn {
 

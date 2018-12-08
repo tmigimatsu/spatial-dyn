@@ -12,8 +12,8 @@
 
 #include "SpatialDyn/structs/articulated_body.h"
 
-#include <vector>   // std::vector
 #include <utility>  // std::pair
+#include <vector>   // std::vector
 
 namespace SpatialDyn {
 

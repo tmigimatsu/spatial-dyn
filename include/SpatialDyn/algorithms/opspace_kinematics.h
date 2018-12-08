@@ -13,7 +13,6 @@
 #include "SpatialDyn/utils/spatial_math.h"
 
 namespace SpatialDyn {
-
 namespace Opspace {
 
 Eigen::Vector3d OrientationError(const Eigen::Quaterniond &quat, const Eigen::Quaterniond &quat_des);

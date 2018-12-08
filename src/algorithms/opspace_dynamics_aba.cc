@@ -8,6 +8,7 @@
  */
 
 #include "algorithms/opspace_dynamics.h"
+
 #include "algorithms/forward_dynamics.h"
 #include "algorithms/inverse_dynamics.h"
 

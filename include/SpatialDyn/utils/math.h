@@ -10,12 +10,12 @@
 #ifndef SPATIAL_DYN_UTILS_MATH_H_
 #define SPATIAL_DYN_UTILS_MATH_H_
 
+namespace SpatialDyn {
+
 template <typename T>
-T signum(T x) {
+T Signum(T x) {
   return (T(0) < x) - (x < T(0));
 }
-
-namespace SpatialDyn {
 
 }  // namespace SpatialDyn
 

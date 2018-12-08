@@ -8,6 +8,7 @@
  */
 
 #include "algorithms/simulation.h"
+
 #include "algorithms/forward_dynamics.h"
 
 namespace SpatialDyn {

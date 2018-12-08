@@ -10,10 +10,9 @@
 #ifndef SPATIAL_DYN_STRUCTS_GRAPHICS_H_
 #define SPATIAL_DYN_STRUCTS_GRAPHICS_H_
 
-#include <Eigen/Eigen>
-
 #include <string>   // std::string
-#include <ostream>  // std::ostream
+
+#include "SpatialDyn/utils/spatial_math.h"
 
 namespace SpatialDyn {
 

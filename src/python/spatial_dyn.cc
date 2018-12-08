@@ -7,16 +7,17 @@
  * Authors: Toki Migimatsu
  */
 
+#include <pybind11/pybind11.h>
+#include "SpatialDyn/utils/spatial_math.h"
+#include <pybind11/eigen.h>
+#include <pybind11/stl.h>
+
 #include "SpatialDyn/algorithms/forward_dynamics.h"
 #include "SpatialDyn/algorithms/forward_kinematics.h"
 #include "SpatialDyn/algorithms/inverse_dynamics.h"
 #include "SpatialDyn/algorithms/simulation.h"
 #include "SpatialDyn/parsers/urdf.h"
 #include "SpatialDyn/parsers/json.h"
-
-#include <pybind11/pybind11.h>
-#include <pybind11/eigen.h>
-#include <pybind11/stl.h>
 
 namespace SpatialDyn {
 

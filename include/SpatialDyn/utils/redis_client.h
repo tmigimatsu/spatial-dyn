@@ -10,13 +10,13 @@
 #ifndef SPATIAL_DYN_UTILS_REDIS_CLIENT_H_
 #define SPATIAL_DYN_UTILS_REDIS_CLIENT_H_
 
-#include <cpp_redis/cpp_redis>
-
-#include <exception>   // std::invalid_argument
+#include <exception>   // std::exception
 #include <future>      // std::future, std::promise
 #include <functional>  // std::function
 #include <string>      // std::string
 #include <sstream>     // std::stringstream
+
+#include <cpp_redis/cpp_redis>
 
 namespace SpatialDyn {
 

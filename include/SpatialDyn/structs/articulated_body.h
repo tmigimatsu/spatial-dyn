@@ -15,9 +15,10 @@
 #include "SpatialDyn/algorithms/opspace_dynamics.h"
 
 #include <functional>  // std::function
-#include <string>      // std::string
-#include <vector>      // std::vector
 #include <ostream>     // std::ostream
+#include <string>      // std::string
+#include <utility>     // std::pair
+#include <vector>      // std::vector
 
 namespace SpatialDyn {
 

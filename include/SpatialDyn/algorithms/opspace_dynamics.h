@@ -10,6 +10,9 @@
 #ifndef SPATIAL_DYN_ALGORITHMS_OPSPACE_DYNAMICS_H_
 #define SPATIAL_DYN_ALGORITHMS_OPSPACE_DYNAMICS_H_
 
+#include <utility>  // std::pair
+#include <vector>   // std::vector
+
 #include "SpatialDyn/utils/spatial_math.h"
 
 namespace SpatialDyn {

@@ -9,13 +9,14 @@
 
 #include "parsers/urdf.h"
 
-#include "tinyxml2.h"
-
 #include <exception>  // std::runtime_error
 #include <limits>     // std::numeric_limits
 #include <list>       // std::list
 #include <map>        // std::map
-#include <utility>    // std::pair
+#include <string>     // std::string
+#include <utility>    // std::move, std::pair, std::tie
+
+#include <tinyxml2.h>
 
 namespace SpatialDyn {
 namespace Urdf {

@@ -8,6 +8,7 @@
  */
 
 #include "algorithms/forward_dynamics.h"
+
 #include "algorithms/inverse_dynamics.h"
 #include "utils/math.h"
 
@@ -81,7 +82,7 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
     ddq(i) = (tau(i) - s.dot(rnea.f[i])) / aba.d[i];
     if (friction) {
       const Joint& joint = ab.rigid_bodies(i).joint();
-      ddq(i) -= joint.f_coulomb() * signum(ab.dq(i)) + joint.f_viscous() * ab.dq(i);
+      ddq(i) -= joint.f_coulomb() * Signum(ab.dq(i)) + joint.f_viscous() * ab.dq(i);
     }
     if (parent >= 0) {
       rnea.f[parent] += ab.T_to_parent(i) *

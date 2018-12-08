@@ -8,6 +8,7 @@
  */
 
 #include "algorithms/inverse_dynamics.h"
+
 #include "utils/math.h"
 
 #define CACHE_INVERSE_DYNAMICS
@@ -75,7 +76,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
 
     tau(i) = s.dot(rnea.f[i]);
     if (friction) {
-      tau(i) += joint.f_coulomb() * signum(ab.dq(i)) + joint.f_viscous() * ab.dq(i);
+      tau(i) += joint.f_coulomb() * Signum(ab.dq(i)) + joint.f_viscous() * ab.dq(i);
     }
     if (parent >= 0) rnea.f[parent] += ab.T_to_parent(i) * rnea.f[i];
   }
@@ -168,7 +169,7 @@ const Eigen::VectorXd& Friction(const ArticulatedBody& ab) {
 
   for (size_t i = 0; i < ab.dof(); i++) {
     const Joint& joint = ab.rigid_bodies(i).joint();
-    grav.F(i) = joint.f_coulomb() * signum(ab.dq(i)) + joint.f_viscous() * ab.dq(i);
+    grav.F(i) = joint.f_coulomb() * Signum(ab.dq(i)) + joint.f_viscous() * ab.dq(i);
   }
   grav.is_friction_computed = true;
   return grav.F;

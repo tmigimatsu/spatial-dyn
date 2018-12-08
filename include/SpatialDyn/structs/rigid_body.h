@@ -14,8 +14,8 @@
 #include "SpatialDyn/structs/joint.h"
 #include "SpatialDyn/utils/spatial_math.h"
 
-#include <string>   // std::string
 #include <ostream>  // std::ostream
+#include <string>   // std::string
 
 namespace SpatialDyn {
 

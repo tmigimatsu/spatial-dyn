@@ -9,8 +9,7 @@
 
 #include "structs/graphics.h"
 
-#include <string>   // std::string
-#include <ostream>  // std::ostream
+#include <map>  // std::map
 
 namespace SpatialDyn {
 
