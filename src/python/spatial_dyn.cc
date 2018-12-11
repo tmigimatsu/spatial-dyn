@@ -10,6 +10,7 @@
 #include <pybind11/pybind11.h>
 #include "SpatialDyn/utils/spatial_math.h"
 #include <pybind11/eigen.h>
+#include <pybind11/functional.h>
 #include <pybind11/stl.h>
 
 #include "SpatialDyn/algorithms/forward_dynamics.h"
@@ -28,13 +29,15 @@ PYBIND11_MODULE(spatialdyn, m) {
 
   // Articulated body
   py::class_<ArticulatedBody>(m, "ArticulatedBody")
+      .def(py::init<>())
+      .def(py::init<const std::string&>())
       .def_readwrite("name", &ArticulatedBody::name)
+      .def_readwrite("graphics", &ArticulatedBody::graphics)
       .def_property_readonly("dof", &ArticulatedBody::dof)
       .def_property("T_base_to_world", &ArticulatedBody::T_base_to_world,
                     (void (ArticulatedBody::*)(const Eigen::Isometry3d&)) &ArticulatedBody::set_T_base_to_world)
-      .def("AddRigidBody", (int (ArticulatedBody::*)(const RigidBody&, int)) &ArticulatedBody::AddRigidBody, "rb"_a, "id_parent"_a = -1)
+      .def("add_rigid_body", (int (ArticulatedBody::*)(const RigidBody&, int)) &ArticulatedBody::AddRigidBody, "rb"_a, "id_parent"_a = -1)
       .def_property_readonly("rigid_bodies", (const std::vector<RigidBody>& (ArticulatedBody::*)(void) const) &ArticulatedBody::rigid_bodies)
-      .def("ancestors", &ArticulatedBody::ancestors)
       .def_property("q",
                     (const Eigen::VectorXd& (ArticulatedBody::*)(void) const) &ArticulatedBody::q,
                     (void (ArticulatedBody::*)(const Eigen::VectorXd&)) &ArticulatedBody::set_q)
@@ -44,9 +47,6 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def_property("ddq",
                     (const Eigen::VectorXd& (ArticulatedBody::*)(void) const) &ArticulatedBody::ddq,
                     (void (ArticulatedBody::*)(const Eigen::VectorXd&)) &ArticulatedBody::set_ddq)
-      .def_property("tau",
-                    (const Eigen::VectorXd& (ArticulatedBody::*)(void) const) &ArticulatedBody::tau,
-                    (void (ArticulatedBody::*)(const Eigen::VectorXd&)) &ArticulatedBody::set_tau)
       .def_property("g",
                     // TODO: Make spatial
                     [](const ArticulatedBody& ab) { return ab.g().linear(); },
@@ -54,7 +54,9 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def("T_to_parent", &ArticulatedBody::T_to_parent)
       .def("T_from_parent", &ArticulatedBody::T_from_parent)
       .def("T_to_world", &ArticulatedBody::T_to_world)
+      .def("ancestors", &ArticulatedBody::ancestors)
       .def("subtree", &ArticulatedBody::subtree)
+      .def("map", &ArticulatedBody::Map)
       .def("__repr__",
            [](const ArticulatedBody& ab) {
              return "<spatialdyn.ArticulatedBody (name=" + ab.name + ")>";

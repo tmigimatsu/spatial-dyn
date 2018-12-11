@@ -25,59 +25,249 @@ namespace SpatialDyn {
 class ArticulatedBody {
 
  public:
+  /// @cond
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  /// @endcond
 
+  /**
+   * Default constructor.
+   */
+  ArticulatedBody() {}
+
+  /**
+   * Constructor that sets the name of the articulated body.
+   *
+   * @param name Name of the articulated body.
+   */
   ArticulatedBody(const std::string& name);
 
+  /**
+   * Name of the articulated body for debugging purposes.
+   *
+   * @see Python: spatialdyn.ArticulatedBody.name
+   */
   std::string name;
+
+  /**
+   * Graphics struct parsed from the URDF file.
+   *
+   * @see Python: spatialdyn.ArticulatedBody.graphics
+   */
   Graphics graphics;
 
-  size_t dof() const;
+  /**
+   * @return Degrees of freedom of the articulated body.
+   * @see Python: spatialdyn.ArticulatedBody.dof
+   */
+  size_t dof() const { return dof_; };
 
-  void set_T_base_to_world(const Eigen::Quaterniond& ori_in_parent,
-                           const Eigen::Vector3d& pos_in_parent);
-  void set_T_base_to_world(const Eigen::Isometry3d& T_to_parent);
-  const Eigen::Isometry3d& T_base_to_world() const;
+  /**
+   * Set the transform from the articulated body's base frame to the world frame.
+   *
+   * @param ori_in_world Orientation of the articulated body in the world frame.
+   * @param pos_in_world Position of the articulated body in the world frame.
+   */
+  void set_T_base_to_world(const Eigen::Quaterniond& ori_in_world,
+                           const Eigen::Vector3d& pos_in_world);
 
+  /**
+   * Set the transform from the articulated body's base frame to the world frame.
+   *
+   * @param T_to_world Transformation from the base frame to the world frame.
+   */
+  void set_T_base_to_world(const Eigen::Isometry3d& T_to_world);
+
+  /**
+   * Get the transform from the articulated body's base frame to the world frame.
+   *
+   * This transformation matrix will transform a vector represented in the
+   * articulated body's base frame to one represented in the world frame. Set to
+   * identity by default.
+   *
+   * Example:
+   * ```{.cc}
+   * // Arbitrary position vector represented in the articulated body's base frame
+   * Eigen::Vector3d pos_in_ab(0.1, 0.1, 0.1);
+   *
+   * // Same position vector now represented in the world frame
+   * Eigen::Vector3d pos_in_world = ab.T_base_to_world() * pos_in_ab;
+   * ```
+   *
+   * @return Transformation from the base frame to the world frame.
+   * @see Python: spatialdyn.ArticulatedBody.T_base_to_world
+   */
+  const Eigen::Isometry3d& T_base_to_world() const { return T_base_to_world_; };
+
+  /**
+   * Add a rigid body to the articulated body and return its assigned ID.
+   *
+   * IDs will be assigned to rigid bodies starting from `0` and incrementing
+   * each time AddRigidBody() is called. These IDs can be used to index into the
+   * corresponding rigid_bodies() vector or joint variables such as q().
+   *
+   * @param rb Rigid body to add.
+   * @param id_parent ID of the parent rigid body. If `parent_id` is `-1`, the
+   *                  rigid body will be added to the base.
+   * @return ID assigned to the new rigid body.
+   * @see Python: spatialdyn.ArticulatedBody.add_rigid_body()
+   */
   int AddRigidBody(RigidBody&& rb, int id_parent = -1);
+
+  /**
+   * See AddRigidBody()
+   */
   int AddRigidBody(const RigidBody& rb, int id_parent = -1);
 
-  const std::vector<RigidBody>& rigid_bodies() const;
-  const RigidBody& rigid_bodies(int i) const;
-  // TODO: RigidBody& rigid_bodies(int i);
-  const std::vector<int>& ancestors(int i) const;
+  /**
+   * @return Vector of rigid bodies, indexed by IDs assigned in AddRigidBody().
+   * @see Python: spatialdyn.ArticulatedBody.rigid_bodies
+   */
+  const std::vector<RigidBody>& rigid_bodies() const { return rigid_bodies_; };
 
-  const Eigen::VectorXd& q() const;
+  /**
+   * @return `i`th rigid body with Pythonic indexing (if `i < 0`, count from the back).
+   */
+  const RigidBody& rigid_bodies(int i) const;
+
+  /**
+   * @return Joint positions. Uninitialized values will be `0` by default.
+   * @see Python: spatialdyn.ArticulatedBody.q
+   */
+  const Eigen::VectorXd& q() const { return q_; };
+
+  /**
+   * @return `i`th joint position with Pythonic indexing (if `i < 0`, count from the back).
+   */
   double q(int i) const;
+
+  /**
+   * Set the joint positions and internally precompute the frames of the articulated body.
+   */
   void set_q(Eigen::Ref<const Eigen::VectorXd> q);
 
-  const Eigen::VectorXd& dq() const;
+  /**
+   * @return Joint velocities. Uninitialized values will be `0` by default.
+   * @see Python: spatialdyn.ArticulatedBody.dq
+   */
+  const Eigen::VectorXd& dq() const { return dq_; };
+
+  /**
+   * @return `i`th joint velocity with Pythonic indexing (if `i < 0`, count from the back).
+   */
   double dq(int i) const;
+
+  /**
+   * Set the joint velocities.
+   */
   void set_dq(Eigen::Ref<const Eigen::VectorXd> dq);
 
-  const Eigen::VectorXd& ddq() const;
+  /**
+   * @return Joint accelerations. Uninitialized values will be `0` by default.
+   * @see Python: spatialdyn.ArticulatedBody.ddq
+   */
+  const Eigen::VectorXd& ddq() const { return ddq_; };
+
+  /**
+   * @return `i`th joint acceleration with Pythonic indexing (if `i < 0`, count from the back).
+   */
   double ddq(int i) const;
+
+  /**
+   * Set the joint accelerations.
+   */
   void set_ddq(Eigen::Ref<const Eigen::VectorXd> ddq);
 
-  // Sensor torque
-  const Eigen::VectorXd& tau() const;
-  double tau(int i) const;
-  void set_tau(Eigen::Ref<const Eigen::VectorXd> tau);
+  /**
+   * @return 6d spatial gravity vector acting on the articulated body.
+   * @see Python: spatialdyn.ArticulatedBody.g
+   */
+  const SpatialMotiond& g() const { return g_; };
 
-  const SpatialMotiond& g() const;
+  /**
+   * Set the gravity vector acting on the articulated body.
+   */
   void set_g(const Eigen::Vector3d& g);
 
+  /**
+   * Get the transform from rigid body `i`'s frame to its parent's frame.
+   *
+   * This transformation matrix will transform a vector represented in frame `i`
+   * to one represented in frame `i-1` according to the `i`th value of the
+   * articulated body's current joint positions q(). Uses Pythonic indexing (if
+   * `i < 0`, count from the back).
+   *
+   * __Example__
+   * ```{.cc}
+   * // Arbitrary position vector represented in the end-effector's frame
+   * Eigen::Vector3d pos_in_ee(0.1, 0.1, 0.1);
+   *
+   * // Same positiion vector represented in the frame of the end-effector's parent
+   * Eigen::Vector3d pos_in_ee_parent = ab.T_to_parent(-1);
+   * ```
+   *
+   * @return Transform from the `i`th rigid body's frame to its parent's frame.
+   * @see Python: spatialdyn.ArticulatedBody.T_to_parent()
+   */
   const Eigen::Isometry3d& T_to_parent(int i) const;
+
+  /**
+   * @return Inverse transform of T_to_parent() (from rigid body `i-1` to `i`).
+   * @see Python: spatialdyn.ArticulatedBody.T_from_parent()
+   */
   const Eigen::Isometry3d& T_from_parent(int i) const;
+
+  /**
+   * Get the transform from rigid body `i`'s frame to the world frame.
+   *
+   * This transformation matrix will transform a vector represented in frame `i`
+   * to one represented in the world frame according to the articulated body's
+   * current joint positions q(). Uses Pythonic indexing (if `i < 0`, count from
+   * the back).
+   *
+   * __Example__
+   * ```{.cc}
+   * // Arbitrary position vector represented in the end-effector's frame
+   * Eigen::Vector3d pos_in_ee(0.1, 0.1, 0.1);
+   *
+   * // Same position vector represented in the world frame
+   * Eigen::Vector3d pos_in_ee_parent = ab.T_to_parent(-1);
+   * ```
+   *
+   * @return Transform from the `i`th rigid body's frame to the world. Uses
+   *         Pythonic indexing (if `i < 0`, count from the back).
+   * @see Python: spatialdyn.ArticulatedBody.T_to_world()
+   */
   const Eigen::Isometry3d& T_to_world(int i) const;
 
+  /**
+   * @return Vector of ancestor IDs of rigid body `i`, from the base to the
+   *         rigid body (inclusive). Uses Pythonic indexing (if `i < 0`, count
+   *         from the back).
+   * @see Python: spatialdyn.ArticulatedBody.ancestors()
+   */
+  const std::vector<int>& ancestors(int i) const;
+
+  /**
+   * @return Vector of IDs in the subtree of rigid body `i`, going from the
+   *         rigid body (inclusive) to the leaves. Uses Pythonic indexing (if `i
+   *         < 0`, count from the back).
+   * @see Python: spatialdyn.ArticulatedBody.subtree()
+   */
   const std::vector<int>& subtree(int i) const;
 
+  /**
+   * Map the given function across the articulated body structure.
+   *
+   * @param rb_function Function to apply to each rigid body.
+   * @return Vector of doubles containing the mapped function results.
+   * @see Python: spatialdyn.ArticulatedBody.map()
+   */
   Eigen::VectorXd Map(const std::function<double(const RigidBody& rb)>& rb_function) const;
 
-  void CalculateTransforms();
-
  protected:
+
+  void CalculateTransforms();
+  void ExpandDof(int id, int id_parent);
 
   size_t dof_ = 0;
   Eigen::Isometry3d T_base_to_world_ = Eigen::Isometry3d::Identity();
@@ -86,14 +276,12 @@ class ArticulatedBody {
   Eigen::VectorXd q_;
   Eigen::VectorXd dq_;
   Eigen::VectorXd ddq_;
-  Eigen::VectorXd tau_;
   SpatialMotiond g_ = -9.81 * SpatialMotiond::UnitLinZ();
   std::vector<Eigen::Isometry3d> T_to_parent_;
   std::vector<Eigen::Isometry3d> T_from_parent_;
   std::vector<Eigen::Isometry3d> T_to_world_;
   std::vector<std::vector<int>> ancestors_;  // Ancestors from base to link i
   std::vector<std::vector<int>> subtrees_;   // Descendants of link i including link i
-
 
   struct VelocityData {
     bool is_computed = false;  // Reusable with same position, velocity
@@ -220,8 +408,6 @@ class ArticulatedBody {
   friend const Eigen::Matrix6d& Opspace::InertiaInverseAba(const ArticulatedBody&, int, const Eigen::Vector3d&);
   friend Eigen::Vector6d Opspace::CentrifugalCoriolisAba(const ArticulatedBody&, int, const Eigen::Vector3d&, double);
   friend Eigen::Vector6d Opspace::GravityAba(const ArticulatedBody&, int, const Eigen::Vector3d&, const std::vector<std::pair<int, SpatialForced>>&, double);
-
-  void ExpandDof(int id, int id_parent);
 
 };
 

@@ -15,36 +15,19 @@ namespace SpatialDyn {
 
 ArticulatedBody::ArticulatedBody(const std::string& name) : name(name) {}
 
-size_t ArticulatedBody::dof() const {
-  return dof_;
+void ArticulatedBody::set_T_base_to_world(const Eigen::Quaterniond& ori_in_world,
+                                          const Eigen::Vector3d& pos_in_world) {
+  T_base_to_world_ = Eigen::Translation3d(pos_in_world) * ori_in_world;
+}
+void ArticulatedBody::set_T_base_to_world(const Eigen::Isometry3d& T_to_world) {
+  T_base_to_world_ = T_to_world;
 }
 
-void ArticulatedBody::set_T_base_to_world(const Eigen::Quaterniond& ori_in_parent,
-                                          const Eigen::Vector3d& pos_in_parent) {
-  T_base_to_world_ = Eigen::Translation3d(pos_in_parent) * ori_in_parent;
-}
-void ArticulatedBody::set_T_base_to_world(const Eigen::Isometry3d& T_to_parent) {
-  T_base_to_world_ = T_to_parent;
-}
-const Eigen::Isometry3d& ArticulatedBody::T_base_to_world() const {
-  return T_base_to_world_;
-}
-
-const std::vector<RigidBody>& ArticulatedBody::rigid_bodies() const {
-  return rigid_bodies_;
-}
 const RigidBody& ArticulatedBody::rigid_bodies(int i) const {
   if (i < 0) i += dof();
   return rigid_bodies_[i];
 }
-const std::vector<int>& ArticulatedBody::ancestors(int i) const {
-  if (i < 0) i += dof();
-  return ancestors_[i];
-}
 
-const Eigen::VectorXd& ArticulatedBody::q() const {
-  return q_;
-}
 double ArticulatedBody::q(int i) const {
   if (i < 0) i += dof();
   return q_(i);
@@ -74,9 +57,6 @@ void ArticulatedBody::set_q(Eigen::Ref<const Eigen::VectorXd> q) {
   opspace_aba_data_.is_lambda_inv_computed = false;
 }
 
-const Eigen::VectorXd& ArticulatedBody::dq() const {
-  return dq_;
-}
 double ArticulatedBody::dq(int i) const {
   if (i < 0) i += dof();
   return dq_(i);
@@ -96,9 +76,6 @@ void ArticulatedBody::set_dq(Eigen::Ref<const Eigen::VectorXd> dq) {
   aba_data_.is_computed = false;
 }
 
-const Eigen::VectorXd& ArticulatedBody::ddq() const {
-  return ddq_;
-}
 double ArticulatedBody::ddq(int i) const {
   if (i < 0) i += dof();
   return ddq_(i);
@@ -107,20 +84,6 @@ void ArticulatedBody::set_ddq(Eigen::Ref<const Eigen::VectorXd> ddq) {
   ddq_ = ddq;
 }
 
-const Eigen::VectorXd& ArticulatedBody::tau() const {
-  return tau_;
-}
-double ArticulatedBody::tau(int i) const {
-  if (i < 0) i += dof();
-  return tau_(i);
-}
-void ArticulatedBody::set_tau(Eigen::Ref<const Eigen::VectorXd> tau) {
-  tau_ = tau;
-}
-
-const SpatialMotiond& ArticulatedBody::g() const {
-  return g_;
-}
 void ArticulatedBody::set_g(const Eigen::Vector3d& g) {
   g_ << g, Eigen::Vector3d::Zero();
   grav_data_.is_computed = false;
@@ -140,6 +103,10 @@ const Eigen::Isometry3d& ArticulatedBody::T_to_world(int i) const {
   return T_to_world_[i];
 }
 
+const std::vector<int>& ArticulatedBody::ancestors(int i) const {
+  if (i < 0) i += dof();
+  return ancestors_[i];
+}
 const std::vector<int>& ArticulatedBody::subtree(int i) const {
   if (i < 0) i += dof();
   return subtrees_[i];
@@ -286,8 +253,7 @@ std::ostream& operator<<(std::ostream& os, const ArticulatedBody& ab) {
   os << "ArticulatedBody(name=\"" << ab.name << "\", dof=" << ab.dof() << ")" << std::endl;
   os << "             q: " << ab.q().transpose() << std::endl;
   os << "            dq: " << ab.dq().transpose() << std::endl;
-  os << "           ddq: " << ab.dq().transpose() << std::endl;
-  os << "           tau: " << ab.dq().transpose() << std::endl;
+  os << "           ddq: " << ab.ddq().transpose() << std::endl;
   os << "             g: " << ab.g().linear().transpose() << std::endl;
   bool first = true;
   for (const RigidBody& rb : ab.rigid_bodies()) {
