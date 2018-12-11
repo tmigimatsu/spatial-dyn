@@ -13,12 +13,10 @@
 #include <utility>  // std::pair
 #include <vector>   // std::vector
 
+#include "SpatialDyn/structs/articulated_body.h"
 #include "SpatialDyn/utils/spatial_math.h"
 
 namespace SpatialDyn {
-
-class ArticulatedBody;
-
 namespace Opspace {
 
 Eigen::Vector3d OrientationError(const Eigen::Quaterniond &quat, const Eigen::Quaterniond &quat_des);

@@ -11,13 +11,14 @@
 
 #include "algorithms/forward_dynamics.h"
 #include "algorithms/inverse_dynamics.h"
+#include "structs/articulated_body_cache.h"
 
 namespace SpatialDyn {
 namespace Opspace {
 
 const Eigen::Matrix6d& InertiaAba(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset, double svd_epsilon) {
   if (idx_link < 0) idx_link += ab.dof();
-  auto& ops = ab.opspace_aba_data_;
+  auto& ops = ab.cache_->opspace_aba_data_;
 
   if (!ops.is_lambda_computed || ops.idx_link != idx_link ||
       ops.offset != offset || ops.svd_epsilon != svd_epsilon) {
@@ -31,8 +32,8 @@ const Eigen::Matrix6d& InertiaAba(const ArticulatedBody& ab, int idx_link, const
 
 const Eigen::Matrix6d& InertiaInverseAba(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset) {
   if (idx_link < 0) idx_link += ab.dof();
-  auto& ops = ab.opspace_aba_data_;
-  auto& aba = ab.aba_data_;
+  auto& ops = ab.cache_->opspace_aba_data_;
+  auto& aba = ab.cache_->aba_data_;
 
   if (ops.is_lambda_inv_computed && ops.idx_link == idx_link && ops.offset == offset) {
     return ops.Lambda_inv;
@@ -72,7 +73,7 @@ const Eigen::Matrix6d& InertiaInverseAba(const ArticulatedBody& ab, int idx_link
   aba.is_computed = true;
 
   SpatialMotion6d a = SpatialMotion6d::Zero();
-  for (int i : ab.ancestors_[idx_link]) {
+  for (int i : ab.ancestors(idx_link)) {
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     a = ab.T_from_parent(i) * a;
     auto ddq = (ops.u[i] - aba.h[i].transpose() * a.matrix()) / aba.d[i];
@@ -89,9 +90,9 @@ const Eigen::Matrix6d& InertiaInverseAba(const ArticulatedBody& ab, int idx_link
 
 Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset, double svd_epsilon) {
   if (idx_link < 0) idx_link += ab.dof();
-  auto& aba = ab.aba_data_;
-  auto& vel = ab.vel_data_;
-  auto& rnea = ab.rnea_data_;
+  auto& aba = ab.cache_->aba_data_;
+  auto& vel = ab.cache_->vel_data_;
+  auto& rnea = ab.cache_->rnea_data_;
 
   // Forward pass
   for (size_t i = 0; i < ab.dof(); i++) {
@@ -142,7 +143,7 @@ Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab, int idx_link, 
   aba.is_computed = true;
 
   SpatialMotiond a = SpatialMotiond::Zero();
-  for (int i : ab.ancestors_[idx_link]) {
+  for (int i : ab.ancestors(idx_link)) {
     const int parent = ab.rigid_bodies(i).id_parent();
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     if (parent >= 0) {
@@ -160,8 +161,8 @@ Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen:
                            const std::vector<std::pair<int, SpatialForced>>& f_external,
                            double svd_epsilon) {
   if (idx_link < 0) idx_link += ab.dof();
-  auto& aba = ab.aba_data_;
-  auto& rnea = ab.rnea_data_;
+  auto& aba = ab.cache_->aba_data_;
+  auto& rnea = ab.cache_->rnea_data_;
 
   // Forward pass
   for (size_t i = 0; i < ab.dof(); i++) {
@@ -201,7 +202,7 @@ Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen:
   aba.is_computed = true;
 
   SpatialMotiond a = SpatialMotiond::Zero();
-  for (int i : ab.ancestors_[idx_link]) {
+  for (int i : ab.ancestors(idx_link)) {
     const int parent = ab.rigid_bodies(i).id_parent();
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     if (parent >= 0) {

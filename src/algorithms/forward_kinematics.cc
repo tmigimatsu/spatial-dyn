@@ -9,6 +9,8 @@
 
 #include "algorithms/forward_kinematics.h"
 
+#include "structs/articulated_body_cache.h"
+
 namespace SpatialDyn {
 
 Eigen::Vector3d Position(const ArticulatedBody& ab, int link,
@@ -59,7 +61,7 @@ Eigen::Isometry3d CartesianPose(const ArticulatedBody& ab, Eigen::Ref<const Eige
 
 const Eigen::Matrix6Xd& Jacobian(const ArticulatedBody& ab, int link,
                                  const Eigen::Vector3d& offset) {
-  auto& jac = ab.jac_data_;
+  auto& jac = ab.cache_->jac_data_;
   if (jac.is_computed && jac.link == link && jac.offset == offset) {
     return jac.J;
   }

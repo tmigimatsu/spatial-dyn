@@ -9,6 +9,8 @@
 
 #include "algorithms/opspace_kinematics.h"
 
+#include "structs/articulated_body_cache.h"
+
 namespace SpatialDyn {
 namespace Opspace {
 

@@ -9,6 +9,7 @@
 
 #include "algorithms/inverse_dynamics.h"
 
+#include "structs/articulated_body_cache.h"
 #include "utils/math.h"
 
 #define CACHE_INVERSE_DYNAMICS
@@ -19,8 +20,8 @@ namespace SpatialDyn {
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq,
                                 const std::vector<std::pair<int, SpatialForced>>& f_external,
                                 bool gravity, bool centrifugal_coriolis, bool friction) {
-  auto& rnea = ab.rnea_data_;
-  auto& vel  = ab.vel_data_;
+  auto& rnea = ab.cache_->rnea_data_;
+  auto& vel  = ab.cache_->vel_data_;
 
   // Forward pass
   for (size_t i = 0; i < ab.dof(); i++) {
@@ -84,8 +85,8 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
 }
 
 const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
-  auto& vel = ab.vel_data_;
-  auto& cc = ab.cc_data_;
+  auto& vel = ab.cache_->vel_data_;
+  auto& cc = ab.cache_->cc_data_;
   if (cc.is_computed) {
     return cc.C;
   }
@@ -127,7 +128,7 @@ const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
 
 const Eigen::VectorXd& Gravity(const ArticulatedBody& ab,
                                const std::vector<std::pair<int, SpatialForced>>& f_external) {
-  auto& grav = ab.grav_data_;
+  auto& grav = ab.cache_->grav_data_;
   if (grav.is_computed && f_external.empty()) {
     return grav.G;
   }
@@ -162,7 +163,7 @@ const Eigen::VectorXd& Gravity(const ArticulatedBody& ab,
 }
 
 const Eigen::VectorXd& Friction(const ArticulatedBody& ab) {
-  auto& grav = ab.grav_data_;
+  auto& grav = ab.cache_->grav_data_;
   if (grav.is_friction_computed) {
     return grav.F;
   }
@@ -177,7 +178,7 @@ const Eigen::VectorXd& Friction(const ArticulatedBody& ab) {
 
 // CRBA
 const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab) {
-  auto& crba = ab.crba_data_;
+  auto& crba = ab.cache_->crba_data_;
   if (crba.is_computed) {
     return crba.A;
   }

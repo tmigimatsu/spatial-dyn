@@ -7,6 +7,8 @@
  * Authors: Toki Migimatsu
  */
 
+#include <sstream>  // std::stringstream
+
 #include <pybind11/pybind11.h>
 #include "SpatialDyn/utils/spatial_math.h"
 #include <pybind11/eigen.h>
@@ -16,6 +18,7 @@
 #include "SpatialDyn/algorithms/forward_dynamics.h"
 #include "SpatialDyn/algorithms/forward_kinematics.h"
 #include "SpatialDyn/algorithms/inverse_dynamics.h"
+#include "SpatialDyn/algorithms/opspace_dynamics.h"
 #include "SpatialDyn/algorithms/simulation.h"
 #include "SpatialDyn/parsers/urdf.h"
 #include "SpatialDyn/parsers/json.h"
@@ -31,11 +34,10 @@ PYBIND11_MODULE(spatialdyn, m) {
   py::class_<ArticulatedBody>(m, "ArticulatedBody")
       .def(py::init<>())
       .def(py::init<const std::string&>())
+      .def(py::init<const ArticulatedBody&>())
       .def_readwrite("name", &ArticulatedBody::name)
       .def_readwrite("graphics", &ArticulatedBody::graphics)
       .def_property_readonly("dof", &ArticulatedBody::dof)
-      .def_property("T_base_to_world", &ArticulatedBody::T_base_to_world,
-                    (void (ArticulatedBody::*)(const Eigen::Isometry3d&)) &ArticulatedBody::set_T_base_to_world)
       .def("add_rigid_body", (int (ArticulatedBody::*)(const RigidBody&, int)) &ArticulatedBody::AddRigidBody, "rb"_a, "id_parent"_a = -1)
       .def_property_readonly("rigid_bodies", (const std::vector<RigidBody>& (ArticulatedBody::*)(void) const) &ArticulatedBody::rigid_bodies)
       .def_property("q",
@@ -51,6 +53,8 @@ PYBIND11_MODULE(spatialdyn, m) {
                     // TODO: Make spatial
                     [](const ArticulatedBody& ab) { return ab.g().linear(); },
                     &ArticulatedBody::set_g)
+      .def_property("T_base_to_world", &ArticulatedBody::T_base_to_world,
+                    (void (ArticulatedBody::*)(const Eigen::Isometry3d&)) &ArticulatedBody::set_T_base_to_world)
       .def("T_to_parent", &ArticulatedBody::T_to_parent)
       .def("T_from_parent", &ArticulatedBody::T_from_parent)
       .def("T_to_world", &ArticulatedBody::T_to_world)
@@ -59,7 +63,9 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def("map", &ArticulatedBody::Map)
       .def("__repr__",
            [](const ArticulatedBody& ab) {
-             return "<spatialdyn.ArticulatedBody (name=" + ab.name + ")>";
+             std::stringstream ss;
+             ss << "spatialdyn." << ab;
+             return ss.str();
            })
       .def("__str__",
            [](const ArticulatedBody& ab) {

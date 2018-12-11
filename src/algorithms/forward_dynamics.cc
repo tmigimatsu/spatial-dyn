@@ -10,6 +10,7 @@
 #include "algorithms/forward_dynamics.h"
 
 #include "algorithms/inverse_dynamics.h"
+#include "structs/articulated_body_cache.h"
 #include "utils/math.h"
 
 namespace SpatialDyn {
@@ -27,9 +28,9 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
                                    Eigen::Ref<const Eigen::VectorXd> tau,
                                    const std::vector<std::pair<int, SpatialForced>>& f_external,
                                    bool friction) {
-  auto& aba = ab.aba_data_;
-  auto& vel = ab.vel_data_;
-  auto& rnea = ab.rnea_data_;
+  auto& aba = ab.cache_->aba_data_;
+  auto& vel = ab.cache_->vel_data_;
+  auto& rnea = ab.cache_->rnea_data_;
 
   // Forward pass
   for (size_t i = 0; i < ab.dof(); i++) {
@@ -106,7 +107,7 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
 }
 
 const Eigen::LDLT<Eigen::MatrixXd>& InertiaInverse(const ArticulatedBody& ab) {
-  auto& crba = ab.crba_data_;
+  auto& crba = ab.cache_->crba_data_;
   if (!crba.is_inv_computed) {
     crba.A_inv = Inertia(ab).ldlt();
     crba.is_inv_computed = true;
@@ -115,7 +116,7 @@ const Eigen::LDLT<Eigen::MatrixXd>& InertiaInverse(const ArticulatedBody& ab) {
 }
 
 const Eigen::MatrixXd& InertiaInverseAba(const ArticulatedBody& ab) {
-  auto& aba = ab.aba_data_;
+  auto& aba = ab.cache_->aba_data_;
   if (aba.is_A_inv_computed) {
     return aba.A_inv;
   }

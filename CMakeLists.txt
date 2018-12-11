@@ -103,7 +103,8 @@ target_include_directories(${SPATIAL_DYN_LIB}
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${SPATIAL_DYN_INCLUDE_DIR}>
     PRIVATE
-        ${SPATIAL_DYN_INCLUDE_DIR}/SpatialDyn)
+        ${SPATIAL_DYN_INCLUDE_DIR}/SpatialDyn
+        ${SPATIAL_DYN_SRC_DIR})
 
 # Attach sources
 target_sources(${SPATIAL_DYN_LIB} PRIVATE

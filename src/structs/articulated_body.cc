@@ -11,17 +11,32 @@
 
 #include <exception>  // std::invalid_argument
 
+#include "structs/articulated_body_cache.h"
+
 namespace SpatialDyn {
 
-ArticulatedBody::ArticulatedBody(const std::string& name) : name(name) {}
+ArticulatedBody::ArticulatedBody() : cache_(new Cache()) {}
 
-void ArticulatedBody::set_T_base_to_world(const Eigen::Quaterniond& ori_in_world,
-                                          const Eigen::Vector3d& pos_in_world) {
-  T_base_to_world_ = Eigen::Translation3d(pos_in_world) * ori_in_world;
-}
-void ArticulatedBody::set_T_base_to_world(const Eigen::Isometry3d& T_to_world) {
-  T_base_to_world_ = T_to_world;
-}
+ArticulatedBody::ArticulatedBody(const std::string& name) : name(name), cache_(new Cache()) {}
+
+ArticulatedBody::ArticulatedBody(const ArticulatedBody& ab)
+    : name(ab.name),
+      graphics(ab.graphics),
+      cache_(new Cache(*ab.cache_)),
+      dof_(ab.dof_),
+      rigid_bodies_(ab.rigid_bodies_),
+      q_(ab.q_),
+      dq_(ab.dq_),
+      ddq_(ab.ddq_),
+      g_(ab.g_),
+      T_base_to_world_(ab.T_base_to_world_),
+      T_to_parent_(ab.T_to_parent_),
+      T_from_parent_(ab.T_from_parent_),
+      T_to_world_(ab.T_to_world_),
+      ancestors_(ab.ancestors_),
+      subtrees_(ab.subtrees_) {}
+
+ArticulatedBody::~ArticulatedBody() {}
 
 const RigidBody& ArticulatedBody::rigid_bodies(int i) const {
   if (i < 0) i += dof();
@@ -42,19 +57,21 @@ void ArticulatedBody::set_q(Eigen::Ref<const Eigen::VectorXd> q) {
   q_ = q;
 
   CalculateTransforms();
-  vel_data_.is_computed = false;
-  jac_data_.is_computed = false;
-  cc_data_.is_computed = false;
-  grav_data_.is_computed = false;
-  crba_data_.is_computed = false;
-  crba_data_.is_inv_computed = false;
-  aba_data_.is_computed = false;
-  aba_data_.is_A_inv_computed = false;
-  opspace_data_.is_lambda_computed = false;
-  opspace_data_.is_lambda_inv_computed = false;
-  opspace_data_.is_jbar_computed = false;
-  opspace_aba_data_.is_lambda_computed = false;
-  opspace_aba_data_.is_lambda_inv_computed = false;
+
+  if (!cache_) return;
+  cache_->vel_data_.is_computed = false;
+  cache_->jac_data_.is_computed = false;
+  cache_->cc_data_.is_computed = false;
+  cache_->grav_data_.is_computed = false;
+  cache_->crba_data_.is_computed = false;
+  cache_->crba_data_.is_inv_computed = false;
+  cache_->aba_data_.is_computed = false;
+  cache_->aba_data_.is_A_inv_computed = false;
+  cache_->opspace_data_.is_lambda_computed = false;
+  cache_->opspace_data_.is_lambda_inv_computed = false;
+  cache_->opspace_data_.is_jbar_computed = false;
+  cache_->opspace_aba_data_.is_lambda_computed = false;
+  cache_->opspace_aba_data_.is_lambda_inv_computed = false;
 }
 
 double ArticulatedBody::dq(int i) const {
@@ -70,10 +87,11 @@ void ArticulatedBody::set_dq(Eigen::Ref<const Eigen::VectorXd> dq) {
   if (dq_ == dq) return;
   dq_ = dq;
 
-  vel_data_.is_computed = false;
-  grav_data_.is_friction_computed = false;
-  cc_data_.is_computed = false;
-  aba_data_.is_computed = false;
+  if (!cache_) return;
+  cache_->vel_data_.is_computed = false;
+  cache_->grav_data_.is_friction_computed = false;
+  cache_->cc_data_.is_computed = false;
+  cache_->aba_data_.is_computed = false;
 }
 
 double ArticulatedBody::ddq(int i) const {
@@ -86,8 +104,17 @@ void ArticulatedBody::set_ddq(Eigen::Ref<const Eigen::VectorXd> ddq) {
 
 void ArticulatedBody::set_g(const Eigen::Vector3d& g) {
   g_ << g, Eigen::Vector3d::Zero();
-  grav_data_.is_computed = false;
-  aba_data_.is_computed = false;
+  if (!cache_) return;
+  cache_->grav_data_.is_computed = false;
+  cache_->aba_data_.is_computed = false;
+}
+
+void ArticulatedBody::set_T_base_to_world(const Eigen::Quaterniond& ori_in_world,
+                                          const Eigen::Vector3d& pos_in_world) {
+  T_base_to_world_ = Eigen::Translation3d(pos_in_world) * ori_in_world;
+}
+void ArticulatedBody::set_T_base_to_world(const Eigen::Isometry3d& T_to_world) {
+  T_base_to_world_ = T_to_world;
 }
 
 const Eigen::Isometry3d& ArticulatedBody::T_to_parent(int i) const {
@@ -184,56 +211,57 @@ void ArticulatedBody::ExpandDof(int id, int id_parent) {
   subtrees_.push_back({id});
 
   // Resize caches
-  vel_data_.is_computed = false;
-  vel_data_.v.push_back(SpatialMotiond());
+  if (!cache_) return;
+  cache_->vel_data_.is_computed = false;
+  cache_->vel_data_.v.push_back(SpatialMotiond());
 
-  jac_data_.is_computed = false;
-  jac_data_.J.resize(6, dof_);
+  cache_->jac_data_.is_computed = false;
+  cache_->jac_data_.J.resize(6, dof_);
 
-  cc_data_.is_computed = false;
-  cc_data_.c_c.push_back(SpatialMotiond());
-  cc_data_.f_c.push_back(SpatialForced());
-  cc_data_.C.resize(dof_);
+  cache_->cc_data_.is_computed = false;
+  cache_->cc_data_.c_c.push_back(SpatialMotiond());
+  cache_->cc_data_.f_c.push_back(SpatialForced());
+  cache_->cc_data_.C.resize(dof_);
 
-  grav_data_.is_computed = false;
-  grav_data_.f_g.push_back(SpatialForced());
-  grav_data_.G.resize(dof_);
-  grav_data_.is_friction_computed = false;
-  grav_data_.F.resize(dof_);
+  cache_->grav_data_.is_computed = false;
+  cache_->grav_data_.f_g.push_back(SpatialForced());
+  cache_->grav_data_.G.resize(dof_);
+  cache_->grav_data_.is_friction_computed = false;
+  cache_->grav_data_.F.resize(dof_);
 
-  rnea_data_.a.push_back(SpatialMotiond());
-  rnea_data_.f.push_back(SpatialForced());
+  cache_->rnea_data_.a.push_back(SpatialMotiond());
+  cache_->rnea_data_.f.push_back(SpatialForced());
 
-  crba_data_.is_computed = false;
-  crba_data_.I_c.push_back(SpatialInertiad());
-  crba_data_.A.resize(dof_, dof_);
+  cache_->crba_data_.is_computed = false;
+  cache_->crba_data_.I_c.push_back(SpatialInertiad());
+  cache_->crba_data_.A.resize(dof_, dof_);
 
-  crba_data_.is_inv_computed = false;
+  cache_->crba_data_.is_inv_computed = false;
 
-  aba_data_.is_computed = false;
-  aba_data_.I_a.push_back(SpatialInertiaMatrixd());
-  aba_data_.h.push_back(SpatialForced());
-  aba_data_.d.push_back(0);
+  cache_->aba_data_.is_computed = false;
+  cache_->aba_data_.I_a.push_back(SpatialInertiaMatrixd());
+  cache_->aba_data_.h.push_back(SpatialForced());
+  cache_->aba_data_.d.push_back(0);
 
-  aba_data_.is_A_inv_computed = false;
-  aba_data_.A_inv.resize(dof_, dof_);
-  aba_data_.P.push_back(SpatialForceXd());
-  aba_data_.A.push_back(SpatialMotionXd());
-  for (SpatialForceXd& P_i : aba_data_.P) {
+  cache_->aba_data_.is_A_inv_computed = false;
+  cache_->aba_data_.A_inv.resize(dof_, dof_);
+  cache_->aba_data_.P.push_back(SpatialForceXd());
+  cache_->aba_data_.A.push_back(SpatialMotionXd());
+  for (SpatialForceXd& P_i : cache_->aba_data_.P) {
     P_i.resize(6, dof_);
   }
-  for (SpatialMotionXd& A_i : aba_data_.A) {
+  for (SpatialMotionXd& A_i : cache_->aba_data_.A) {
     A_i.resize(6, dof_);
   }
 
-  opspace_data_.is_lambda_computed = false;
-  opspace_data_.is_lambda_inv_computed = false;
-  opspace_data_.is_jbar_computed = false;
+  cache_->opspace_data_.is_lambda_computed = false;
+  cache_->opspace_data_.is_lambda_inv_computed = false;
+  cache_->opspace_data_.is_jbar_computed = false;
 
-  opspace_aba_data_.is_lambda_computed = false;
-  opspace_aba_data_.is_lambda_inv_computed = false;
-  opspace_aba_data_.p.push_back(SpatialForce6d());
-  opspace_aba_data_.u.push_back(Eigen::Matrix<double,1,6>());
+  cache_->opspace_aba_data_.is_lambda_computed = false;
+  cache_->opspace_aba_data_.is_lambda_inv_computed = false;
+  cache_->opspace_aba_data_.p.push_back(SpatialForce6d());
+  cache_->opspace_aba_data_.u.push_back(Eigen::Matrix<double,1,6>());
 }
 
 void ArticulatedBody::CalculateTransforms() {

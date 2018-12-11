@@ -12,6 +12,7 @@
 #include "algorithms/forward_dynamics.h"
 #include "algorithms/forward_kinematics.h"
 #include "algorithms/inverse_dynamics.h"
+#include "structs/articulated_body_cache.h"
 
 namespace SpatialDyn {
 namespace Opspace {
@@ -62,7 +63,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
 
 const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                double svd_epsilon) {
-  auto& ops = ab.opspace_data_;
+  auto& ops = ab.cache_->opspace_data_;
 
   if (!ops.is_lambda_computed || ops.J.size() != J.size() || ops.J != J ||
       ops.svd_epsilon != svd_epsilon) {
@@ -75,7 +76,7 @@ const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab, const Eigen::MatrixXd&
 }
 
 const Eigen::MatrixXd& InertiaInverse(const ArticulatedBody& ab, const Eigen::MatrixXd& J) {
-  auto& ops = ab.opspace_data_;
+  auto& ops = ab.cache_->opspace_data_;
 
   if (!ops.is_lambda_inv_computed || ops.J.size() != J.size() || ops.J != J) {
     ops.A_inv_J_bar_T = SpatialDyn::InertiaInverse(ab).solve(J.transpose());
@@ -91,7 +92,7 @@ const Eigen::MatrixXd& InertiaInverse(const ArticulatedBody& ab, const Eigen::Ma
 
 const Eigen::MatrixXd& JacobianDynamicInverse(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                               double svd_epsilon) {
-  auto& ops = ab.opspace_data_;
+  auto& ops = ab.cache_->opspace_data_;
 
   if (!ops.is_jbar_computed || ops.J != J || ops.svd_epsilon != svd_epsilon) {
     // TODO: Force recompute
@@ -108,7 +109,7 @@ Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, const Eigen::Matr
                                     int idx_link, const Eigen::Vector3d&,
                                     double svd_epsilon) {
   if (idx_link < 0) idx_link += ab.dof();
-  auto& cc = ab.cc_data_;
+  auto& cc = ab.cache_->cc_data_;
 
   // Compute joint space centrifugal/Coriolis first to cache cc.c
   Eigen::Vector6d mu = JacobianDynamicInverse(ab, J, svd_epsilon).transpose() *
