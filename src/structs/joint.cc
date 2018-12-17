@@ -18,9 +18,10 @@ Joint::Joint(Joint::Type type) {
   set_type(type);
 }
 
-Joint::Type Joint::type() const {
-  return type_;
+Joint::Joint(const std::string& type) {
+  set_type(StringToType(type));
 }
+
 void Joint::set_type(Joint::Type type) {
   type_ = type;
   switch (type_) {
@@ -54,13 +55,6 @@ bool Joint::is_revolute() const {
   return type_ == Joint::Type::RX || type_ == Joint::Type::RY || type_ == Joint::Type::RZ;
 }
 
-const SpatialMotiond& Joint::subspace() const {
-  return subspace_;
-}
-
-double Joint::q_min() const {
-  return q_min_;
-}
 void Joint::set_q_min(double q_min) {
   if (q_min > q_max_) {
     throw std::invalid_argument("Joint::set_q_min(): q_min (" + std::to_string(q_min) +
@@ -69,9 +63,6 @@ void Joint::set_q_min(double q_min) {
   q_min_ = q_min;
 }
 
-double Joint::q_max() const {
-  return q_max_;
-}
 void Joint::set_q_max(double q_max) {
   if (q_max < q_min_) {
     throw std::invalid_argument("Joint::set_q_min(): q_max (" + std::to_string(q_max) +
@@ -89,9 +80,6 @@ void Joint::set_q_limits(double q_min, double q_max) {
   q_max_ = q_max;
 }
 
-double Joint::dq_max() const {
-  return dq_max_;
-}
 void Joint::set_dq_max(double dq_max) {
   if (dq_max < 0.) {
     throw std::invalid_argument("Joint::set_dq_max(): dq_max (" + std::to_string(dq_max) +
@@ -100,9 +88,6 @@ void Joint::set_dq_max(double dq_max) {
   dq_max_ = dq_max;
 }
 
-double Joint::fq_max() const {
-  return fq_max_;
-}
 void Joint::set_fq_max(double fq_max) {
   if (fq_max < 0.) {
     throw std::invalid_argument("Joint::set_fq_max(): fq_max (" + std::to_string(fq_max) +
@@ -111,9 +96,6 @@ void Joint::set_fq_max(double fq_max) {
   fq_max_ = fq_max;
 }
 
-double Joint::f_coulomb() const {
-  return f_coulomb_;
-}
 void Joint::set_f_coulomb(double f_coulomb) {
   if (f_coulomb < 0.) {
     throw std::invalid_argument("Joint::set_f_coulomb(): f_coulomb (" + std::to_string(f_coulomb) +
@@ -122,9 +104,6 @@ void Joint::set_f_coulomb(double f_coulomb) {
   f_coulomb_ = f_coulomb;
 }
 
-double Joint::f_viscous() const {
-  return f_viscous_;
-}
 void Joint::set_f_viscous(double f_viscous) {
   if (f_viscous < 0.) {
     throw std::invalid_argument("Joint::set_f_viscous(): f_viscous (" + std::to_string(f_viscous) +
@@ -133,9 +112,6 @@ void Joint::set_f_viscous(double f_viscous) {
   f_viscous_ = f_viscous;
 }
 
-double Joint::f_stiction() const {
-  return f_stiction_;
-}
 void Joint::set_f_stiction(double f_stiction) {
   if (f_stiction < 0.) {
     throw std::invalid_argument("Joint::set_f_stiction(): f_stiction (" + std::to_string(f_stiction) +
@@ -163,8 +139,14 @@ Eigen::Isometry3d Joint::T_joint(double q) const {
   }
 }
 
-Joint::operator std::string() const {
-  switch (type_) {
+static const std::map<std::string, Joint::Type> kStringToJointType = {
+  {"RX", Joint::Type::RX}, {"RY", Joint::Type::RY}, {"RZ", Joint::Type::RZ},
+  {"PX", Joint::Type::PX}, {"PY", Joint::Type::PY}, {"PZ", Joint::Type::PZ},
+  {"UNDEFINED", Joint::Type::UNDEFINED}
+};
+
+std::string Joint::TypeToString(const Type& type) {
+  switch (type) {
     case Joint::Type::RX:
       return "RX";
     case Joint::Type::RY:
@@ -182,13 +164,7 @@ Joint::operator std::string() const {
   }
 }
 
-static const std::map<std::string, Joint::Type> kStringToJointType = {
-  {"RX", Joint::Type::RX}, {"RY", Joint::Type::RY}, {"RZ", Joint::Type::RZ},
-  {"PX", Joint::Type::PX}, {"PY", Joint::Type::PY}, {"PZ", Joint::Type::PZ},
-  {"UNDEFINED", Joint::Type::UNDEFINED}
-};
-
-Joint::Type Joint::FromString(const std::string& type) {
+Joint::Type Joint::StringToType(const std::string& type) {
   try {
     return kStringToJointType.at(type);
   } catch (...) {

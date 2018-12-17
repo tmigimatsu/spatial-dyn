@@ -13,7 +13,15 @@
 
 namespace SpatialDyn {
 
-Graphics::Geometry::operator std::string() const {
+static const std::map<std::string, Graphics::Geometry::Type> kStringToType = {
+  {"BOX",       Graphics::Geometry::Type::BOX},
+  {"CYLINDER",  Graphics::Geometry::Type::CYLINDER},
+  {"SPHERE",    Graphics::Geometry::Type::SPHERE},
+  {"MESH",      Graphics::Geometry::Type::MESH},
+  {"UNDEFINED", Graphics::Geometry::Type::UNDEFINED}
+};
+
+std::string Graphics::Geometry::TypeToString(const Type& type) {
   switch (type) {
     case Type::BOX:      return "BOX";
     case Type::CYLINDER: return "CYLINDER";
@@ -23,14 +31,7 @@ Graphics::Geometry::operator std::string() const {
   }
 }
 
-static const std::map<std::string, Graphics::Geometry::Type> kStringToType = {
-  {"BOX",       Graphics::Geometry::Type::BOX},
-  {"CYLINDER",  Graphics::Geometry::Type::CYLINDER},
-  {"SPHERE",    Graphics::Geometry::Type::SPHERE},
-  {"MESH",      Graphics::Geometry::Type::MESH},
-  {"UNDEFINED", Graphics::Geometry::Type::UNDEFINED}
-};
-Graphics::Geometry::Type Graphics::Geometry::FromString(const std::string& type) {
+Graphics::Geometry::Type Graphics::Geometry::StringToType(const std::string& type) {
   try {
     return kStringToType.at(type);
   } catch (...) {

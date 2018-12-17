@@ -18,59 +18,224 @@
 
 namespace SpatialDyn {
 
+/**
+ * Joint struct for SpatialDyn.
+ *
+ * @see Python: spatialdyn.Joint
+ */
 class Joint {
 
  public:
+  /// @cond
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  /// @endcond
 
-  enum class Type { UNDEFINED, RX, RY, RZ, PX, PY, PZ };
+  /**
+   * %Joint types.
+   */
+  enum class Type {
+    UNDEFINED,  ///< Undefined.
+    RX,         ///< Revolute about X.
+    RY,         ///< Revolute about Y.
+    RZ,         ///< Revolute about Z.
+    PX,         ///< Prismatic along X.
+    PY,         ///< Prismatic along Y.
+    PZ          ///< Prismatic along Z.
+  };
 
+  /**
+   * Default constructor. Sets joint type to Type::UNDEFINED.
+   */
   Joint() {}
+
+  /**
+   * Constructor that sets the joint type.
+   *
+   * @param type %Joint type.
+   */
   Joint(Type type);
 
-  Type type() const;
+  /**
+   * Constructor that sets the joint type from a string.
+   *
+   * Valid values: `"UNDEFINED"`, `"RX"`, `"RY"`, `"RZ"`, `"PX"`, `"PY"`, `"PZ"`.
+   *
+   * @param type %Joint type string.
+   * @see Python: spatialdyn.Joint.__init__()
+   */
+  Joint(const std::string& type);
+
+  /**
+   * @return %Joint type.
+   * @see Python: spatialdyn.Joint.type
+   */
+  Type type() const { return type_; }
+
+  /**
+   * Set the joint type.
+   *
+   * @param type Joint type.
+   */
   void set_type(Type type);
 
+  /**
+   * @return Boolean indicating whether the joint is prismatic.
+   * @see Python: spatialdyn.Joint.is_prismatic
+   */
   bool is_prismatic() const;
+
+  /**
+   * @return Boolean indicating whether the joint is revolute.
+   * @see Python: spatialdyn.Joint.is_revolute
+   */
   bool is_revolute() const;
 
-  // Motion subspace
-  const SpatialMotiond& subspace() const;
+  /**
+   * @return Motion subspace spatial vector, determined by the joint type.
+   * @see Python: spatialdyn.Joint.subspace
+   */
+  const SpatialMotiond& subspace() const { return subspace_; }
 
-  // Limits
-  double q_min() const;
+  /**
+   * @return Lower joint limit. Defaults to negative infinity.
+   * @see Python: spatialdyn.Joint.q_min
+   */
+  double q_min() const { return q_min_; }
+
+  /**
+   * Set the lower joint limit. Throws an error if `q_min > q_max`.
+   *
+   * @param q_min Lower joint limit.
+   */
   void set_q_min(double q_min);
 
-  double q_max() const;
+  /**
+   * @return Upper joint limit. Defaults to infinity.
+   * @see Python: spatialdyn.Joint.q_max
+   */
+  double q_max() const { return q_max_; }
+
+  /**
+   * Set the upper joint limit. Throws an error if `q_max > q_min`.
+   *
+   * @param q_max Upper joint limit.
+   */
   void set_q_max(double q_max);
 
+  /**
+   * Set the lower and upper joint limits. Throws an error if `q_min > q_max`.
+   *
+   * @param q_min Lower joint limit.
+   * @param q_max Upper joint limit.
+   */
   void set_q_limits(double q_min, double q_max);
 
-  double dq_max() const;
+  /**
+   * @return Maximum joint velocity. Defaults to infinity.
+   * @see Python: spatialdyn.Joint.dq_max
+   */
+  double dq_max() const { return dq_max_; }
+
+  /**
+   * Set the maximum joint velocity. Throws an error if `dq_max < 0`.
+   *
+   * @param dq_max Maximum joint velocity
+   */
   void set_dq_max(double dq_max);
 
-  double fq_max() const;
+  /**
+   * @return Maximum joint torque. Defaults to infinity.
+   * @see Python: spatialdyn.Joint.fq_max
+   */
+  double fq_max() const { return fq_max_; }
+
+  /**
+   * Set the maximum joint torque. Throws an error if `fq_max < 0`.
+   *
+   * @param fq_max Maximum joint torque.
+   */
   void set_fq_max(double fq_max);
 
-  // Friction
-  double f_coulomb() const;
+  /**
+   * @return Coulomb friction coefficient used as `f_coulomb * signum(dq)`.
+   *         Defaults to `0`.
+   * @see Python: spatialdyn.Joint.f_coulomb
+   */
+  double f_coulomb() const { return f_coulomb_; }
+
+  /**
+   * Set the Coulomb friction coefficient. Throws an error if `f_coulomb < 0`.
+   *
+   * @param f_coulomb Coulomb friction coefficient.
+   */
   void set_f_coulomb(double f_coulomb);
 
-  double f_viscous() const;
+  /**
+   * @return Viscous friction coefficient used as `f_viscous * dq`. Defaults to `0`.
+   * @see Python: spatialdyn.Joint.f_viscous
+   */
+  double f_viscous() const { return f_viscous_; }
+
+  /**
+   * Set the viscous friction coefficient. Throws an error if `f_viscous < 0`.
+   *
+   * @param f_viscous Viscous friction coefficient.
+   */
   void set_f_viscous(double f_viscous);
 
-  double f_stiction() const;
+  /**
+   * @return Stiction coefficient. Defaults to `0`.
+   * @see Python: spatialdyn.Joint.f_stiction
+   */
+  double f_stiction() const { return f_stiction_; }
+
+  /**
+   * Set the stiction coefficient. Throws an error if `f_stiction < 0`.
+   *
+   * @param f_stiction Stiction coefficient.
+   */
   void set_f_stiction(double f_stiction);
 
-  // Transform
+  /**
+   * Compute the transform from the joint frame to its parent rigid body's frame.
+   *
+   * @param q %Joint position.
+   * @return Transform given q.
+   * @see Python: spatialdyn.Joint.T_joint()
+   */
   Eigen::Isometry3d T_joint(double q) const;
 
-  // String
-  operator std::string() const;
-  static Type FromString(const std::string& type);
+  /**
+   * Convert the Joint::Type to a string.
+   *
+   * @param type %Joint type enum.
+   * @return %Joint type string.
+   */
+  static std::string TypeToString(const Type& type);
+
+  /**
+   * Convert the string to a Joint::Type.
+   *
+   * @param type %Joint type string.
+   * @return %Joint type enum.
+   */
+  static Type StringToType(const std::string& type);
+
+  /**
+   * Convert the joint type enum to a string.
+   *
+   * Example:
+   * ```
+   * std::string(Joint(Joint::Type::RX)) -> "RX"
+   * ```
+   *
+   * @return %Joint type as a string.
+   */
+  operator std::string() const { return TypeToString(type_); }
 
  protected:
 
+  /// @cond
   Type type_ = Type::UNDEFINED;
   SpatialMotiond subspace_ = SpatialMotiond::Zero();
 
@@ -81,9 +246,14 @@ class Joint {
   double f_coulomb_  = 0.;
   double f_viscous_  = 0.;
   double f_stiction_ = 0.;
+  /// @endcond
 
 };
 
+/**
+ * @return Stream representation of the joint for debugging.
+ * @see Python: spatialdyn.Joint.__repr__()
+ */
 std::ostream& operator<<(std::ostream& os, const Joint& j);
 
 }  // namespace SpatialDyn

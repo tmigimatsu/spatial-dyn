@@ -147,18 +147,6 @@ Eigen::VectorXd ArticulatedBody::Map(const std::function<double(const RigidBody&
   return result;
 }
 
-int ArticulatedBody::AddRigidBody(RigidBody&& rb, int id_parent) {
-  // TODO: Set default state
-  int id = rigid_bodies_.size();
-  if ((id_parent < 0 || id_parent >= id) && id != 0) {
-    throw std::invalid_argument("ArticulatedBody::AddRigidBody(): Parent rigid body with id " + std::to_string(id_parent) + " does not exist.");
-  }
-  rb.id_ = id;
-  rb.id_parent_ = id_parent;
-  rigid_bodies_.push_back(std::move(rb));
-  ExpandDof(id, id_parent);
-  return id;
-}
 int ArticulatedBody::AddRigidBody(const RigidBody& rb_in, int id_parent) {
   int id = rigid_bodies_.size();
   if ((id_parent < 0 || id_parent >= id) && id != 0) {

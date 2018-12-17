@@ -41,21 +41,22 @@ class RigidBody {
   RigidBody() {}
 
   /**
-   * Constructor that sets the name of the articulated body.
+   * Constructor that sets the name of the rigid body.
    *
-   * @param name Name of the articulated body.
+   * @param name Name of the rigid body.
+   * @see Python: spatialdyn.RigidBody.__init__()
    */
   RigidBody(const std::string& name) : name(name) {}
 
   /**
-   * Name of the articulated body for debugging purposes.
+   * Name of the rigid body for debugging purposes.
    *
    * @see Python: spatialdyn.RigidBody.name
    */
   std::string name;
 
   /**
-   * Graphics for the rigid body.
+   * %Graphics for the rigid body.
    *
    * @see Python: spatialdyn.RigidBody.graphics
    */
@@ -120,15 +121,10 @@ class RigidBody {
    *
    * @param inertia Spatial inertia of the rigid body.
    */
-  void set_inertia(SpatialInertiad&& inertia);
-
-  /**
-   * @see set_inertia()
-   */
   void set_inertia(const SpatialInertiad& inertia);
 
   /**
-   * @return Joint attached to the rigid body.
+   * @return %Joint attached to the rigid body.
    * @see Python: spatialdyn.RigidBody.joint
    */
   const Joint& joint() const { return joint_; }
@@ -137,11 +133,6 @@ class RigidBody {
    * Set the joint attached to the rigid body.
    *
    * @param inertia Spatial inertia of the rigid body.
-   */
-  void set_joint(Joint&& joint);
-
-  /**
-   * @see set_joint()
    */
   void set_joint(const Joint& joint);
 
@@ -153,14 +144,15 @@ class RigidBody {
   Eigen::Isometry3d T_to_parent_ = Eigen::Isometry3d::Identity();
   SpatialInertiad inertia_ = SpatialInertiad(1, Eigen::Vector3d::Zero(), Eigen::Vector6d::Zero());
   Joint joint_;
-  /// @endcond
 
   friend class ArticulatedBody;
+  /// @endcond
 
 };
 
 /**
- * @return String representation of the rigid body.
+ * @return Stream representation of the rigid body for debugging.
+ * @see Python: spatialdyn.RigidBody.__repr__()
  */
 std::ostream& operator<<(std::ostream& os, const RigidBody& rb);
 

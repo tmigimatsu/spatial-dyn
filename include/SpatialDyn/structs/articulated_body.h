@@ -43,6 +43,7 @@ class ArticulatedBody {
    * Constructor that sets the name of the articulated body.
    *
    * @param name Name of the articulated body.
+   * @see Python: spatialdyn.ArticulatedBody.__init__()
    */
   ArticulatedBody(const std::string& name);
 
@@ -64,7 +65,7 @@ class ArticulatedBody {
   std::string name;
 
   /**
-   * Graphics for the base.
+   * %Graphics for the base.
    *
    * @see Python: spatialdyn.ArticulatedBody.graphics
    */
@@ -88,11 +89,6 @@ class ArticulatedBody {
    *                  rigid body will be added to the base.
    * @return ID assigned to the new rigid body.
    * @see Python: spatialdyn.ArticulatedBody.add_rigid_body()
-   */
-  int AddRigidBody(RigidBody&& rb, int id_parent = -1);
-
-  /**
-   * @see AddRigidBody()
    */
   int AddRigidBody(const RigidBody& rb, int id_parent = -1);
 
@@ -311,7 +307,8 @@ class ArticulatedBody {
 };
 
 /**
- * @return String representation of the articulated body's state.
+ * @return Stream representation of the articulated body for debugging.
+ * @see Python: spatialdyn.ArticulatedBody.__repr__()
  */
 std::ostream& operator<<(std::ostream& os, const ArticulatedBody& ab);
 

@@ -38,7 +38,7 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def_readwrite("name", &ArticulatedBody::name)
       .def_readwrite("graphics", &ArticulatedBody::graphics)
       .def_property_readonly("dof", &ArticulatedBody::dof)
-      .def("add_rigid_body", (int (ArticulatedBody::*)(const RigidBody&, int)) &ArticulatedBody::AddRigidBody, "rb"_a, "id_parent"_a = -1)
+      .def("add_rigid_body", &ArticulatedBody::AddRigidBody, "rb"_a, "id_parent"_a = -1)
       .def_property_readonly("rigid_bodies", (const std::vector<RigidBody>& (ArticulatedBody::*)(void) const) &ArticulatedBody::rigid_bodies)
       .def_property("q",
                     (const Eigen::VectorXd& (ArticulatedBody::*)(void) const) &ArticulatedBody::q,
@@ -61,15 +61,15 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def("ancestors", &ArticulatedBody::ancestors)
       .def("subtree", &ArticulatedBody::subtree)
       .def("map", &ArticulatedBody::Map)
+      .def("__str__",
+           [](const ArticulatedBody& ab) {
+             return SpatialDyn::Json::Serialize(ab).dump();
+           })
       .def("__repr__",
            [](const ArticulatedBody& ab) {
              std::stringstream ss;
              ss << "spatialdyn." << ab;
              return ss.str();
-           })
-      .def("__str__",
-           [](const ArticulatedBody& ab) {
-             return SpatialDyn::Json::Serialize(ab).dump();
            });
 
   // Rigid body
@@ -82,8 +82,49 @@ PYBIND11_MODULE(spatialdyn, m) {
                     (void (RigidBody::*)(const Eigen::Isometry3d&)) &RigidBody::set_T_to_parent)
       .def_property("inertia", &RigidBody::inertia,
                     (void (RigidBody::*)(const SpatialInertiad&)) &RigidBody::set_inertia)
-      .def_property("joint", &RigidBody::joint,
-                    (void (RigidBody::*)(const Joint&)) &RigidBody::set_joint);
+      .def_property("joint", &RigidBody::joint, &RigidBody::set_joint)
+      .def("__str__",
+           [](const RigidBody& rb) {
+             return SpatialDyn::Json::Serialize(rb).dump();
+           })
+      .def("__repr__",
+           [](const RigidBody& rb) {
+             std::stringstream ss;
+             ss << "spatialdyn." << rb;
+             return ss.str();
+           });
+
+  // Joint
+  py::class_<Joint>(m, "Joint")
+      .def_property("type",
+                    [](const Joint& joint) {
+                      return std::string(joint);
+                    },
+                    [](Joint& joint, const std::string& type) {
+                      joint.set_type(Joint::StringToType(type));
+                    })
+      .def_property_readonly("is_prismatic", &Joint::is_prismatic)
+      .def_property_readonly("is_revolute", &Joint::is_revolute)
+      // TODO: subspace
+      .def_property("q_min", &Joint::q_min, &Joint::set_q_min)
+      .def_property("q_max", &Joint::q_max, &Joint::set_q_max)
+      .def("set_q_limits", &Joint::set_q_limits)
+      .def_property("dq_max", &Joint::dq_max, &Joint::set_dq_max)
+      .def_property("fq_max", &Joint::fq_max, &Joint::set_fq_max)
+      .def_property("f_coulomb", &Joint::f_coulomb, &Joint::set_f_coulomb)
+      .def_property("f_viscous", &Joint::f_viscous, &Joint::set_f_viscous)
+      .def_property("f_stiction", &Joint::f_stiction, &Joint::set_f_stiction)
+      .def("T_joint", &Joint::T_joint)
+      .def("__str__",
+           [](const Joint& joint) {
+             return SpatialDyn::Json::Serialize(joint).dump();
+           })
+      .def("__repr__",
+           [](const Joint& joint) {
+             std::stringstream ss;
+             ss << "spatialdyn." << joint;
+             return ss.str();
+           });
 
   // Graphics
   py::class_<Graphics>(m, "Graphics")
@@ -99,7 +140,7 @@ PYBIND11_MODULE(spatialdyn, m) {
                       return std::string(geometry);
                     },
                     [](Graphics::Geometry& geometry, const std::string& type) {
-                      geometry.type = Graphics::Geometry::FromString(type);
+                      geometry.type = Graphics::Geometry::StringToType(type);
                     })
       .def_readwrite("scale", &Graphics::Geometry::scale)
       .def_readwrite("radius", &Graphics::Geometry::radius)
@@ -111,27 +152,6 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def_readwrite("name", &Graphics::Material::name)
       .def_readwrite("rgba", &Graphics::Material::rgba)
       .def_readwrite("texture", &Graphics::Material::texture);
-
-  // Joint
-  py::class_<Joint>(m, "Joint")
-      .def_property("type",
-                    [](const Joint& joint) {
-                      return std::string(joint);
-                    },
-                    [](Joint& joint, const std::string& type) {
-                      joint.set_type(Joint::FromString(type));
-                    })
-      .def_property("q_min", &Joint::q_min, &Joint::set_q_min)
-      .def_property("q_max", &Joint::q_max, &Joint::set_q_max)
-      .def_property("dq_max", &Joint::dq_max, &Joint::set_dq_max)
-      .def_property("fq_max", &Joint::fq_max, &Joint::set_fq_max)
-      .def_property("f_coulomb", &Joint::f_coulomb, &Joint::set_f_coulomb)
-      .def_property("f_stiction", &Joint::f_stiction, &Joint::set_f_stiction)
-      .def("T_joint", &Joint::T_joint)
-      .def("__repr__",
-           [](const Joint& joint) {
-             return "<spatialdyn.Joint (type=" + std::string(joint) + ")>";
-           });
 
   // Forward dynamics
   m.def("forward_dynamics", &ForwardDynamics, "ab"_a, "tau"_a,

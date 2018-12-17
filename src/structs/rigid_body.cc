@@ -29,21 +29,11 @@ void RigidBody::set_inertia(double mass,
   } 
   inertia_ = SpatialInertiad(mass, com, I_com_flat);
 }
-void RigidBody::set_inertia(SpatialInertiad&& inertia) {
-  if (inertia.mass < 0.) {
-    throw std::invalid_argument("RigidBody::set_inertia(): Mass must be non-negative (mass=" + std::to_string(inertia.mass) + ").");
-  } 
-  inertia_ = SpatialInertiad(std::move(inertia));
-}
 void RigidBody::set_inertia(const SpatialInertiad& inertia) {
   if (inertia.mass < 0.) {
     throw std::invalid_argument("RigidBody::set_inertia(): Mass must be non-negative (mass=" + std::to_string(inertia.mass) + ").");
   } 
   inertia_ = SpatialInertiad(inertia);
-}
-
-void RigidBody::set_joint(Joint&& joint) {
-  joint_ = joint;
 }
 
 void RigidBody::set_joint(const Joint& joint) {
