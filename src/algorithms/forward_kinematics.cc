@@ -23,8 +23,7 @@ Eigen::Vector3d Position(const ArticulatedBody& ab, Eigen::Ref<const Eigen::Vect
   if (link < 0) link += ab.dof();
   Eigen::Vector3d pos = offset;
   for (int i = link; i != -1; i = ab.rigid_bodies(i).id_parent()) {
-    const RigidBody& rb = ab.rigid_bodies(i);
-    pos = rb.T_to_parent() * (rb.joint().T_joint(q(i)) * pos);
+    pos = ab.T_to_parent(i, q(i)) * pos;
   }
   return ab.T_base_to_world() * pos;
 }
@@ -38,8 +37,7 @@ Eigen::Quaterniond Orientation(const ArticulatedBody& ab, Eigen::Ref<const Eigen
   if (link < 0) link += ab.dof();
   Eigen::Matrix3d ori = Eigen::Matrix3d::Identity();
   for (int i = link; i != -1; i = ab.rigid_bodies(i).id_parent()) {
-    const RigidBody& rb = ab.rigid_bodies(i);
-    ori = rb.T_to_parent().linear() * rb.joint().T_joint(q(i)).linear() * ori;
+    ori = ab.T_to_parent(i, q(i)).linear() * ori;
   }
   return Eigen::Quaterniond(ab.T_base_to_world().linear() * ori);
 }
@@ -50,13 +48,7 @@ Eigen::Isometry3d CartesianPose(const ArticulatedBody& ab, int link, const Eigen
 }
 Eigen::Isometry3d CartesianPose(const ArticulatedBody& ab, Eigen::Ref<const Eigen::VectorXd> q,
                                 int link, const Eigen::Vector3d& offset) {
-  if (link < 0) link += ab.dof();
-  Eigen::Isometry3d T_to_base = Eigen::Isometry3d::Identity();
-  for (int i = link; i != -1; i = ab.rigid_bodies(i).id_parent()) {
-    const RigidBody& rb = ab.rigid_bodies(i);
-    T_to_base = rb.T_to_parent() * rb.joint().T_joint(q(i)) * T_to_base;
-  }
-  return ab.T_base_to_world() * T_to_base;
+  return ab.T_to_world(link, q) * Eigen::Translation3d(offset);
 }
 
 const Eigen::Matrix6Xd& Jacobian(const ArticulatedBody& ab, int link,
@@ -86,9 +78,9 @@ Eigen::Matrix6Xd Jacobian(const ArticulatedBody& ab, Eigen::Ref<const Eigen::Vec
     int i = ancestors[idx];
     const RigidBody& rb = ab.rigid_bodies(i);
     if (idx == 0) {
-      T_to_world[idx] = ab.T_base_to_world() * rb.T_to_parent() * rb.joint().T_joint(q(i));
+      T_to_world[idx] = ab.T_base_to_world() * ab.T_to_parent(i, q(i));
     } else {
-      T_to_world[idx] = T_to_world[idx-1] * rb.T_to_parent() * rb.joint().T_joint(q(i));
+      T_to_world[idx] = T_to_world[idx-1] * ab.T_to_parent(i, q(i));
     }
   }
   const Eigen::Vector3d p_0n = T_to_world.back() * offset;
@@ -123,9 +115,9 @@ Eigen::Matrix3Xd LinearJacobian(const ArticulatedBody& ab, Eigen::Ref<const Eige
     int i = ancestors[idx];
     const RigidBody& rb = ab.rigid_bodies(i);
     if (idx == 0) {
-      T_to_world[idx] = ab.T_base_to_world() * rb.T_to_parent() * rb.joint().T_joint(q(i));
+      T_to_world[idx] = ab.T_base_to_world() * ab.T_to_parent(i, q(i));
     } else {
-      T_to_world[idx] = T_to_world[idx-1] * rb.T_to_parent() * rb.joint().T_joint(q(i));
+      T_to_world[idx] = T_to_world[idx-1] * ab.T_to_parent(i, q(i));
     }
   }
   const Eigen::Vector3d p_0n = T_to_world.back() * offset;
@@ -159,9 +151,9 @@ Eigen::Matrix3Xd AngularJacobian(const ArticulatedBody& ab, Eigen::Ref<const Eig
     int i = ancestors[idx];
     const RigidBody& rb = ab.rigid_bodies(i);
     if (idx == 0) {
-      T_to_world[idx] = ab.T_base_to_world() * rb.T_to_parent() * rb.joint().T_joint(q(i));
+      T_to_world[idx] = ab.T_base_to_world() * ab.T_to_parent(i, q(i));
     } else {
-      T_to_world[idx] = T_to_world[idx-1] * rb.T_to_parent() * rb.joint().T_joint(q(i));
+      T_to_world[idx] = T_to_world[idx-1] * ab.T_to_parent(i, q(i));
     }
   }
   const Eigen::Vector3d p_0n = T_to_world.back().translation();

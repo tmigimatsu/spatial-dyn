@@ -30,9 +30,6 @@ ArticulatedBody::ArticulatedBody(const ArticulatedBody& ab)
       ddq_(ab.ddq_),
       g_(ab.g_),
       T_base_to_world_(ab.T_base_to_world_),
-      T_to_parent_(ab.T_to_parent_),
-      T_from_parent_(ab.T_from_parent_),
-      T_to_world_(ab.T_to_world_),
       ancestors_(ab.ancestors_),
       subtrees_(ab.subtrees_) {}
 
@@ -56,9 +53,9 @@ void ArticulatedBody::set_q(Eigen::Ref<const Eigen::VectorXd> q) {
   if (q_ == q) return;
   q_ = q;
 
-  CalculateTransforms();
-
   if (!cache_) return;
+  cache_->T_data_.is_T_to_parent_computed = false;
+  cache_->T_data_.is_T_to_world_computed = false;
   cache_->vel_data_.is_computed = false;
   cache_->jac_data_.is_computed = false;
   cache_->cc_data_.is_computed = false;
@@ -119,15 +116,48 @@ void ArticulatedBody::set_T_base_to_world(const Eigen::Isometry3d& T_to_world) {
 
 const Eigen::Isometry3d& ArticulatedBody::T_to_parent(int i) const {
   if (i < 0) i += dof();
-  return T_to_parent_[i];
+  auto& T = cache_->T_data_;
+  if (!T.is_T_to_parent_computed) {
+    for (size_t j = 0; j < rigid_bodies_.size(); j++) {
+      const RigidBody& rb = rigid_bodies_[j];
+      T.T_to_parent[j] = rb.T_to_parent() * rb.joint().T_joint(q_(j));
+    }
+    T.is_T_to_parent_computed = true;
+  }
+  return T.T_to_parent[i];
 }
-const Eigen::Isometry3d& ArticulatedBody::T_from_parent(int i) const {
+Eigen::Isometry3d ArticulatedBody::T_to_parent(int i, double q) const {
   if (i < 0) i += dof();
-  return T_from_parent_[i];
+  const RigidBody& rb = rigid_bodies_[i];
+  return rb.T_to_parent() * rb.joint().T_joint(q);
 }
+
 const Eigen::Isometry3d& ArticulatedBody::T_to_world(int i) const {
   if (i < 0) i += dof();
-  return T_to_world_[i];
+  auto& T = cache_->T_data_;
+  if (!T.is_T_to_world_computed) {
+    T_to_parent(0);  // Compute parent transforms
+    for (size_t j = 0; j < rigid_bodies_.size(); j++) {
+      const RigidBody& rb = rigid_bodies_[j];
+      if (rb.id_parent() < 0) {
+        T.T_to_world[j] = T_base_to_world_ * T.T_to_parent[j];
+      } else {
+        T.T_to_world[j] = T.T_to_world[rb.id_parent()] * T.T_to_parent[j];
+      }
+    }
+    T.is_T_to_world_computed = true;
+  }
+  return T.T_to_world[i];
+}
+Eigen::Isometry3d ArticulatedBody::T_to_world(int i, Eigen::Ref<const Eigen::VectorXd> q) const {
+  if (i < 0) i += dof();
+  Eigen::Isometry3d T;
+  while (i >= 0) {
+    const RigidBody& rb = rigid_bodies_[i];
+    T = T_to_parent(i, q(i)) * T;
+    i = rb.id_parent();
+  }
+  return T_base_to_world_ * T;
 }
 
 const std::vector<int>& ArticulatedBody::ancestors(int i) const {
@@ -162,9 +192,6 @@ int ArticulatedBody::AddRigidBody(const RigidBody& rb_in, int id_parent) {
 
 void ArticulatedBody::ExpandDof(int id, int id_parent) {
   dof_++;
-  T_to_parent_.resize(dof_);
-  T_from_parent_.resize(dof_);
-  T_to_world_.resize(dof_);
 
   // Expand state size while leaving old values in place
   if (q_.size() < static_cast<int>(dof_)) q_.conservativeResize(dof_);
@@ -175,15 +202,6 @@ void ArticulatedBody::ExpandDof(int id, int id_parent) {
   q_(id) = 0.;
   dq_(id) = 0.;
   ddq_(id) = 0.;
-
-  // Compute transforms for added rigid body
-  T_to_parent_[id] = rigid_bodies_[id].T_to_parent();
-  T_from_parent_[id] = T_to_parent_[id].inverse();
-  if (id_parent < 0) {
-    T_to_world_[id] = T_base_to_world_ * T_to_parent_[id];
-  } else {
-    T_to_world_[id] = T_to_world_[id_parent] * T_to_parent_[id];
-  }
 
   // Update ancestors and subtrees
   if (id_parent < 0) {
@@ -200,6 +218,11 @@ void ArticulatedBody::ExpandDof(int id, int id_parent) {
 
   // Resize caches
   if (!cache_) return;
+  cache_->T_data_.is_T_to_parent_computed = false;
+  cache_->T_data_.T_to_parent.push_back(Eigen::Isometry3d());
+  cache_->T_data_.is_T_to_world_computed = false;
+  cache_->T_data_.T_to_world.push_back(Eigen::Isometry3d());
+
   cache_->vel_data_.is_computed = false;
   cache_->vel_data_.v.push_back(SpatialMotiond());
 
@@ -250,19 +273,6 @@ void ArticulatedBody::ExpandDof(int id, int id_parent) {
   cache_->opspace_aba_data_.is_lambda_inv_computed = false;
   cache_->opspace_aba_data_.p.push_back(SpatialForce6d());
   cache_->opspace_aba_data_.u.push_back(Eigen::Matrix<double,1,6>());
-}
-
-void ArticulatedBody::CalculateTransforms() {
-  for (size_t i = 0; i < rigid_bodies_.size(); i++) {
-    const RigidBody& rb = rigid_bodies_[i];
-    T_to_parent_[i] = rb.T_to_parent() * rb.joint().T_joint(q_(i));
-    T_from_parent_[i] = T_to_parent_[i].inverse();
-    if (rb.id_parent() < 0) {
-      T_to_world_[i] = T_base_to_world_ * T_to_parent_[i];
-    } else {
-      T_to_world_[i] = T_to_world_[rb.id_parent()] * T_to_parent_[i];
-    }
-  }
 }
 
 std::ostream& operator<<(std::ostream& os, const ArticulatedBody& ab) {

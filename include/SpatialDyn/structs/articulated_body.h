@@ -203,6 +203,9 @@ class ArticulatedBody {
   /**
    * Get the transform from rigid body `i`'s frame to its parent's frame.
    *
+   * The computed transform is cached to avoid recomputation in subsequent calls
+   * to T_to_parent() for the same joint configuration.
+   *
    * This transformation matrix will transform a vector represented in frame `i`
    * to one represented in frame `i-1` according to the `i`th value of the
    * articulated body's current joint positions q(). Uses Pythonic indexing (if
@@ -217,19 +220,51 @@ class ArticulatedBody {
    * Eigen::Vector3d pos_in_ee_parent = ab.T_to_parent(-1);
    * ```
    *
-   * @return Transform from the `i`th rigid body's frame to its parent's frame.
-   * @see Python: spatialdyn.ArticulatedBody.T_to_parent()
+   * @param i Index of the desired frame. Uses Pythonic indexing (if `i < 0`,
+   *          count from the back).
+   * @return Reference to the ached transform from the `i`th rigid body's frame
+   *         to its parent's frame. @see Python:
+   * spatialdyn.ArticulatedBody.T_to_parent()
    */
   const Eigen::Isometry3d& T_to_parent(int i) const;
 
   /**
-   * @return Inverse transform of T_to_parent() (from rigid body `i-1` to `i`).
+   * Get the transform from rigid body `i`'s frame to its parent's frame given
+   * joint position q.
+   *
+   * @param i Index of the desired frame. Uses Pythonic indexing (if `i < 0`,
+   *          count from the back).
+   * @param q Position of joint `i`.
+   * @return Transform from the `i`th rigid body's frame to its parent's frame.
+   */
+  Eigen::Isometry3d T_to_parent(int i, double q) const;
+
+  /**
+   * Get the transform from rigid body `i`'s frame to its parent's frame.
+   *
+   * @param i Index of the desired frame. Uses Pythonic indexing (if `i < 0`,
+   *          count from the back).
+   * @return Inverse transform of T_to_parent(int).
    * @see Python: spatialdyn.ArticulatedBody.T_from_parent()
    */
-  const Eigen::Isometry3d& T_from_parent(int i) const;
+  Eigen::Isometry3d T_from_parent(int i) const { return T_to_parent(i).inverse(); };
+
+  /**
+   * Get the transform from rigid body `i`'s parent frame to its own frame.
+   *
+   * @param i Index of the desired frame. Uses Pythonic indexing (if `i < 0`,
+   *          count from the back).
+   * @param q Position of joint `i`.
+   * @return Inverse transform of T_to_parent(int, double).
+   * @see Python: spatialdyn.ArticulatedBody.T_from_parent()
+   */
+  Eigen::Isometry3d T_from_parent(int i, double q) const { return T_to_parent(i, q).inverse(); };
 
   /**
    * Get the transform from rigid body `i`'s frame to the world frame.
+   *
+   * The computed transform is cached to avoid recomputation in subsequent calls
+   * to T_to_world() for the same joint configuration.
    *
    * This transformation matrix will transform a vector represented in frame `i`
    * to one represented in the world frame according to the articulated body's
@@ -245,24 +280,42 @@ class ArticulatedBody {
    * Eigen::Vector3d pos_in_ee_parent = ab.T_to_parent(-1);
    * ```
    *
-   * @return Transform from the `i`th rigid body's frame to the world. Uses
-   *         Pythonic indexing (if `i < 0`, count from the back).
+   * @param i Index of the desired frame. Uses Pythonic indexing (if `i < 0`,
+   *          count from the back).
+   * @return Reference to the cached transform from the `i`th rigid body's frame to the world.
    * @see Python: spatialdyn.ArticulatedBody.T_to_world()
    */
   const Eigen::Isometry3d& T_to_world(int i) const;
 
   /**
+   * Get the transform from rigid body `i`'s frame to the world frame given
+   * joint position q.
+   *
+   * @param i Index of the desired frame. Uses Pythonic indexing (if `i < 0`,
+   *          count from the back).
+   * @param q %Joint configuration of articulated body.
+   * @return Transform from the `i`th rigid body's frame to the world.
+   */
+  Eigen::Isometry3d T_to_world(int i, Eigen::Ref<const Eigen::VectorXd> q) const;
+
+  /**
+   * Get the ancestors of rigid body `i`.
+   *
+   * @param i Index of the desired frame. Uses Pythonic indexing (if `i < 0`,
+   *          count from the back).
    * @return Vector of ancestor IDs of rigid body `i`, from the base to the
-   *         rigid body (inclusive). Uses Pythonic indexing (if `i < 0`, count
-   *         from the back).
+   *         rigid body (inclusive).
    * @see Python: spatialdyn.ArticulatedBody.ancestors()
    */
   const std::vector<int>& ancestors(int i) const;
 
   /**
+   * Get the subtree of rigid body `i`.
+   *
+   * @param i Index of the desired frame. Uses Pythonic indexing (if `i < 0`,
+   *          count from the back).
    * @return Vector of IDs in the subtree of rigid body `i`, going from the
-   *         rigid body (inclusive) to the leaves. Uses Pythonic indexing (if `i
-   *         < 0`, count from the back).
+   *         rigid body (inclusive) to the leaves.
    * @see Python: spatialdyn.ArticulatedBody.subtree()
    */
   const std::vector<int>& subtree(int i) const;
@@ -284,7 +337,6 @@ class ArticulatedBody {
  protected:
 
   /// @cond
-  void CalculateTransforms();
   void ExpandDof(int id, int id_parent);
 
   size_t dof_ = 0;
@@ -296,9 +348,6 @@ class ArticulatedBody {
   SpatialMotiond g_ = -9.81 * SpatialMotiond::UnitLinZ();
 
   Eigen::Isometry3d T_base_to_world_ = Eigen::Isometry3d::Identity();
-  std::vector<Eigen::Isometry3d> T_to_parent_;
-  std::vector<Eigen::Isometry3d> T_from_parent_;
-  std::vector<Eigen::Isometry3d> T_to_world_;
 
   std::vector<std::vector<int>> ancestors_;  // Ancestors from base to link i
   std::vector<std::vector<int>> subtrees_;   // Descendants of link i including link i

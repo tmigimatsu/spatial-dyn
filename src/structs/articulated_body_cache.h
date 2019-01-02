@@ -19,6 +19,15 @@ namespace SpatialDyn {
 /// @cond
 struct ArticulatedBody::Cache {
 
+  struct TransformData {
+    bool is_T_to_parent_computed = false;  // Reusable with same position
+    std::vector<Eigen::Isometry3d> T_to_parent;
+
+    bool is_T_to_world_computed = false;  // Reusable with same position
+    std::vector<Eigen::Isometry3d> T_to_world;
+  };
+  TransformData T_data_;
+
   struct VelocityData {
     bool is_computed = false;  // Reusable with same position, velocity
     std::vector<SpatialMotiond> v;  // Rigid body velocities

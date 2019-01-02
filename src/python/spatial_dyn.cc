@@ -55,9 +55,9 @@ PYBIND11_MODULE(spatialdyn, m) {
                     &ArticulatedBody::set_g)
       .def_property("T_base_to_world", &ArticulatedBody::T_base_to_world,
                     (void (ArticulatedBody::*)(const Eigen::Isometry3d&)) &ArticulatedBody::set_T_base_to_world)
-      .def("T_to_parent", &ArticulatedBody::T_to_parent)
+      .def("T_to_parent", (const Eigen::Isometry3d& (ArticulatedBody::*)(int i) const) &ArticulatedBody::T_to_parent)
       .def("T_from_parent", &ArticulatedBody::T_from_parent)
-      .def("T_to_world", &ArticulatedBody::T_to_world)
+      .def("T_to_world", (const Eigen::Isometry3d& (ArticulatedBody::*)(int i) const) &ArticulatedBody::T_to_world)
       .def("ancestors", &ArticulatedBody::ancestors)
       .def("subtree", &ArticulatedBody::subtree)
       .def("map", &ArticulatedBody::Map)

@@ -64,7 +64,7 @@ class ArticulatedBody:
     def T_to_parent(self, i):
         pass
 
-    ## Inverse transform of T_to_parent()
+    ## Get the transform from rigid body `i`'s parent frame to its own frame.
     # @param i int
     # @return spatialdyn.eigen.Isometry3d
     # @see C++: SpatialDyn::ArticulatedBody::T_from_parent()
