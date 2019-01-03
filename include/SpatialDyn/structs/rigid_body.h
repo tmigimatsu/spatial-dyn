@@ -22,6 +22,8 @@ namespace SpatialDyn {
 class ArticulatedBody;
 
 /**
+ * @ingroup cpp_structs
+ *
  * Rigid body struct for SpatialDyn.
  *
  * Comprised of an articulated joint and the attached rigid body.
@@ -151,6 +153,7 @@ class RigidBody {
 };
 
 /**
+ * @ingroup cpp_structs
  * @return Stream representation of the rigid body for debugging.
  * @see Python: spatialdyn.RigidBody.__repr__()
  */

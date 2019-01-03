@@ -55,9 +55,19 @@ PYBIND11_MODULE(spatialdyn, m) {
                     &ArticulatedBody::set_g)
       .def_property("T_base_to_world", &ArticulatedBody::T_base_to_world,
                     (void (ArticulatedBody::*)(const Eigen::Isometry3d&)) &ArticulatedBody::set_T_base_to_world)
-      .def("T_to_parent", (const Eigen::Isometry3d& (ArticulatedBody::*)(int i) const) &ArticulatedBody::T_to_parent)
-      .def("T_from_parent", &ArticulatedBody::T_from_parent)
-      .def("T_to_world", (const Eigen::Isometry3d& (ArticulatedBody::*)(int i) const) &ArticulatedBody::T_to_world)
+      .def("T_to_parent",
+           [](const ArticulatedBody& ab, int i, py::object q) -> Eigen::Isometry3d {
+             return q.is_none() ? ab.T_to_parent(i) : ab.T_to_parent(i, q.cast<double>());
+           }, "i"_a, "q"_a = py::none())
+      .def("T_from_parent",
+           [](const ArticulatedBody& ab, int i, py::object q) -> Eigen::Isometry3d {
+             return q.is_none() ? ab.T_from_parent(i) : ab.T_from_parent(i, q.cast<double>());
+           }, "i"_a, "q"_a = py::none())
+      .def("T_to_world",
+           [](const ArticulatedBody& ab, int i, py::object q) -> Eigen::Isometry3d {
+             return q.is_none() ? ab.T_to_world(i)
+                                : ab.T_to_world(i, q.cast<Eigen::Ref<const Eigen::VectorXd>>());
+           }, "i"_a, "q"_a = py::none())
       .def("ancestors", &ArticulatedBody::ancestors)
       .def("subtree", &ArticulatedBody::subtree)
       .def("map", &ArticulatedBody::Map)
@@ -162,12 +172,46 @@ PYBIND11_MODULE(spatialdyn, m) {
         "friction"_a = false);
 
   // Forward kinematics
-  m.def("position", (Eigen::Vector3d (*)(const ArticulatedBody&, int, const Eigen::Vector3d&)) &Position, "ab"_a, "link"_a = -1, "offset"_a = Eigen::Vector3d::Zero());
-  m.def("orientation", (Eigen::Quaterniond (*)(const ArticulatedBody&, int)) &Orientation, "ab"_a, "link"_a = -1);
-  m.def("jacobian", (const Eigen::Matrix6Xd& (*)(const ArticulatedBody&, int, const Eigen::Vector3d&)) &Jacobian, "ab"_a, "link"_a = -1, "offset"_a = Eigen::Vector3d::Zero());
-  m.def("linear_jacobian", (Eigen::Matrix3Xd (*)(const ArticulatedBody&, int, const Eigen::Vector3d&)) &LinearJacobian, "ab"_a, "link"_a = -1,
-        "offset"_a = Eigen::Vector3d::Zero());
-  m.def("angular_jacobian", (Eigen::Matrix3Xd (*)(const ArticulatedBody&, int)) &AngularJacobian, "ab"_a, "link"_a = -1);
+  m.def("position",
+        [](const ArticulatedBody& ab, int link, const Eigen::Vector3d& offset, py::object q) -> Eigen::Vector3d {
+          return q.is_none() ? Position(ab, link, offset)
+                             : Position(ab, q.cast<Eigen::Ref<const Eigen::VectorXd>>(), link, offset);
+        }, "ab"_a, "link"_a = -1, "offset"_a = Eigen::Vector3d::Zero(), "q"_a = py::none())
+   .def("orientation",
+        [](const ArticulatedBody& ab, int link, py::object q) -> Eigen::Quaterniond {
+          return q.is_none() ? Orientation(ab, link)
+                             : Orientation(ab, q.cast<Eigen::Ref<const Eigen::VectorXd>>(), link);
+        }, "ab"_a, "link"_a = -1, "q"_a = py::none())
+   .def("cartesian_pose",
+        [](const ArticulatedBody& ab, int link, const Eigen::Vector3d& offset, py::object q) -> Eigen::Isometry3d {
+          return q.is_none() ? CartesianPose(ab, link, offset)
+                             : CartesianPose(ab, q.cast<Eigen::Ref<const Eigen::VectorXd>>(), link, offset);
+        }, "ab"_a, "link"_a = -1, "offset"_a = Eigen::Vector3d::Zero(), "q"_a = py::none())
+   .def("jacobian",
+        [](const ArticulatedBody& ab, int link, const Eigen::Vector3d& offset, py::object q) -> Eigen::Matrix6Xd {
+          return q.is_none() ? Jacobian(ab, link, offset)
+                             : Jacobian(ab, q.cast<Eigen::Ref<const Eigen::VectorXd>>(), link, offset);
+        }, "ab"_a, "link"_a = -1, "offset"_a = Eigen::Vector3d::Zero(), "q"_a = py::none())
+   .def("linear_jacobian",
+        [](const ArticulatedBody& ab, int link, const Eigen::Vector3d& offset, py::object q) -> Eigen::Matrix3Xd {
+          return q.is_none() ? Eigen::Matrix3Xd(LinearJacobian(ab, link, offset))
+                             : LinearJacobian(ab, q.cast<Eigen::Ref<const Eigen::VectorXd>>(), link, offset);
+        }, "ab"_a, "link"_a = -1, "offset"_a = Eigen::Vector3d::Zero(), "q"_a = py::none())
+   .def("angular_jacobian",
+        [](const ArticulatedBody& ab, int link, const Eigen::Vector3d& offset, py::object q) -> Eigen::Matrix3Xd {
+          return q.is_none() ? Eigen::Matrix3Xd(AngularJacobian(ab, link))
+                             : AngularJacobian(ab, q.cast<Eigen::Ref<const Eigen::VectorXd>>(), link);
+        }, "ab"_a, "link"_a = -1, "offset"_a = Eigen::Vector3d::Zero(), "q"_a = py::none())
+   .def("hessian",
+        [](const ArticulatedBody& ab, int link, const Eigen::Vector3d& offset) -> py::array {
+          Eigen::Tensor3d H = Hessian(ab, link, offset);
+          constexpr ssize_t elem_size = sizeof(double);
+          constexpr ssize_t six = 6;
+          ssize_t dof = static_cast<ssize_t>(ab.dof());
+          return py::array({ dof, dof, six },
+                           { elem_size, elem_size * dof, elem_size * dof * dof },
+                           H.data(), py::handle());
+        }, "ab"_a, "link"_a = -1, "offset"_a = Eigen::Vector3d::Zero());
 
   // Inverse dynamics
   m.def("inverse_dynamics", &InverseDynamics, "ab"_a, "ddq"_a,

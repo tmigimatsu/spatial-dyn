@@ -16,7 +16,11 @@
 
 namespace SpatialDyn {
 
+// TODO: Finish
+
 /**
+ * @ingroup cpp_structs
+ *
  * Graphics struct for SpatialDyn.
  *
  * @see Python: spatialdyn.Graphics

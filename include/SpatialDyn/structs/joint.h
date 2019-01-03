@@ -19,6 +19,8 @@
 namespace SpatialDyn {
 
 /**
+ * @ingroup cpp_structs
+ *
  * Joint struct for SpatialDyn.
  *
  * @see Python: spatialdyn.Joint
@@ -251,6 +253,7 @@ class Joint {
 };
 
 /**
+ * @ingroup cpp_structs
  * @return Stream representation of the joint for debugging.
  * @see Python: spatialdyn.Joint.__repr__()
  */

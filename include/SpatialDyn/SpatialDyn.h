@@ -10,11 +10,35 @@
 #ifndef SPATIAL_DYN_SPATIAL_DYN_H_
 #define SPATIAL_DYN_SPATIAL_DYN_H_
 
-// Core
+/**
+ * @defgroup cpp C++
+ *
+ * C++ implementation of SpatialDyn.
+ *
+ * @see Python: \ref py
+ */
+
+
 #include "SpatialDyn/utils/spatial_math.h"
+
+/**
+ * @defgroup cpp_structs Structs
+ * @ingroup cpp
+ *
+ * C++ implementation of SpatialDyn structs.
+ *
+ * @see Python: \ref py_structs
+ */
 #include "SpatialDyn/structs/articulated_body.h"
 
-// Algorithms
+/**
+ * @defgroup cpp_algorithms Algorithms
+ * @ingroup cpp
+ *
+ * C++ implementation of SpatialDyn algorithms.
+ *
+ * @see Python: \ref py_algorithms
+ */
 #include "SpatialDyn/algorithms/forward_dynamics.h"
 #include "SpatialDyn/algorithms/forward_kinematics.h"
 #include "SpatialDyn/algorithms/inverse_dynamics.h"

@@ -23,6 +23,8 @@
 namespace SpatialDyn {
 
 /**
+ * @ingroup cpp_structs
+ *
  * Main articulated body struct for SpatialDyn.
  *
  * @see Python: spatialdyn.ArticulatedBody
@@ -223,8 +225,8 @@ class ArticulatedBody {
    * @param i Index of the desired frame. Uses Pythonic indexing (if `i < 0`,
    *          count from the back).
    * @return Reference to the ached transform from the `i`th rigid body's frame
-   *         to its parent's frame. @see Python:
-   * spatialdyn.ArticulatedBody.T_to_parent()
+   *         to its parent's frame.
+   * @see Python: spatialdyn.ArticulatedBody.T_to_parent()
    */
   const Eigen::Isometry3d& T_to_parent(int i) const;
 
@@ -236,6 +238,7 @@ class ArticulatedBody {
    *          count from the back).
    * @param q Position of joint `i`.
    * @return Transform from the `i`th rigid body's frame to its parent's frame.
+   * @see Python: spatialdyn.ArticulatedBody.T_to_parent()
    */
   Eigen::Isometry3d T_to_parent(int i, double q) const;
 
@@ -295,6 +298,7 @@ class ArticulatedBody {
    *          count from the back).
    * @param q %Joint configuration of articulated body.
    * @return Transform from the `i`th rigid body's frame to the world.
+   * @see Python: spatialdyn.ArticulatedBody.T_to_world()
    */
   Eigen::Isometry3d T_to_world(int i, Eigen::Ref<const Eigen::VectorXd> q) const;
 
@@ -356,6 +360,7 @@ class ArticulatedBody {
 };
 
 /**
+ * @ingroup cpp_structs
  * @return Stream representation of the articulated body for debugging.
  * @see Python: spatialdyn.ArticulatedBody.__repr__()
  */
