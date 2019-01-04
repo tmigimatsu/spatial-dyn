@@ -19,15 +19,15 @@ Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab,
                                 Eigen::Ref<const Eigen::VectorXd> tau,
                                 const std::map<int, SpatialForced>& f_external,
                                 bool gravity, bool centrifugal_coriolis, bool friction) {
-  return InertiaInverse(ab).solve(tau - InverseDynamics(ab,
-      Eigen::VectorXd::Zero(ab.dof()), f_external, gravity, centrifugal_coriolis, friction));
+  return InertiaInverse(ab).solve(tau - InverseDynamics(ab, Eigen::VectorXd::Zero(ab.dof()),
+                                                        f_external, gravity,
+                                                        centrifugal_coriolis, friction));
 }
 
-// ABA
 Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
                                    Eigen::Ref<const Eigen::VectorXd> tau,
-                                   const std::vector<std::pair<int, SpatialForced>>& f_external,
-                                   bool friction) {
+                                   const std::map<int, SpatialForced>& f_external,
+                                   bool gravity, bool centrifugal_coriolis, bool friction) {
   auto& aba = ab.cache_->aba_data_;
   auto& vel = ab.cache_->vel_data_;
   auto& rnea = ab.cache_->rnea_data_;
@@ -37,9 +37,10 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
     const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     const int parent = ab.rigid_bodies(i).id_parent();
+    const double dq_i = centrifugal_coriolis ? ab.dq(i) : 0.;
 
     if (!vel.is_computed) {
-      vel.v[i] = ab.dq(i) * s;
+      vel.v[i] = dq_i * s;
       if (parent >= 0) {
         vel.v[i] += ab.T_from_parent(i) * vel.v[parent];
       }
@@ -48,19 +49,15 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
     if (parent < 0) {
       rnea.a[i].setZero();
     } else {
-      rnea.a[i] = vel.v[i].cross(ab.dq(i) * s);
+      rnea.a[i] = vel.v[i].cross(dq_i * s);
     }
 
     if (!aba.is_computed) aba.I_a[i] = I;
 
     rnea.f[i] = vel.v[i].cross(I * vel.v[i]);
 
-    // TODO: Use more efficient data structure for sorting through external forces
-    for (const std::pair<int, SpatialForced>& link_f : f_external) {
-      int idx_link = link_f.first;
-      if (idx_link < 0) idx_link += ab.dof();
-      if (idx_link != static_cast<int>(i)) continue;
-      rnea.f[i] -= ab.T_to_world(i).inverse() * link_f.second;
+    if (f_external.find(i) != f_external.end()) {
+      rnea.f[i] -= ab.T_from_world(i) * f_external.at(i);
     }
   }
   vel.is_computed = true;
@@ -95,7 +92,11 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
     const int parent = ab.rigid_bodies(i).id_parent();
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     if (parent < 0) {
-      rnea.a[i] = ab.T_from_parent(i) * -ab.g();
+      if (gravity) {
+        rnea.a[i] = ab.T_from_parent(i) * -ab.g();
+      } else {
+        rnea.a[i].setZero();
+      }
     } else {
       rnea.a[i] += ab.T_from_parent(i) * rnea.a[parent];
     }

@@ -171,11 +171,12 @@ PYBIND11_MODULE(spatialdyn, m) {
   // Forward dynamics
   m.def("forward_dynamics", &ForwardDynamics, "ab"_a, "tau"_a,
         "f_external"_a = std::map<int, SpatialForced>(),
-        "gravity"_a = true, "centrifugal_coriolis"_a = true, "friction"_a = false);
-  m.def("forward_dynamics_aba", &ForwardDynamicsAba, "ab"_a, "tau"_a,
+        "gravity"_a = true, "centrifugal_coriolis"_a = true, "friction"_a = false)
+   .def("forward_dynamics_aba", &ForwardDynamicsAba, "ab"_a, "tau"_a,
         "f_external"_a = std::map<int, SpatialForced>(),
-        "friction"_a = false);
-  m.def("inertia_inverse", &InertiaInverse, "ab"_a);
+        "gravity"_a = true, "centrifugal_coriolis"_a = true, "friction"_a = false)
+   .def("inertia_inverse", &InertiaInverse, "ab"_a)
+   .def("inertia_inverse_aba", &InertiaInverseAba, "ab"_a);
 
   // Forward kinematics
   m.def("position",

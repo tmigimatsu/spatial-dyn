@@ -180,7 +180,6 @@ const Eigen::VectorXd& Friction(const ArticulatedBody& ab) {
   return grav.F;
 }
 
-// CRBA
 const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab) {
   auto& crba = ab.cache_->crba_data_;
   if (crba.is_computed) return crba.A;

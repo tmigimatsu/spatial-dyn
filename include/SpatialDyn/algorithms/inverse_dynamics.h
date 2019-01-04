@@ -118,6 +118,10 @@ const Eigen::VectorXd& Friction(const ArticulatedBody& ab);
  */
 const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab);
 
+/*
+ * @}
+ */  // defgroup cpp_inverse_dynamics
+
 }  // namespace SpatialDyn
 
 #endif  // SPATIAL_DYN_ALGORITHMS_INVERSE_DYNAMICS_H_
