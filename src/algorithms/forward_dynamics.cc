@@ -17,7 +17,7 @@ namespace SpatialDyn {
 
 Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab,
                                 Eigen::Ref<const Eigen::VectorXd> tau,
-                                const std::vector<std::pair<int, SpatialForced>>& f_external,
+                                const std::map<int, SpatialForced>& f_external,
                                 bool gravity, bool centrifugal_coriolis, bool friction) {
   return InertiaInverse(ab).solve(tau - InverseDynamics(ab,
       Eigen::VectorXd::Zero(ab.dof()), f_external, gravity, centrifugal_coriolis, friction));
@@ -39,10 +39,9 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
     const int parent = ab.rigid_bodies(i).id_parent();
 
     if (!vel.is_computed) {
-      if (parent < 0) {
-        vel.v[i] = ab.dq(i) * s;
-      } else {
-        vel.v[i] = ab.T_from_parent(i) * vel.v[parent] + ab.dq(i) * s;
+      vel.v[i] = ab.dq(i) * s;
+      if (parent >= 0) {
+        vel.v[i] += ab.T_from_parent(i) * vel.v[parent];
       }
     }
 
@@ -87,7 +86,7 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
     }
     if (parent >= 0) {
       rnea.f[parent] += ab.T_to_parent(i) *
-                       (rnea.f[i] + aba.I_a[i] * rnea.a[i] + ddq(i) * aba.h[i]);
+                        (rnea.f[i] + aba.I_a[i] * rnea.a[i] + ddq(i) * aba.h[i]);
     }
   }
   aba.is_computed = true;

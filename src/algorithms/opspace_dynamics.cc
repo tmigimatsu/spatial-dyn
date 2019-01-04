@@ -19,7 +19,7 @@ namespace Opspace {
 
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                 const Eigen::VectorXd& ddx, Eigen::MatrixXd *N,
-                                const std::vector<std::pair<int, SpatialForced>>& f_external,
+                                const std::map<int, SpatialForced>& f_external,
                                 bool gravity, bool centrifugal_coriolis, bool friction,
                                 double svd_epsilon) {
   // Project Jacobian in nullspace
@@ -31,11 +31,14 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
   const Eigen::MatrixXd& J_x = (use_nullspace) ? JN : J;
 
   // Compute opspace dynamics
-  Eigen::VectorXd F_x;
-  if (gravity) {  // Compute inline for efficiency
-    F_x = Inertia(ab, J_x, svd_epsilon) * ddx + Gravity(ab, J_x, f_external, svd_epsilon);
-  } else {
-    F_x = Inertia(ab, J_x, svd_epsilon) * ddx;
+  Eigen::VectorXd F_x = Inertia(ab, J_x, svd_epsilon) * ddx;
+
+  if (!f_external.empty()) {
+    F_x += ExternalForces(ab, J_x, f_external, svd_epsilon);
+  }
+
+  if (gravity) {
+    F_x += Gravity(ab, J_x, svd_epsilon);
   }
 
   // TODO: Only works for 6d pos_ori tasks at the origin of the ee frame
@@ -120,9 +123,14 @@ Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, const Eigen::Matr
 }
 
 Eigen::VectorXd Gravity(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
-                        const std::vector<std::pair<int, SpatialForced>>& f_external,
                         double svd_epsilon) {
-  return JacobianDynamicInverse(ab, J, svd_epsilon).transpose() * Gravity(ab, f_external);
+  return JacobianDynamicInverse(ab, J, svd_epsilon).transpose() * Gravity(ab);
+}
+
+Eigen::VectorXd ExternalForces(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
+                               const std::map<int, SpatialForced>& f_external,
+                               double svd_epsilon) {
+  return JacobianDynamicInverse(ab, J, svd_epsilon).transpose() * ExternalTorques(ab, f_external);
 }
 
 Eigen::VectorXd Friction(const ArticulatedBody& ab, const Eigen::MatrixXd& J,

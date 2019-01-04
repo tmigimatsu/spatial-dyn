@@ -19,7 +19,7 @@ namespace SpatialDyn {
  * @defgroup cpp_forward_kinematics Forward Kinematics
  * @ingroup cpp_algorithms
  *
- * C++ implementation of SpatialDyn forawrd kinematics algorithms.
+ * C++ implementation of SpatialDyn forward kinematics algorithms.
  *
  * @see Python: \ref py_forward_kinematics
  * @{

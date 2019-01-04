@@ -14,7 +14,7 @@
 namespace SpatialDyn {
 
 void Integrate(ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt,
-               const std::vector<std::pair<int, SpatialForced>> f_external,
+               const std::map<int, SpatialForced>& f_external,
                bool gravity, bool centrifugal_coriolis, bool friction) {
   Eigen::VectorXd q  = ab.q();
   Eigen::VectorXd dq = ab.dq();

@@ -12,7 +12,7 @@
 
 #include "SpatialDyn/structs/articulated_body.h"
 
-#include <vector>      // std::vector
+#include <vector>  // std::vector
 
 namespace SpatialDyn {
 
@@ -29,7 +29,7 @@ struct ArticulatedBody::Cache {
   TransformData T_data_;
 
   struct VelocityData {
-    bool is_computed = false;  // Reusable with same position, velocity
+    bool is_computed = false;       // Reusable with same position, velocity
     std::vector<SpatialMotiond> v;  // Rigid body velocities
   };
   VelocityData vel_data_;
@@ -39,7 +39,7 @@ struct ArticulatedBody::Cache {
     int link;
     Eigen::Vector3d offset;
 
-    bool is_computed = false;
+    bool is_computed = false;  // Reusable with same position, link, offset
     Eigen::Matrix6Xd J;
   };
   JacobianData jac_data_;

@@ -97,7 +97,7 @@ class RigidBody {
    * Set the fixed transform from the rigid body's frame to its parent's frame
    * when the joint position is 0.
    *
-   * @param T_to_parent Transform from the rigid body frame to its parent's * frame.
+   * @param T_to_parent Transform from the rigid body frame to its parent's frame.
    */
   void set_T_to_parent(const Eigen::Isometry3d& T_to_parent);
 
@@ -134,7 +134,7 @@ class RigidBody {
   /**
    * Set the joint attached to the rigid body.
    *
-   * @param inertia Spatial inertia of the rigid body.
+   * @param joint Joint.
    */
   void set_joint(const Joint& joint);
 

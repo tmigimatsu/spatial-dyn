@@ -10,8 +10,7 @@
 #ifndef SPATIAL_DYN_ALGORITHMS_OPSPACE_DYNAMICS_H_
 #define SPATIAL_DYN_ALGORITHMS_OPSPACE_DYNAMICS_H_
 
-#include <utility>  // std::pair
-#include <vector>   // std::vector
+#include <map>  // std::map
 
 #include "SpatialDyn/structs/articulated_body.h"
 #include "SpatialDyn/utils/spatial_math.h"
@@ -23,7 +22,7 @@ Eigen::Vector3d OrientationError(const Eigen::Quaterniond &quat, const Eigen::Qu
 
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                 const Eigen::VectorXd& ddx, Eigen::MatrixXd *N = nullptr,
-                                const std::vector<std::pair<int, SpatialForced>>& f_external = {},
+                                const std::map<int, SpatialForced>& f_external = {},
                                 bool gravity = false, bool centrifugal_coriolis = false,
                                 bool friction = false, double svd_epsilon = 0);
 
@@ -42,31 +41,30 @@ Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, const Eigen::Matr
                                     double svd_epsilon = 0);
 
 Eigen::VectorXd Gravity(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
-                        const std::vector<std::pair<int, SpatialForced>>& f_external = {},
                         double svd_epsilon = 0);
+
+Eigen::VectorXd ExternalForces(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
+                               const std::map<int, SpatialForced>& f_external = {},
+                               double svd_epsilon = 0);
 
 Eigen::VectorXd Friction(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                          double svd_epsilon = 0);
 
 // ABA
-const Eigen::Matrix6d& InertiaAba(const ArticulatedBody& ab,
-                                  int idx_link = -1,
+const Eigen::Matrix6d& InertiaAba(const ArticulatedBody& ab, int idx_link = -1,
                                   const Eigen::Vector3d& offset = Eigen::Vector3d::Zero(),
                                   double svd_epsilon = 0);
 
-const Eigen::Matrix6d& InertiaInverseAba(const ArticulatedBody& ab,
-                                         int idx_link = -1,
+const Eigen::Matrix6d& InertiaInverseAba(const ArticulatedBody& ab, int idx_link = -1,
                                          const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
 
-Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab,
-                                       int idx_link = -1,
+Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab, int idx_link = -1,
                                        const Eigen::Vector3d& offset = Eigen::Vector3d::Zero(),
                                        double svd_epsilon = 0);
 
-Eigen::Vector6d GravityAba(const ArticulatedBody& ab,
-                           int idx_link = -1,
+Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link = -1,
                            const Eigen::Vector3d& offset = Eigen::Vector3d::Zero(),
-                           const std::vector<std::pair<int, SpatialForced>>& f_external = {},
+                           const std::map<int, SpatialForced>& f_external = {},
                            double svd_epsilon = 0);
 
 }  // namespace Opspace

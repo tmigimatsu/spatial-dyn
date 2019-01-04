@@ -16,9 +16,8 @@
 
 namespace SpatialDyn {
 
-// RNEA
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq,
-                                const std::vector<std::pair<int, SpatialForced>>& f_external,
+                                const std::map<int, SpatialForced>& f_external,
                                 bool gravity, bool centrifugal_coriolis, bool friction) {
   auto& rnea = ab.cache_->rnea_data_;
   auto& vel  = ab.cache_->vel_data_;
@@ -30,46 +29,37 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
     const int parent = ab.rigid_bodies(i).id_parent();
 
     if (centrifugal_coriolis && !vel.is_computed) {
-      if (parent < 0) {
-        vel.v[i] = ab.dq(i) * s;
-      } else {
-        vel.v[i] = ab.T_from_parent(i) * vel.v[parent] + ab.dq(i) * s;
+      vel.v[i] = ab.dq(i) * s;
+      if (parent >= 0) {
+        vel.v[i] += ab.T_from_parent(i) * vel.v[parent];
       }
     }
 
     if (parent < 0) {
+      rnea.a[i] = ddq(i) * s;
       if (gravity) {
-        rnea.a[i] = ddq(i) * s - ab.T_to_world(i).inverse() * ab.g();
-      } else {
-        rnea.a[i] = ddq(i) * s;
+        rnea.a[i] -= ab.T_to_world(i).inverse() * ab.g();
       }
     } else {
+      rnea.a[i] = ab.T_from_parent(i) * rnea.a[parent] + ddq(i) * s;
       if (centrifugal_coriolis) {
-        rnea.a[i] = ab.T_from_parent(i) * rnea.a[parent] + ddq(i) * s +
-                    vel.v[i].cross(ab.dq(i) * s);
-      } else {
-        rnea.a[i] = ab.T_from_parent(i) * rnea.a[parent] + ddq(i) * s;
+        rnea.a[i] += vel.v[i].cross(ab.dq(i) * s);
       }
     }
 
+    rnea.f[i] = I * rnea.a[i];
     if (centrifugal_coriolis) {
-      rnea.f[i] = I * rnea.a[i] + vel.v[i].cross(I * vel.v[i]);
-    } else {
-      rnea.f[i] = I * rnea.a[i];
+      rnea.f[i] += vel.v[i].cross(I * vel.v[i]);
     }
 
-    // TODO: Use more efficient data structure for sorting through external forces
-    for (const std::pair<int, SpatialForced>& link_f : f_external) {
-      int idx_link = link_f.first;
-      if (idx_link < 0) idx_link += ab.dof();
-      if (idx_link != static_cast<int>(i)) continue;
-      rnea.f[i] -= ab.T_to_world(i).inverse() * link_f.second;
+    if (f_external.find(i) != f_external.end()) {
+      rnea.f[i] -= ab.T_to_world(i).inverse() * f_external.at(i);
     }
   }
   if (centrifugal_coriolis) vel.is_computed = true;
 
   // Backward pass
-  Eigen::VectorXd tau(ab.dof());           // Resulting joint torques
+  Eigen::VectorXd tau(ab.dof());  // Resulting joint torques
   for (int i = ab.dof() - 1; i >= 0; i--) {
     const Joint& joint = ab.rigid_bodies(i).joint();
     const SpatialMotiond& s = joint.subspace();
@@ -87,9 +77,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
 const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
   auto& vel = ab.cache_->vel_data_;
   auto& cc = ab.cache_->cc_data_;
-  if (cc.is_computed) {
-    return cc.C;
-  }
+  if (cc.is_computed) return cc.C;
 
   // Forward pass
   for (size_t i = 0; i < ab.dof(); i++) {
@@ -98,8 +86,10 @@ const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
     const int parent = ab.rigid_bodies(i).id_parent();
 
     if (!vel.is_computed) {
-      if (parent < 0) vel.v[i] = ab.dq(i) * s;
-      else            vel.v[i] = ab.T_from_parent(i) * vel.v[parent] + ab.dq(i) * s;
+      vel.v[i] = ab.dq(i) * s;
+      if (parent >= 0) {
+        vel.v[i] += ab.T_from_parent(i) * vel.v[parent];
+      }
     }
 
     if (parent < 0) {
@@ -126,26 +116,14 @@ const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
   return cc.C;
 }
 
-const Eigen::VectorXd& Gravity(const ArticulatedBody& ab,
-                               const std::vector<std::pair<int, SpatialForced>>& f_external) {
+const Eigen::VectorXd& Gravity(const ArticulatedBody& ab) {
   auto& grav = ab.cache_->grav_data_;
-  if (grav.is_computed && f_external.empty()) {
-    return grav.G;
-  }
+  if (grav.is_computed) return grav.G;
 
   // Forward pass
   for (size_t i = 0; i < ab.dof(); i++) {
     const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
-    const auto T_from_world = ab.T_to_world(i).inverse();
-    grav.f_g[i] = I * (T_from_world * -ab.g());
-
-    // TODO: Use more efficient data structure for sorting through external forces
-    for (const std::pair<int, SpatialForced>& link_f : f_external) {
-      int idx_link = link_f.first;
-      if (idx_link < 0) idx_link += ab.dof();
-      if (idx_link != static_cast<int>(i)) continue;
-      grav.f_g[i] -= ab.T_to_world(i).inverse() * link_f.second;
-    }
+    grav.f_g[i] = I * (ab.T_from_world(i) * -ab.g());
   }
 
   // Backward pass
@@ -158,15 +136,41 @@ const Eigen::VectorXd& Gravity(const ArticulatedBody& ab,
       grav.f_g[parent] += ab.T_to_parent(i) * grav.f_g[i];
     }
   }
-  grav.is_computed = f_external.empty();
+  grav.is_computed = true;
   return grav.G;
+}
+
+Eigen::VectorXd ExternalTorques(const ArticulatedBody& ab,
+                                const std::map<int, SpatialForced>& f_external) {
+  // Use gravity data structure. TODO: Change to dedicated structure?
+  auto& grav = ab.cache_->grav_data_;
+
+  // Forward pass
+  for (size_t i = 0; i < ab.dof(); i++) {
+    if (f_external.find(i) != f_external.end()) {
+      grav.f_g[i] = ab.T_from_world(i) * -f_external.at(i);
+    } else {
+      grav.f_g[i].setZero();
+    }
+  }
+
+  // Backward pass
+  Eigen::VectorXd tau;
+  for (int i = ab.dof() - 1; i >= 0; i--) {
+    const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
+    tau(i) = s.dot(grav.f_g[i]);
+
+    const int parent = ab.rigid_bodies(i).id_parent();
+    if (parent >= 0) {
+      grav.f_g[parent] += ab.T_to_parent(i) * grav.f_g[i];
+    }
+  }
+  return tau;
 }
 
 const Eigen::VectorXd& Friction(const ArticulatedBody& ab) {
   auto& grav = ab.cache_->grav_data_;
-  if (grav.is_friction_computed) {
-    return grav.F;
-  }
+  if (grav.is_friction_computed) return grav.F;
 
   for (size_t i = 0; i < ab.dof(); i++) {
     const Joint& joint = ab.rigid_bodies(i).joint();
@@ -179,9 +183,7 @@ const Eigen::VectorXd& Friction(const ArticulatedBody& ab) {
 // CRBA
 const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab) {
   auto& crba = ab.cache_->crba_data_;
-  if (crba.is_computed) {
-    return crba.A;
-  }
+  if (crba.is_computed) return crba.A;
 
   // Initialize composite rigid body inertia
   for (size_t i = 0; i < ab.dof(); i++) {

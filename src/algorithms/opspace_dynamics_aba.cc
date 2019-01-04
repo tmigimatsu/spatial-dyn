@@ -158,7 +158,7 @@ Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab, int idx_link, 
 }
 
 Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset,
-                           const std::vector<std::pair<int, SpatialForced>>& f_external,
+                           const std::map<int, SpatialForced>& f_external,
                            double svd_epsilon) {
   if (idx_link < 0) idx_link += ab.dof();
   auto& aba = ab.cache_->aba_data_;
@@ -172,11 +172,8 @@ Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen:
     rnea.f[i] = aba.I_a[i] * (ab.T_to_world(i).inverse() * ab.g());
 
     // TODO: Use more efficient data structure for sorting through external forces
-    for (const std::pair<int, SpatialForced>& link_f : f_external) {
-      int idx_link = link_f.first;
-      if (idx_link < 0) idx_link += ab.dof();
-      if (idx_link != static_cast<int>(i)) continue;
-      rnea.f[i] -= ab.T_to_world(i).inverse() * link_f.second;
+    if (f_external.find(i) != f_external.end()) {
+      rnea.f[i] -= ab.T_from_world(i) * f_external.at(i);
     }
   }
 

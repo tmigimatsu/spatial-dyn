@@ -10,8 +10,7 @@
 #ifndef SPATIAL_DYN_ALGORITHMS_FORWARD_DYNAMICS_H_
 #define SPATIAL_DYN_ALGORITHMS_FORWARD_DYNAMICS_H_
 
-#include <utility>  // std::pair
-#include <vector>   // std::vector
+#include <map>  // std::map
 
 #include "SpatialDyn/structs/articulated_body.h"
 #include "SpatialDyn/utils/spatial_math.h"
@@ -20,7 +19,7 @@ namespace SpatialDyn {
 
 Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab,
                                 Eigen::Ref<const Eigen::VectorXd> tau,
-                                const std::vector<std::pair<int, SpatialForced>>& f_external = {},
+                                const std::map<int, SpatialForced>& f_external = {},
                                 bool gravity = true,
                                 bool centrifugal_coriolis = true,
                                 bool friction = false);

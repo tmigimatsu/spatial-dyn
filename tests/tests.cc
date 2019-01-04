@@ -238,7 +238,7 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
     Eigen::VectorXd tau_crba_Aq = SpatialDyn::Inertia(ab) * ddq;
 
     SpatialDyn::SpatialForced f_ext = SpatialDyn::SpatialForced::Ones();
-    Eigen::VectorXd tau_f_ext = SpatialDyn::InverseDynamics(ab, ddq, {{-1, f_ext}}, true, true);
+    Eigen::VectorXd tau_f_ext = SpatialDyn::InverseDynamics(ab, ddq, {{ab.dof()-1, f_ext}}, true, true);
 
     Eigen::Matrix6Xd J = Eigen::Matrix6Xd::Zero(6, ab.dof());
     for (const int i : ab.ancestors(-1)) {
@@ -250,7 +250,8 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
                                      J.transpose() * f_ext.matrix();
     Eigen::VectorXd tau_crba_f_ext_2 = SpatialDyn::Inertia(ab) * ddq +
                                        SpatialDyn::CentrifugalCoriolis(ab) +
-                                       SpatialDyn::Gravity(ab, {{-1, f_ext}});
+                                       SpatialDyn::Gravity(ab) +
+                                       SpatialDyn::ExternalTorques(ab, {{ab.dof()-1, f_ext}});
 
     REQUIRE((tau - tau_crba_Aq_v_g).norm() < 1e-10);
     REQUIRE((tau_Aq_g - tau_crba_Aq_g).norm() < 1e-10);
@@ -283,8 +284,8 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
     Eigen::VectorXd ddq_aba = SpatialDyn::ForwardDynamics(ab, tau);
 
     SpatialDyn::SpatialForced f_ext = SpatialDyn::SpatialForced::Ones();
-    Eigen::VectorXd ddq_f_ext = SpatialDyn::ForwardDynamics(ab, tau, {{-1, f_ext}});
-    Eigen::VectorXd ddq_aba_f_ext = SpatialDyn::ForwardDynamicsAba(ab, tau, {{-1, f_ext}});
+    Eigen::VectorXd ddq_f_ext = SpatialDyn::ForwardDynamics(ab, tau, {{ab.dof()-1, f_ext}});
+    Eigen::VectorXd ddq_aba_f_ext = SpatialDyn::ForwardDynamicsAba(ab, tau, {{ab.dof()-1, f_ext}});
 
     Eigen::VectorXd ddq_fr = SpatialDyn::ForwardDynamics(ab, tau, {}, true);
     Eigen::VectorXd ddq_aba_fr = SpatialDyn::ForwardDynamics(ab, tau, {}, true);

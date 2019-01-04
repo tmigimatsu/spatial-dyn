@@ -60,6 +60,16 @@ class ArticulatedBody {
   virtual ~ArticulatedBody();
 
   /**
+   * Copy assignment operator.
+   */
+  ArticulatedBody& operator=(const ArticulatedBody& ab);
+
+  /**
+   * Move assignment operator.
+   */
+  // ArticulatedBody& operator=(ArticulatedBody&& ab) = default;
+
+  /**
    * Name of the articulated body for debugging purposes.
    *
    * @see Python: spatialdyn.ArticulatedBody.name
@@ -243,7 +253,7 @@ class ArticulatedBody {
   Eigen::Isometry3d T_to_parent(int i, double q) const;
 
   /**
-   * Get the transform from rigid body `i`'s frame to its parent's frame.
+   * Get the transform from rigid body `i`'s parent frame to its own frame.
    *
    * @param i Index of the desired frame. Uses Pythonic indexing (if `i < 0`,
    *          count from the back).
@@ -253,7 +263,8 @@ class ArticulatedBody {
   Eigen::Isometry3d T_from_parent(int i) const { return T_to_parent(i).inverse(); };
 
   /**
-   * Get the transform from rigid body `i`'s parent frame to its own frame.
+   * Get the transform from rigid body `i`'s parent frame to its own frame given
+   * joint position q.
    *
    * @param i Index of the desired frame. Uses Pythonic indexing (if `i < 0`,
    *          count from the back).
@@ -301,6 +312,30 @@ class ArticulatedBody {
    * @see Python: spatialdyn.ArticulatedBody.T_to_world()
    */
   Eigen::Isometry3d T_to_world(int i, Eigen::Ref<const Eigen::VectorXd> q) const;
+
+  /**
+   * Get the transform from the world frame to rigid body `i`'s frame.
+   *
+   * @param i Index of the desired frame. Uses Pythonic indexing (if `i < 0`,
+   *          count from the back).
+   * @return Inverse transform of T_to_world(int).
+   * @see Python: spatialdyn.ArticulatedBody.T_from_world()
+   */
+  Eigen::Isometry3d T_from_world(int i) const { return T_to_world(i).inverse(); };
+
+  /**
+   * Get the transform from the world frame to rigid body `i`'s frame given
+   * joint position q.
+   *
+   * @param i Index of the desired frame. Uses Pythonic indexing (if `i < 0`,
+   *          count from the back).
+   * @param q %Joint configuration of articulated body.
+   * @return Inverse transform of T_to_world(int, double).
+   * @see Python: spatialdyn.ArticulatedBody.T_from_world()
+   */
+  Eigen::Isometry3d T_from_world(int i, Eigen::Ref<const Eigen::VectorXd> q) const {
+    return T_to_world(i, q).inverse();
+  };
 
   /**
    * Get the ancestors of rigid body `i`.

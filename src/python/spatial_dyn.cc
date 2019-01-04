@@ -68,6 +68,11 @@ PYBIND11_MODULE(spatialdyn, m) {
              return q.is_none() ? ab.T_to_world(i)
                                 : ab.T_to_world(i, q.cast<Eigen::Ref<const Eigen::VectorXd>>());
            }, "i"_a, "q"_a = py::none())
+      .def("T_from_world",
+           [](const ArticulatedBody& ab, int i, py::object q) -> Eigen::Isometry3d {
+             return q.is_none() ? ab.T_from_world(i)
+                                : ab.T_from_world(i, q.cast<Eigen::Ref<const Eigen::VectorXd>>());
+           }, "i"_a, "q"_a = py::none())
       .def("ancestors", &ArticulatedBody::ancestors)
       .def("subtree", &ArticulatedBody::subtree)
       .def("map", &ArticulatedBody::Map)
@@ -165,11 +170,12 @@ PYBIND11_MODULE(spatialdyn, m) {
 
   // Forward dynamics
   m.def("forward_dynamics", &ForwardDynamics, "ab"_a, "tau"_a,
-        "f_external"_a = std::vector<std::pair<int, SpatialForced>>(),
+        "f_external"_a = std::map<int, SpatialForced>(),
         "gravity"_a = true, "centrifugal_coriolis"_a = true, "friction"_a = false);
   m.def("forward_dynamics_aba", &ForwardDynamicsAba, "ab"_a, "tau"_a,
-        "f_external"_a = std::vector<std::pair<int, SpatialForced>>(),
+        "f_external"_a = std::map<int, SpatialForced>(),
         "friction"_a = false);
+  m.def("inertia_inverse", &InertiaInverse, "ab"_a);
 
   // Forward kinematics
   m.def("position",
@@ -215,17 +221,17 @@ PYBIND11_MODULE(spatialdyn, m) {
 
   // Inverse dynamics
   m.def("inverse_dynamics", &InverseDynamics, "ab"_a, "ddq"_a,
-        "f_external"_a = std::vector<std::pair<int, SpatialForced>>(),
+        "f_external"_a = std::map<int, SpatialForced>(),
         "gravity"_a = true, "centrifugal_coriolis"_a = false, "friction"_a = false);
   m.def("centrifugal_coriolis", &CentrifugalCoriolis, "ab"_a);
-  m.def("gravity", &Gravity, "ab"_a, "f_external"_a = std::vector<std::pair<int, SpatialForced>>());
+  m.def("gravity", &Gravity, "ab"_a);
+  m.def("external_torques", &ExternalTorques, "ab"_a, "f_external"_a = std::map<int, SpatialForced>());
   m.def("friction", &Friction, "ab"_a);
   m.def("inertia", &Inertia, "ab"_a);
-  m.def("inertia_inverse", &InertiaInverse, "ab"_a);
 
   // Simulation
   m.def("integrate", &Integrate, "ab"_a, "tau"_a, "dt"_a,
-        "f_external"_a = std::vector<std::pair<int, SpatialForced>>(),
+        "f_external"_a = std::map<int, SpatialForced>(),
         "gravity"_a = true, "centrifugal_coriolis"_a = true, "friction"_a = false);
 
   // Spatial inertia
@@ -246,7 +252,7 @@ PYBIND11_MODULE(spatialdyn, m) {
   m_op.def("inverse_dynamics",
            [](const ArticulatedBody& ab, const Eigen::MatrixXd& J,
               const Eigen::VectorXd& ddx, py::EigenDRef<Eigen::MatrixXd> N,
-              const std::vector<std::pair<int, SpatialForced>>& f_external,
+              const std::map<int, SpatialForced>& f_external,
               bool gravity, bool centrifugal_coriolis, bool friction, double svd_epsilon) {
              Eigen::MatrixXd N_temp = N;
              Eigen::VectorXd tau = Opspace::InverseDynamics(ab, J, ddx, &N_temp, f_external, gravity, centrifugal_coriolis, friction, svd_epsilon);
@@ -262,8 +268,7 @@ PYBIND11_MODULE(spatialdyn, m) {
            "svd_epsilon"_a = 0);
   m_op.def("centrifugal_coriolis", &Opspace::CentrifugalCoriolis, "ab"_a, "J"_a,
            "idx_link"_a = -1, "offset"_a = Eigen::Vector3d::Zero(), "svd_epsilon"_a = 0);
-  m_op.def("gravity", &Opspace::Gravity, "ab"_a, "J"_a,
-           "f_external"_a = std::vector<std::pair<int, SpatialForced>>(), "svd_epsilon"_a = 0);
+  m_op.def("gravity", &Opspace::Gravity, "ab"_a, "J"_a, "svd_epsilon"_a = 0);
   m_op.def("friction", &Opspace::Friction, "ab"_a, "J"_a, "svd_epsilon"_a = 0);
 
   m_op.def("inertia_aba", &Opspace::InertiaAba, "ab"_a, "idx_link"_a = -1,
@@ -274,7 +279,7 @@ PYBIND11_MODULE(spatialdyn, m) {
            "idx_link"_a = -1, "offset"_a = Eigen::Vector3d::Zero(), "svd_epsilon"_a = 0);
   m_op.def("gravity_aba", &Opspace::GravityAba, "ab"_a, "idx_link"_a = -1,
            "offset"_a = Eigen::Vector3d::Zero(),
-           "f_external"_a = std::vector<std::pair<int, SpatialForced>>(), "svd_epsilon"_a = 0);
+           "f_external"_a = std::map<int, SpatialForced>(), "svd_epsilon"_a = 0);
 
   // Urdf parser
   py::module m_urdf = m.def_submodule("urdf");

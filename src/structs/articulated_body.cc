@@ -35,6 +35,22 @@ ArticulatedBody::ArticulatedBody(const ArticulatedBody& ab)
 
 ArticulatedBody::~ArticulatedBody() {}
 
+ArticulatedBody& ArticulatedBody::operator=(const ArticulatedBody& ab) {
+  name = ab.name;
+  graphics = ab.graphics;
+  cache_.reset(new Cache(*ab.cache_));
+  dof_ = ab.dof_;
+  rigid_bodies_ = ab.rigid_bodies_;
+  q_ = ab.q_;
+  dq_ = ab.dq_;
+  ddq_ = ab.ddq_;
+  g_ = ab.g_;
+  T_base_to_world_ = ab.T_base_to_world_;
+  ancestors_ = ab.ancestors_;
+  subtrees_ = ab.subtrees_;
+  return *this;
+}
+
 const RigidBody& ArticulatedBody::rigid_bodies(int i) const {
   if (i < 0) i += dof();
   return rigid_bodies_[i];
