@@ -87,7 +87,7 @@ class ArticulatedBody:
 
     ## Get the transform from rigid body `i`'s frame to the world frame.
     # @param i int
-    # @param q numpy.ndarray[shape=(n,), dtype=numpy.float64] or None (for cached transform)
+    # @param q numpy.ndarray[float64[n]] or None (for cached transform)
     # @return spatialdyn.eigen.Isometry3d
     # @see C++: SpatialDyn::ArticulatedBody::T_to_world()
     def T_to_world(self, i, q = None):
@@ -95,7 +95,7 @@ class ArticulatedBody:
 
     ## Get the transform from the world frame to rigid body `i`'s frame.
     # @param i int
-    # @param q numpy.ndarray[shape=(n,), dtype=numpy.float64] or None (for cached transform)
+    # @param q numpy.ndarray[float64[n]] or None (for cached transform)
     # @return spatialdyn.eigen.Isometry3d
     # @see C++: SpatialDyn::ArticulatedBody::T_from_world()
     def T_from_world(self, i, q = None):
@@ -117,7 +117,7 @@ class ArticulatedBody:
 
     ## Map the given function across the articulated body structure
     # @param rb_function Callable[[spatialdyn.RigidBody], float]
-    # @return numpy.ndarray[shape=(n,), dtype=numpy.float64]
+    # @return numpy.ndarray[float64[n]]
     # @see C++: SpatialDyn::ArticulatedBody::Map()
     def map(self, rb_function):
         pass
@@ -277,8 +277,8 @@ class Joint:
 ## Compute the world frame position of an offset vector in link `i`.
 # @param ab spatialdyn.ArticulatedBody
 # @param link int
-# @param offset numpy.ndarray[shape=(3,), dtype=numpy.float64]
-# @return numpy.ndarray[shape=(3,), dtype=numpy.Float64]
+# @param offset numpy.ndarray[float64[3]]
+# @return numpy.ndarray[float64[3]]
 # @see C++: SpatialDyn::Position()
 def position(ab, link = -1, offset = numpy.zeros((3,))):
     pass
@@ -294,7 +294,7 @@ def orientation(ab, link = -1):
 ## Compute the world frame pose of an offset vector in link `i`.
 # @param ab spatialdyn.ArticulatedBody
 # @param link int
-# @param offset numpy.ndarray[shape=(3,), dtype=numpy.float64]
+# @param offset numpy.ndarray[float64[3]]
 # @return eigen.Isometry3d
 # @see C++: SpatialDyn::CartesianPose()
 def cartesian_pose(ab, link = -1, offset = numpy.zeros((3,))):
@@ -303,8 +303,8 @@ def cartesian_pose(ab, link = -1, offset = numpy.zeros((3,))):
 ## Compute the world frame basic Jacobian of the given operational point.
 # @param ab spatialdyn.ArticulatedBody
 # @param link int
-# @param offset numpy.ndarray[shape=(3,), dtype=numpy.float64]
-# @return numpy.ndarray[shape=(6,n), dtype=numpy.float64]
+# @param offset numpy.ndarray[float64[3]]
+# @return numpy.ndarray[float64[6, n]]
 # @see C++: SpatialDyn::Jacobian()
 def jacobian(ab, link = -1, offset = numpy.zeros((3,))):
     pass
@@ -312,8 +312,8 @@ def jacobian(ab, link = -1, offset = numpy.zeros((3,))):
 ## Compute the world frame linear Jacobian of the given operational point.
 # @param ab spatialdyn.ArticulatedBody
 # @param link int
-# @param offset numpy.ndarray[shape=(3,), dtype=numpy.float64]
-# @return numpy.ndarray[shape=(3,n), dtype=numpy.float64]
+# @param offset numpy.ndarray[float64[3]]
+# @return numpy.ndarray[float64[3, n]]
 # @see C++: SpatialDyn::LinearJacobian()
 def linear_jacobian(ab, link = -1, offset = numpy.zeros((3,))):
     pass
@@ -321,8 +321,8 @@ def linear_jacobian(ab, link = -1, offset = numpy.zeros((3,))):
 ## Compute the world frame angular Jacobian of the given operational point.
 # @param ab spatialdyn.ArticulatedBody
 # @param link int
-# @param offset numpy.ndarray[shape=(3,), dtype=numpy.float64]
-# @return numpy.ndarray[shape=(3,n), dtype=numpy.float64]
+# @param offset numpy.ndarray[float64[3]]
+# @return numpy.ndarray[float64[3, n]]
 # @see C++: SpatialDyn::AngularJacobian()
 def angular_jacobian(ab, link = -1, offset = numpy.zeros((3,))):
     pass
@@ -330,8 +330,8 @@ def angular_jacobian(ab, link = -1, offset = numpy.zeros((3,))):
 ## Compute the world frame Hessian of the given operational point.
 # @param ab spatialdyn.ArticulatedBody
 # @param link int
-# @param offset numpy.ndarray[shape=(3,), dtype=numpy.float64]
-# @return numpy.ndarray[shape=(n,n,6), dtype=numpy.float64]
+# @param offset numpy.ndarray[float64[3]]
+# @return numpy.ndarray[float64[6, 6, n]]
 # @see C++: SpatialDyn::Hessian()
 def hessian(ab, link = -1, offset = numpy.zeros((3,))):
     pass
@@ -351,12 +351,12 @@ def hessian(ab, link = -1, offset = numpy.zeros((3,))):
 ##
 # Compute the inverse dynamics torques given the desired acceleration `ddq`.
 # @param ab spatialdyn.ArticulatedBody
-# @param ddq numpy.ndarray[shape=(n,), dtype=numpy.float64]
+# @param ddq numpy.ndarray[float64[n]]
 # @param f_external Dict[int, spatialdyn.SpatialForced]
 # @param gravity bool
 # @param centrifugal_coriolis bool
 # @param friction bool
-# @return numpy.ndarray[shape=(n,), dtype=numpy.float64]
+# @return numpy.ndarray[float64[n]]
 # @see C++: SpatialDyn::InverseDynamics()
 def inverse_dynamics(ab, ddq, f_external = {}, gravity = True,
                      centrifugal_coriolis = True, friction = False):
@@ -365,7 +365,7 @@ def inverse_dynamics(ab, ddq, f_external = {}, gravity = True,
 ##
 # Compute the centrifugal/Coriolis compensation torques.
 # @param ab spatialdyn.ArticulatedBody
-# @return numpy.ndarray[shape=(n,), dtype=numpy.float64]
+# @return numpy.ndarray[float64[n]]
 # @see C++: SpatialDyn::CentrifugalCoriolis()
 def centrifugal_coriolis(ab):
     pass
@@ -373,7 +373,7 @@ def centrifugal_coriolis(ab):
 ##
 # Compute the gravity compensation torques.
 # @param ab spatialdyn.ArticulatedBody
-# @return numpy.ndarray[shape=(n,), dtype=numpy.float64]
+# @return numpy.ndarray[float64[n]]
 # @see C++: SpatialDyn::Gravity()
 def gravity(ab):
     pass
@@ -382,7 +382,7 @@ def gravity(ab):
 # Compute the gravity compensation torques.
 # @param ab spatialdyn.ArticulatedBody
 # @param f_external Dict[int, spatialdyn.SpatialForced]
-# @return numpy.ndarray[shape=(n,), dtype=numpy.float64]
+# @return numpy.ndarray[float64[n]]
 # @see C++: SpatialDyn::ExternalTorques()
 def external_torques(ab, f_external = {}):
     pass
@@ -390,7 +390,7 @@ def external_torques(ab, f_external = {}):
 ##
 # Compute the Coulomb and viscous joint friction compensation torques.
 # @param ab spatialdyn.ArticulatedBody
-# @return numpy.ndarray[shape=(n,), dtype=numpy.float64]
+# @return numpy.ndarray[float64[n]]
 # @see C++: SpatialDyn::Friction()
 def friction(ab):
     pass
@@ -398,7 +398,7 @@ def friction(ab):
 ##
 # Compute the joint space inertia matrix.
 # @param ab spatialdyn.ArticulatedBody
-# @return numpy.ndarray[shape=(n,n), dtype=numpy.float64]
+# @return numpy.ndarray[float64[n, n]]
 # @see Forward dynamics: spatialdyn.inertia_inverse()
 # @see C++: SpatialDyn::Inertia()
 def inertia(ab):
@@ -419,12 +419,12 @@ def inertia(ab):
 ##
 # Compute the forward dynamics by inverting the inverse dynamics.
 # @param ab spatialdyn.ArticulatedBody
-# @param tau numpy.ndarray[shape=(n,), dtype=numpy.float64]
+# @param tau numpy.ndarray[float64[n]]
 # @param f_external Dict[int, spatialdyn.SpatialForced]
 # @param gravity bool
 # @param centrifugal_coriolis bool
 # @param friction bool
-# @return numpy.ndarray[shape=(n,), dtype=numpy.float64]
+# @return numpy.ndarray[float64[n]]
 # @see C++: SpatialDyn::ForwardDynamics()
 def forward_dynamics(ab, tau, f_external = {}, gravity = True,
                      centrifugal_coriolis = True, friction = True):
@@ -433,12 +433,12 @@ def forward_dynamics(ab, tau, f_external = {}, gravity = True,
 ##
 # Compute the forward dynamics with ABA.
 # @param ab spatialdyn.ArticulatedBody
-# @param tau numpy.ndarray[shape=(n,), dtype=numpy.float64]
+# @param tau numpy.ndarray[float64[n]]
 # @param f_external Dict[int, spatialdyn.SpatialForced]
 # @param gravity bool
 # @param centrifugal_coriolis bool
 # @param friction bool
-# @return numpy.ndarray[shape=(n,), dtype=numpy.float64]
+# @return numpy.ndarray[float64[n]]
 # @see C++: SpatialDyn::ForwardDynamicsAba()
 def forward_dynamics_aba(ab, tau, f_external = {}, gravity = True,
                          centrifugal_coriolis = True, friction = True):
@@ -455,7 +455,7 @@ def inertia_inverse(ab):
 ##
 # Compute the inverse of the joint space inertia matrix with ABA.
 # @param ab spatialdyn.ArticulatedBody
-# @return numpy.ndarray[shape=(n,n), dtype-numpy.float64]
+# @return numpy.ndarray[float64[n, n]]
 # @see C++: SpatialDyn::InertiaInverseAba()
 def inertia_inverse_aba(ab):
     pass

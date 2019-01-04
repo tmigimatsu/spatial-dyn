@@ -287,11 +287,19 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
     Eigen::VectorXd ddq_f_ext = SpatialDyn::ForwardDynamics(ab, tau, {{ab.dof()-1, f_ext}});
     Eigen::VectorXd ddq_aba_f_ext = SpatialDyn::ForwardDynamicsAba(ab, tau, {{ab.dof()-1, f_ext}});
 
-    Eigen::VectorXd ddq_fr = SpatialDyn::ForwardDynamics(ab, tau, {}, true);
-    Eigen::VectorXd ddq_aba_fr = SpatialDyn::ForwardDynamics(ab, tau, {}, true);
+    Eigen::VectorXd ddq_no_g = SpatialDyn::ForwardDynamics(ab, tau, {}, false, true);
+    Eigen::VectorXd ddq_aba_no_g = SpatialDyn::ForwardDynamics(ab, tau, {}, false, true);
+
+    Eigen::VectorXd ddq_no_cc = SpatialDyn::ForwardDynamics(ab, tau, {}, true, false);
+    Eigen::VectorXd ddq_aba_no_cc = SpatialDyn::ForwardDynamics(ab, tau, {}, true, false);
+
+    Eigen::VectorXd ddq_fr = SpatialDyn::ForwardDynamics(ab, tau, {}, true, true, true);
+    Eigen::VectorXd ddq_aba_fr = SpatialDyn::ForwardDynamics(ab, tau, {}, true, true, true);
 
     REQUIRE((ddq - ddq_aba).norm() < 1e-10);
     REQUIRE((ddq_f_ext - ddq_aba_f_ext).norm() < 1e-10);
+    REQUIRE((ddq_no_g - ddq_aba_no_g).norm() < 1e-10);
+    REQUIRE((ddq_no_cc - ddq_aba_no_cc).norm() < 1e-10);
     REQUIRE((ddq_fr - ddq_aba_fr).norm() < 1e-10);
   }
 

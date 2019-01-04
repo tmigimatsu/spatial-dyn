@@ -7,7 +7,11 @@
  * Authors: Toki Migimatsu
  */
 
-#include <sstream>  // std::stringstream
+#include <exception>  // std::invalid_argument
+#include <map>        // std::map
+#include <sstream>    // std::stringstream
+#include <string>     // std::string
+#include <vector>     // std::vector
 
 #include <pybind11/pybind11.h>
 #include "SpatialDyn/utils/spatial_math.h"
@@ -231,9 +235,24 @@ PYBIND11_MODULE(spatialdyn, m) {
   m.def("inertia", &Inertia, "ab"_a);
 
   // Simulation
-  m.def("integrate", &Integrate, "ab"_a, "tau"_a, "dt"_a,
-        "f_external"_a = std::map<int, SpatialForced>(),
-        "gravity"_a = true, "centrifugal_coriolis"_a = true, "friction"_a = false);
+  m.def("integrate",
+        [](ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt,
+               const std::map<int, SpatialForced>& f_external,
+               bool gravity, bool centrifugal_coriolis, bool friction,
+               const std::string& method) {
+          static const std::map<std::string, IntegrationMethod> kStringToMethod = {
+            {"EULER", IntegrationMethod::EULER},
+            {"HEUNS", IntegrationMethod::HEUNS},
+            {"RK4", IntegrationMethod::RK4}
+          };
+          if (kStringToMethod.find(method) == kStringToMethod.end()) {
+            throw std::invalid_argument("spatialdyn.integrate(): Invalid integration method " + method);
+          }
+          Integrate(ab, tau, dt, f_external, gravity, centrifugal_coriolis, friction,
+                    kStringToMethod.at(method));
+        }, "ab"_a, "tau"_a, "dt"_a, "f_external"_a = std::map<int, SpatialForced>(),
+        "gravity"_a = true, "centrifugal_coriolis"_a = true, "friction"_a = false,
+        "method"_a = "RK4");
 
   // Spatial inertia
   py::class_<SpatialInertiad>(m, "SpatialInertiad")
@@ -260,7 +279,7 @@ PYBIND11_MODULE(spatialdyn, m) {
              N = N_temp;
              return tau;
            }, "ab"_a, "J"_a, "ddx"_a, "N"_a,
-           "f_external"_a = std::vector<std::pair<int, SpatialForced>>(),
+           "f_external"_a = std::map<int, SpatialForced>(),
            "gravity"_a = false, "centrifugal_coriolis"_a = false, "friction"_a = false,
            "svd_epsilon"_a = 0);
   m_op.def("inertia", &Opspace::Inertia, "ab"_a, "J"_a, "svd_epsilon"_a = 0);
