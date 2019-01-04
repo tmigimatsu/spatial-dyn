@@ -50,9 +50,6 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def_property("dq",
                     (const Eigen::VectorXd& (ArticulatedBody::*)(void) const) &ArticulatedBody::dq,
                     (void (ArticulatedBody::*)(const Eigen::VectorXd&)) &ArticulatedBody::set_dq)
-      .def_property("ddq",
-                    (const Eigen::VectorXd& (ArticulatedBody::*)(void) const) &ArticulatedBody::ddq,
-                    (void (ArticulatedBody::*)(const Eigen::VectorXd&)) &ArticulatedBody::set_ddq)
       .def_property("g",
                     // TODO: Make spatial
                     [](const ArticulatedBody& ab) { return ab.g().linear(); },
@@ -238,7 +235,7 @@ PYBIND11_MODULE(spatialdyn, m) {
   m.def("integrate",
         [](ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt,
                const std::map<int, SpatialForced>& f_external,
-               bool gravity, bool centrifugal_coriolis, bool friction,
+               bool gravity, bool centrifugal_coriolis, bool friction, bool aba,
                const std::string& method) {
           static const std::map<std::string, IntegrationMethod> kStringToMethod = {
             {"EULER", IntegrationMethod::EULER},
@@ -249,10 +246,10 @@ PYBIND11_MODULE(spatialdyn, m) {
             throw std::invalid_argument("spatialdyn.integrate(): Invalid integration method " + method);
           }
           Integrate(ab, tau, dt, f_external, gravity, centrifugal_coriolis, friction,
-                    kStringToMethod.at(method));
+                    aba, kStringToMethod.at(method));
         }, "ab"_a, "tau"_a, "dt"_a, "f_external"_a = std::map<int, SpatialForced>(),
         "gravity"_a = true, "centrifugal_coriolis"_a = true, "friction"_a = false,
-        "method"_a = "RK4");
+        "aba"_a = false, "method"_a = "RK4");
 
   // Spatial inertia
   py::class_<SpatialInertiad>(m, "SpatialInertiad")

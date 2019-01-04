@@ -148,22 +148,6 @@ class ArticulatedBody {
   void set_dq(Eigen::Ref<const Eigen::VectorXd> dq);
 
   /**
-   * @return Joint accelerations. Uninitialized values will be `0` by default.
-   * @see Python: spatialdyn.ArticulatedBody.ddq
-   */
-  const Eigen::VectorXd& ddq() const { return ddq_; };
-
-  /**
-   * @return `i`th joint acceleration with Pythonic indexing (if `i < 0`, count from the back).
-   */
-  double ddq(int i) const;
-
-  /**
-   * Set the joint accelerations.
-   */
-  void set_ddq(Eigen::Ref<const Eigen::VectorXd> ddq);
-
-  /**
    * @return 6d spatial gravity vector acting on the articulated body. Defaults
    *         to `-9.81` in the linear `z` direction.
    * @see Python: spatialdyn.ArticulatedBody.g
@@ -369,8 +353,8 @@ class ArticulatedBody {
   Eigen::VectorXd Map(const std::function<double(const RigidBody& rb)>& rb_function) const;
 
   /// @cond
-  struct Cache;
-  std::unique_ptr<Cache> cache_;
+  struct Cache;                   // Defined in articulated_body_cache.h
+  std::unique_ptr<Cache> cache_;  // Pointer to cache for internal use
   /// @endcond
 
  protected:
@@ -383,7 +367,6 @@ class ArticulatedBody {
 
   Eigen::VectorXd q_;
   Eigen::VectorXd dq_;
-  Eigen::VectorXd ddq_;
   SpatialMotiond g_ = -9.81 * SpatialMotiond::UnitLinZ();
 
   Eigen::Isometry3d T_base_to_world_ = Eigen::Isometry3d::Identity();

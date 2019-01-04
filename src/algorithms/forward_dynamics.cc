@@ -39,7 +39,7 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
     const int parent = ab.rigid_bodies(i).id_parent();
     const double dq_i = centrifugal_coriolis ? ab.dq(i) : 0.;
 
-    if (!vel.is_computed) {
+    if (!vel.is_computed || !centrifugal_coriolis) {
       vel.v[i] = dq_i * s;
       if (parent >= 0) {
         vel.v[i] += ab.T_from_parent(i) * vel.v[parent];
@@ -60,7 +60,7 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
       rnea.f[i] -= ab.T_from_world(i) * f_external.at(i);
     }
   }
-  vel.is_computed = true;
+  vel.is_computed = centrifugal_coriolis;
 
   // Backward pass
   Eigen::VectorXd ddq(ab.dof());
@@ -76,11 +76,12 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
       }
     }
 
-    ddq(i) = (tau(i) - s.dot(rnea.f[i])) / aba.d[i];
+    double tau_i = tau(i);
     if (friction) {
       const Joint& joint = ab.rigid_bodies(i).joint();
-      ddq(i) -= joint.f_coulomb() * Signum(ab.dq(i)) + joint.f_viscous() * ab.dq(i);
+      tau_i -= joint.f_coulomb() * Signum(ab.dq(i)) + joint.f_viscous() * ab.dq(i);
     }
+    ddq(i) = (tau_i - s.dot(rnea.f[i])) / aba.d[i];
     if (parent >= 0) {
       rnea.f[parent] += ab.T_to_parent(i) *
                         (rnea.f[i] + aba.I_a[i] * rnea.a[i] + ddq(i) * aba.h[i]);

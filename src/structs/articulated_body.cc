@@ -27,7 +27,6 @@ ArticulatedBody::ArticulatedBody(const ArticulatedBody& ab)
       rigid_bodies_(ab.rigid_bodies_),
       q_(ab.q_),
       dq_(ab.dq_),
-      ddq_(ab.ddq_),
       g_(ab.g_),
       T_base_to_world_(ab.T_base_to_world_),
       ancestors_(ab.ancestors_),
@@ -43,7 +42,6 @@ ArticulatedBody& ArticulatedBody::operator=(const ArticulatedBody& ab) {
   rigid_bodies_ = ab.rigid_bodies_;
   q_ = ab.q_;
   dq_ = ab.dq_;
-  ddq_ = ab.ddq_;
   g_ = ab.g_;
   T_base_to_world_ = ab.T_base_to_world_;
   ancestors_ = ab.ancestors_;
@@ -105,14 +103,6 @@ void ArticulatedBody::set_dq(Eigen::Ref<const Eigen::VectorXd> dq) {
   cache_->grav_data_.is_friction_computed = false;
   cache_->cc_data_.is_computed = false;
   cache_->aba_data_.is_computed = false;
-}
-
-double ArticulatedBody::ddq(int i) const {
-  if (i < 0) i += dof();
-  return ddq_(i);
-}
-void ArticulatedBody::set_ddq(Eigen::Ref<const Eigen::VectorXd> ddq) {
-  ddq_ = ddq;
 }
 
 void ArticulatedBody::set_g(const Eigen::Vector3d& g) {
@@ -212,12 +202,10 @@ void ArticulatedBody::ExpandDof(int id, int id_parent) {
   // Expand state size while leaving old values in place
   if (q_.size() < static_cast<int>(dof_)) q_.conservativeResize(dof_);
   if (dq_.size() < static_cast<int>(dof_)) dq_.conservativeResize(dof_);
-  if (ddq_.size() < static_cast<int>(dof_)) ddq_.conservativeResize(dof_);
 
   // Set default state to zero
   q_(id) = 0.;
   dq_(id) = 0.;
-  ddq_(id) = 0.;
 
   // Update ancestors and subtrees
   if (id_parent < 0) {
@@ -295,7 +283,6 @@ std::ostream& operator<<(std::ostream& os, const ArticulatedBody& ab) {
   os << "ArticulatedBody(name=\"" << ab.name << "\", dof=" << ab.dof() << ")" << std::endl;
   os << "             q: " << ab.q().transpose() << std::endl;
   os << "            dq: " << ab.dq().transpose() << std::endl;
-  os << "           ddq: " << ab.ddq().transpose() << std::endl;
   os << "             g: " << ab.g().linear().transpose() << std::endl;
   bool first = true;
   for (const RigidBody& rb : ab.rigid_bodies()) {

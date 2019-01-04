@@ -21,7 +21,7 @@ enum class IntegrationMethod { EULER, HEUNS, RK4 };
 void Integrate(ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt,
                const std::map<int, SpatialForced>& f_external = {},
                bool gravity = true, bool centrifugal_coriolis = true, bool friction = false,
-               IntegrationMethod method = IntegrationMethod::RK4);
+               bool aba = false, IntegrationMethod method = IntegrationMethod::RK4);
 
 }  // namespace SpatialDyn
 

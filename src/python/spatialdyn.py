@@ -57,10 +57,6 @@ class ArticulatedBody:
     # @see C++: SpatialDyn::ArticulatedBody::dq()
     dq = numpy.zeros(dof, dtype=numpy.float64)
 
-    ## %Joint accelerations as a numpy array of size dof.
-    # @see C++: SpatialDyn::ArticulatedBody::ddq()
-    ddq = numpy.zeros(dof, dtype=numpy.float64)
-
     ## Gravity vector as a numpy array of size 3.
     # @see C++: SpatialDyn::ArticulatedBody::g()
     g = numpy.array([0., 0., -9.81], dtype=numpy.float64)
