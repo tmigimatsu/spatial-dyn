@@ -9,6 +9,8 @@
 
 #include "algorithms/opspace_dynamics.h"
 
+#include <exception>  // std::invalid_argument
+
 #include "algorithms/forward_dynamics.h"
 #include "algorithms/forward_kinematics.h"
 #include "algorithms/inverse_dynamics.h"
@@ -21,7 +23,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
                                 const Eigen::VectorXd& ddx, Eigen::MatrixXd *N,
                                 const std::map<int, SpatialForced>& f_external,
                                 bool gravity, bool centrifugal_coriolis, bool friction,
-                                double svd_epsilon) {
+                                double svd_epsilon, double stiction_epsilon) {
   // Project Jacobian in nullspace
   Eigen::MatrixXd JN;
   bool use_nullspace = N != nullptr && N->size() > 0;
@@ -42,12 +44,12 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
   }
 
   // TODO: Only works for 6d pos_ori tasks at the origin of the ee frame
-  if (centrifugal_coriolis && F_x.size() == 6) {
+  if (centrifugal_coriolis) {
     F_x += CentrifugalCoriolis(ab, J_x, svd_epsilon);
   }
 
   if (friction) {
-    F_x += Friction(ab, J_x, svd_epsilon);
+    F_x += Friction(ab, J_x, J_x.transpose() * F_x, svd_epsilon, stiction_epsilon);
   }
 
   // Update nullspace
@@ -97,7 +99,8 @@ const Eigen::MatrixXd& JacobianDynamicInverse(const ArticulatedBody& ab, const E
                                               double svd_epsilon) {
   auto& ops = ab.cache_->opspace_data_;
 
-  if (!ops.is_jbar_computed || ops.J != J || ops.svd_epsilon != svd_epsilon) {
+  if (!ops.is_jbar_computed || ops.J.size() != J.size() || ops.J != J ||
+      ops.svd_epsilon != svd_epsilon) {
     // TODO: Force recompute
     Opspace::Inertia(ab, J, svd_epsilon);
     ops.J_bar = ops.A_inv_J_bar_T * ops.Lambda;
@@ -111,6 +114,10 @@ const Eigen::MatrixXd& JacobianDynamicInverse(const ArticulatedBody& ab, const E
 Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                     int idx_link, const Eigen::Vector3d&,
                                     double svd_epsilon) {
+  if (J.rows() != 6) {
+    throw std::invalid_argument("Opspace::CentrifugalCoriolis(): Jacobian must be the basic Jacobian at the origin of the desired link.");
+  }
+
   if (idx_link < 0) idx_link += ab.dof();
   auto& cc = ab.cache_->cc_data_;
 
@@ -134,8 +141,9 @@ Eigen::VectorXd ExternalForces(const ArticulatedBody& ab, const Eigen::MatrixXd&
 }
 
 Eigen::VectorXd Friction(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
-                         double svd_epsilon) {
-  return JacobianDynamicInverse(ab, J, svd_epsilon).transpose() * Friction(ab);
+                         Eigen::Ref<const Eigen::VectorXd> tau, double svd_epsilon,
+                         double stiction_epsilon) {
+  return JacobianDynamicInverse(ab, J, svd_epsilon).transpose() * Friction(ab, tau, stiction_epsilon);
 }
 
 }  // namespace Opspace

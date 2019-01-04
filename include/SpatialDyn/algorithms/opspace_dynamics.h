@@ -24,7 +24,8 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
                                 const Eigen::VectorXd& ddx, Eigen::MatrixXd *N = nullptr,
                                 const std::map<int, SpatialForced>& f_external = {},
                                 bool gravity = false, bool centrifugal_coriolis = false,
-                                bool friction = false, double svd_epsilon = 0);
+                                bool friction = false, double svd_epsilon = 0,
+                                double stiction_epsilon = 0.01);
 
 const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                double svd_epsilon = 0);
@@ -48,7 +49,8 @@ Eigen::VectorXd ExternalForces(const ArticulatedBody& ab, const Eigen::MatrixXd&
                                double svd_epsilon = 0);
 
 Eigen::VectorXd Friction(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
-                         double svd_epsilon = 0);
+                         const Eigen::Ref<const Eigen::VectorXd> tau,
+                         double svd_epsilon = 0, double stiction_epsilon = 0.01);
 
 // ABA
 const Eigen::Matrix6d& InertiaAba(const ArticulatedBody& ab, int idx_link = -1,

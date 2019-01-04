@@ -352,10 +352,12 @@ def hessian(ab, link = -1, offset = numpy.zeros((3,))):
 # @param gravity bool
 # @param centrifugal_coriolis bool
 # @param friction bool
+# @param stiction_epsilon float
 # @return numpy.ndarray[float64[n]]
 # @see C++: SpatialDyn::InverseDynamics()
 def inverse_dynamics(ab, ddq, f_external = {}, gravity = True,
-                     centrifugal_coriolis = True, friction = False):
+                     centrifugal_coriolis = True, friction = False,
+                     stiction_epsilon = 0.01):
     pass
 
 ##
@@ -386,9 +388,12 @@ def external_torques(ab, f_external = {}):
 ##
 # Compute the Coulomb and viscous joint friction compensation torques.
 # @param ab spatialdyn.ArticulatedBody
+# @param tau numpy.ndarray[float64[n]]
+# @param compensate bool
+# @param stiction_epsilon float
 # @return numpy.ndarray[float64[n]]
 # @see C++: SpatialDyn::Friction()
-def friction(ab):
+def friction(ab, tau, compensate, stiction_epsilon):
     pass
 
 ##
@@ -420,10 +425,12 @@ def inertia(ab):
 # @param gravity bool
 # @param centrifugal_coriolis bool
 # @param friction bool
+# @param stiction_epsilon float
 # @return numpy.ndarray[float64[n]]
 # @see C++: SpatialDyn::ForwardDynamics()
 def forward_dynamics(ab, tau, f_external = {}, gravity = True,
-                     centrifugal_coriolis = True, friction = True):
+                     centrifugal_coriolis = True, friction = True,
+                     stiction_epsilon = 0.01):
     pass
 
 ##
@@ -434,10 +441,12 @@ def forward_dynamics(ab, tau, f_external = {}, gravity = True,
 # @param gravity bool
 # @param centrifugal_coriolis bool
 # @param friction bool
+# @param stiction_epsilon float
 # @return numpy.ndarray[float64[n]]
 # @see C++: SpatialDyn::ForwardDynamicsAba()
 def forward_dynamics_aba(ab, tau, f_external = {}, gravity = True,
-                         centrifugal_coriolis = True, friction = True):
+                         centrifugal_coriolis = True, friction = True,
+                         stiction_epsilon = 0.01):
     pass
 
 ##

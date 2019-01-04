@@ -56,9 +56,6 @@ struct ArticulatedBody::Cache {
     bool is_computed = false;        // Reusable with same position, gravity
     std::vector<SpatialForced> f_g;  // Rigid body gravity force
     Eigen::VectorXd G;               // Joint space gravity
-
-    bool is_friction_computed = false;
-    Eigen::VectorXd F;
   };
   GravityData grav_data_;
 

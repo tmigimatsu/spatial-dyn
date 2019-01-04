@@ -13,8 +13,8 @@
 namespace SpatialDyn {
 
 template <typename T>
-T Signum(T x) {
-  return (T(0) < x) - (x < T(0));
+T Signum(T x, T epsilon = T(0)) {
+  return (x > epsilon) - (x < -epsilon);
 }
 
 }  // namespace SpatialDyn

@@ -100,7 +100,6 @@ void ArticulatedBody::set_dq(Eigen::Ref<const Eigen::VectorXd> dq) {
 
   if (!cache_) return;
   cache_->vel_data_.is_computed = false;
-  cache_->grav_data_.is_friction_computed = false;
   cache_->cc_data_.is_computed = false;
   cache_->aba_data_.is_computed = false;
 }
@@ -241,8 +240,6 @@ void ArticulatedBody::ExpandDof(int id, int id_parent) {
   cache_->grav_data_.is_computed = false;
   cache_->grav_data_.f_g.push_back(SpatialForced());
   cache_->grav_data_.G.resize(dof_);
-  cache_->grav_data_.is_friction_computed = false;
-  cache_->grav_data_.F.resize(dof_);
 
   cache_->rnea_data_.a.push_back(SpatialMotiond());
   cache_->rnea_data_.f.push_back(SpatialForced());

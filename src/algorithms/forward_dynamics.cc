@@ -9,6 +9,9 @@
 
 #include "algorithms/forward_dynamics.h"
 
+#include <algorithm>  // std::min
+#include <cmath>      // std::abs
+
 #include "algorithms/inverse_dynamics.h"
 #include "structs/articulated_body_cache.h"
 #include "utils/math.h"
@@ -18,16 +21,19 @@ namespace SpatialDyn {
 Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab,
                                 Eigen::Ref<const Eigen::VectorXd> tau,
                                 const std::map<int, SpatialForced>& f_external,
-                                bool gravity, bool centrifugal_coriolis, bool friction) {
-  return InertiaInverse(ab).solve(tau - InverseDynamics(ab, Eigen::VectorXd::Zero(ab.dof()),
-                                                        f_external, gravity,
-                                                        centrifugal_coriolis, friction));
+                                bool gravity, bool centrifugal_coriolis, bool friction,
+                                double stiction_epsilon) {
+  Eigen::VectorXd dtau = tau - InverseDynamics(ab, Eigen::VectorXd::Zero(ab.dof()),
+                                               f_external, gravity, centrifugal_coriolis);
+  if (friction) dtau -= Friction(ab, dtau, false, stiction_epsilon);
+  return InertiaInverse(ab).solve(dtau);
 }
 
 Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
                                    Eigen::Ref<const Eigen::VectorXd> tau,
                                    const std::map<int, SpatialForced>& f_external,
-                                   bool gravity, bool centrifugal_coriolis, bool friction) {
+                                   bool gravity, bool centrifugal_coriolis, bool friction,
+                                   double stiction_epsilon) {
   auto& aba = ab.cache_->aba_data_;
   auto& vel = ab.cache_->vel_data_;
   auto& rnea = ab.cache_->rnea_data_;
@@ -76,12 +82,31 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
       }
     }
 
-    double tau_i = tau(i);
+    double tau_i = tau(i) - s.dot(rnea.f[i]);
+    ddq(i) = tau_i / aba.d[i];
+
+    // TODO: Fix friction computation
+    // Decouple friction from centrifugal/Coriolis
+    // Incorporate gravity
     if (friction) {
       const Joint& joint = ab.rigid_bodies(i).joint();
-      tau_i -= joint.f_coulomb() * Signum(ab.dq(i)) + joint.f_viscous() * ab.dq(i);
+
+      // Viscous friction
+      tau_i -= joint.f_viscous() * ab.dq(i);
+
+      // Kinetic friction
+      double f_coulomb = joint.f_coulomb() * Signum(ab.dq(i), stiction_epsilon);
+
+      // Static friction
+      if (f_coulomb == 0.) {
+        double mu = std::min(std::abs(tau_i), joint.f_coulomb() + joint.f_stiction());
+        f_coulomb = mu * Signum(tau_i);
+      }
+      tau_i -= f_coulomb;
+
+      ddq(i) = tau_i / aba.d[i];
     }
-    ddq(i) = (tau_i - s.dot(rnea.f[i])) / aba.d[i];
+
     if (parent >= 0) {
       rnea.f[parent] += ab.T_to_parent(i) *
                         (rnea.f[i] + aba.I_a[i] * rnea.a[i] + ddq(i) * aba.h[i]);

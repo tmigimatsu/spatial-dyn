@@ -41,13 +41,14 @@ namespace SpatialDyn {
  * @param gravity Include gravity torques.
  * @param centrifugal_coriolis Include centrifugal/Coriolis torques.
  * @param friction Include Coulomb and viscous friction torques at the joints.
+ * @param stiction_epsilon Velocity threshold for stiction activation.
  * @return Inverse dynamics torques.
  * @see Python: spatialdyn.inverse_dynamics()
  */
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq,
                                 const std::map<int, SpatialForced>& f_external = {},
                                 bool gravity = true, bool centrifugal_coriolis = false,
-                                bool friction = false);
+                                bool friction = false, double stiction_epsilon = 0.01);
 
 /**
  * Compute the centrifugal/Coriolis compensation torques.
@@ -93,16 +94,20 @@ Eigen::VectorXd ExternalTorques(const ArticulatedBody& ab,
                                 const std::map<int, SpatialForced>& f_external = {});
 
 /**
- * Compute Coulomb and viscous joint friction compensation torques.
+ * Compute Coulomb and viscous joint friction torques.
  *
- * Friction torques are computed in O(n) time and cached so that subsequent
- * calls with the same `q` and `dq` will return in O(1) time.
+ * Friction torques are computed in O(n) time.
  *
  * @param ab ArticulatedBody.
- * @return Reference to cached friction torques.
+ * @param tau Applied torques (for stiction).
+ * @param compensate Return friction compensation torques as opposed to
+ *                   resulting friction torques.
+ * @param stiction_epsilon Velocity threshold for stiction activation.
+ * @return Friction torques.
  * @see Python: spatialdyn.friction()
  */
-const Eigen::VectorXd& Friction(const ArticulatedBody& ab);
+Eigen::VectorXd Friction(const ArticulatedBody& ab, Eigen::Ref<const Eigen::VectorXd> tau,
+                         bool compensate = true, double stiction_epsilon = 0.01);
 
 /**
  * Compute the joint space inertia matrix.

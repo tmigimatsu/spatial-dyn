@@ -41,6 +41,7 @@ namespace SpatialDyn {
  * @param gravity Include gravity acceleration.
  * @param centrifugal_coriolis Include centrifugal/Coriolis acceleration.
  * @param friction Include Coulomb and viscous friction acceleration at the joints.
+ * @param stiction_epsilon Velocity threshold for stiction activation.
  * @return Joint accelerations.
  * @see Python: spatialdyn.forward_dynamics()
  */
@@ -48,7 +49,7 @@ Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab,
                                 Eigen::Ref<const Eigen::VectorXd> tau,
                                 const std::map<int, SpatialForced>& f_external = {},
                                 bool gravity = true, bool centrifugal_coriolis = true,
-                                bool friction = false);
+                                bool friction = false, double stiction_epsilon = 0.01);
 
 /**
  * Compute the forward dynamics with ABA.
@@ -64,6 +65,7 @@ Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab,
  * @param gravity Include gravity acceleration.
  * @param centrifugal_coriolis Include centrifugal/Coriolis acceleration.
  * @param friction Include Coulomb and viscous friction acceleration at the joints.
+ * @param stiction_epsilon Velocity threshold for stiction activation.
  * @return Joint accelerations.
  * @see Python: spatialdyn.forward_dynamics_aba()
  */
@@ -71,7 +73,7 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
                                    Eigen::Ref<const Eigen::VectorXd> tau,
                                    const std::map<int, SpatialForced>& f_external = {},
                                    bool gravity = true, bool centrifugal_coriolis = true,
-                                   bool friction = false);
+                                   bool friction = false, double stiction_epsilon = 0.01);
 
 /**
  * Compute the Cholesky decomposition of the joint space inertia matrix.

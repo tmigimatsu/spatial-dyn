@@ -9,6 +9,9 @@
 
 #include "algorithms/inverse_dynamics.h"
 
+#include <algorithm>  // std::min
+#include <cmath>      // std::abs
+
 #include "structs/articulated_body_cache.h"
 #include "utils/math.h"
 
@@ -18,7 +21,8 @@ namespace SpatialDyn {
 
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq,
                                 const std::map<int, SpatialForced>& f_external,
-                                bool gravity, bool centrifugal_coriolis, bool friction) {
+                                bool gravity, bool centrifugal_coriolis, bool friction,
+                                double stiction_epsilon) {
   auto& rnea = ab.cache_->rnea_data_;
   auto& vel  = ab.cache_->vel_data_;
 
@@ -61,11 +65,12 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
     const int parent = ab.rigid_bodies(i).id_parent();
 
     tau(i) = s.dot(rnea.f[i]);
-    if (friction) {
-      tau(i) += joint.f_coulomb() * Signum(ab.dq(i)) + joint.f_viscous() * ab.dq(i);
-    }
     if (parent >= 0) rnea.f[parent] += ab.T_to_parent(i) * rnea.f[i];
   }
+
+  // Friction compensation
+  if (friction) tau += Friction(ab, tau, true, stiction_epsilon);
+
   return tau;
 }
 
@@ -163,16 +168,28 @@ Eigen::VectorXd ExternalTorques(const ArticulatedBody& ab,
   return tau;
 }
 
-const Eigen::VectorXd& Friction(const ArticulatedBody& ab) {
-  auto& grav = ab.cache_->grav_data_;
-  if (grav.is_friction_computed) return grav.F;
-
+Eigen::VectorXd Friction(const ArticulatedBody& ab, Eigen::Ref<const Eigen::VectorXd> tau,
+                         bool compensate, double stiction_epsilon) {
+  Eigen::VectorXd F(ab.dof());
   for (size_t i = 0; i < ab.dof(); i++) {
     const Joint& joint = ab.rigid_bodies(i).joint();
-    grav.F(i) = joint.f_coulomb() * Signum(ab.dq(i)) + joint.f_viscous() * ab.dq(i);
+
+    // Kinetic friction
+    double f_coulomb = joint.f_coulomb() * Signum(ab.dq(i), stiction_epsilon);
+
+    // Static friction
+    if (f_coulomb == 0.) {
+      double mu = joint.f_coulomb() + joint.f_stiction();
+      if (!compensate) {
+        mu = std::min(mu, std::abs(tau(i)));
+      }
+      f_coulomb = mu * Signum(tau(i));
+    }
+
+    // Add viscous and Coulomb friction
+    F(i) = joint.f_viscous() * ab.dq(i) + f_coulomb;
   }
-  grav.is_friction_computed = true;
-  return grav.F;
+  return F;
 }
 
 const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab) {
