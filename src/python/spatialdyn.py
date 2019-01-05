@@ -429,7 +429,7 @@ def inertia(ab):
 # @return numpy.ndarray[float64[n]]
 # @see C++: SpatialDyn::ForwardDynamics()
 def forward_dynamics(ab, tau, f_external = {}, gravity = True,
-                     centrifugal_coriolis = True, friction = True,
+                     centrifugal_coriolis = True, friction = False,
                      stiction_epsilon = 0.01):
     pass
 
@@ -445,7 +445,7 @@ def forward_dynamics(ab, tau, f_external = {}, gravity = True,
 # @return numpy.ndarray[float64[n]]
 # @see C++: SpatialDyn::ForwardDynamicsAba()
 def forward_dynamics_aba(ab, tau, f_external = {}, gravity = True,
-                         centrifugal_coriolis = True, friction = True,
+                         centrifugal_coriolis = True, friction = False,
                          stiction_epsilon = 0.01):
     pass
 
