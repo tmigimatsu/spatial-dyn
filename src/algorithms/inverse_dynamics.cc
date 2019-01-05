@@ -21,8 +21,7 @@ namespace SpatialDyn {
 
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq,
                                 const std::map<int, SpatialForced>& f_external,
-                                bool gravity, bool centrifugal_coriolis, bool friction,
-                                double stiction_epsilon) {
+                                const InverseDynamicsOptions& options) {
   auto& rnea = ab.cache_->rnea_data_;
   auto& vel  = ab.cache_->vel_data_;
 
@@ -31,9 +30,9 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
     const int parent = ab.rigid_bodies(i).id_parent();
-    const double dq_i = centrifugal_coriolis ? ab.dq(i) : 0.;
+    const double dq_i = options.centrifugal_coriolis ? ab.dq(i) : 0.;
 
-    if (!vel.is_computed || !centrifugal_coriolis) {
+    if (!vel.is_computed || !options.centrifugal_coriolis) {
       vel.v[i] = dq_i * s;
       if (parent >= 0) {
         vel.v[i] += ab.T_from_parent(i) * vel.v[parent];
@@ -42,7 +41,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
 
     rnea.a[i] = ddq(i) * s;
     if (parent < 0) {
-      if (gravity) {
+      if (options.gravity) {
         rnea.a[i] -= ab.T_from_world(i) * ab.g();
       }
     } else {
@@ -55,7 +54,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
       rnea.f[i] -= ab.T_from_world(i) * f_external.at(i);
     }
   }
-  vel.is_computed = centrifugal_coriolis;
+  vel.is_computed = options.centrifugal_coriolis;
 
   // Backward pass
   Eigen::VectorXd tau(ab.dof());  // Resulting joint torques
@@ -69,7 +68,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
   }
 
   // Friction compensation
-  if (friction) tau += Friction(ab, tau, true, stiction_epsilon);
+  if (options.friction) tau += Friction(ab, tau, true, options.stiction_epsilon);
 
   return tau;
 }

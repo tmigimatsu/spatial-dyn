@@ -224,11 +224,11 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
   SECTION("inverse dynamics") {
     Eigen::VectorXd ddq = Eigen::VectorXd::Ones(ab.dof());
 
-    Eigen::VectorXd tau = SpatialDyn::InverseDynamics(ab, ddq, {}, true, true);
-    Eigen::VectorXd tau_Aq_g = SpatialDyn::InverseDynamics(ab, ddq, {}, true, false);
-    Eigen::VectorXd tau_Aq_v = SpatialDyn::InverseDynamics(ab, ddq, {}, false, true);
-    Eigen::VectorXd tau_Aq = SpatialDyn::InverseDynamics(ab, ddq, {}, false, false);
-    Eigen::VectorXd tau_Aq_v_g_fr = SpatialDyn::InverseDynamics(ab, ddq, {}, true, true, true);
+    Eigen::VectorXd tau = SpatialDyn::InverseDynamics(ab, ddq, {}, { true, true });
+    Eigen::VectorXd tau_Aq_g = SpatialDyn::InverseDynamics(ab, ddq, {}, { true, false });
+    Eigen::VectorXd tau_Aq_v = SpatialDyn::InverseDynamics(ab, ddq, {}, { false, true });
+    Eigen::VectorXd tau_Aq = SpatialDyn::InverseDynamics(ab, ddq, {}, { false, false });
+    Eigen::VectorXd tau_Aq_v_g_fr = SpatialDyn::InverseDynamics(ab, ddq, {}, { true, true, true });
 
     Eigen::VectorXd tau_crba_Aq_v_g = SpatialDyn::Inertia(ab) * ddq +
                                       SpatialDyn::CentrifugalCoriolis(ab) +
@@ -243,7 +243,7 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
     tau_crba_Aq_v_g_fr += SpatialDyn::Friction(ab, tau_crba_Aq_v_g_fr);
 
     SpatialDyn::SpatialForced f_ext = SpatialDyn::SpatialForced::Ones();
-    Eigen::VectorXd tau_f_ext = SpatialDyn::InverseDynamics(ab, ddq, {{ab.dof()-1, f_ext}}, true, true);
+    Eigen::VectorXd tau_f_ext = SpatialDyn::InverseDynamics(ab, ddq, {{ab.dof()-1, f_ext}}, { true, true });
 
     Eigen::Matrix6Xd J = Eigen::Matrix6Xd::Zero(6, ab.dof());
     for (const int i : ab.ancestors(-1)) {
@@ -293,18 +293,18 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
     Eigen::VectorXd ddq_f_ext = SpatialDyn::ForwardDynamics(ab, tau, {{ab.dof()-1, f_ext}});
     Eigen::VectorXd ddq_aba_f_ext = SpatialDyn::ForwardDynamicsAba(ab, tau, {{ab.dof()-1, f_ext}});
 
-    Eigen::VectorXd ddq_no_g = SpatialDyn::ForwardDynamics(ab, tau, {}, false, true);
-    Eigen::VectorXd ddq_aba_no_g = SpatialDyn::ForwardDynamicsAba(ab, tau, {}, false, true);
+    Eigen::VectorXd ddq_no_g = SpatialDyn::ForwardDynamics(ab, tau, {}, { false, true });
+    Eigen::VectorXd ddq_aba_no_g = SpatialDyn::ForwardDynamicsAba(ab, tau, {}, { false, true });
 
-    Eigen::VectorXd ddq_no_cc = SpatialDyn::ForwardDynamics(ab, tau, {}, true, false);
-    Eigen::VectorXd ddq_aba_no_cc = SpatialDyn::ForwardDynamicsAba(ab, tau, {}, true, false);
+    Eigen::VectorXd ddq_no_cc = SpatialDyn::ForwardDynamics(ab, tau, {}, { true, false });
+    Eigen::VectorXd ddq_aba_no_cc = SpatialDyn::ForwardDynamicsAba(ab, tau, {}, { true, false });
 
-    Eigen::VectorXd ddq_fr = SpatialDyn::ForwardDynamics(ab, tau, {}, false, true, true);
-    Eigen::VectorXd ddq_aba_fr = SpatialDyn::ForwardDynamicsAba(ab, tau, {}, false, true, true);
+    Eigen::VectorXd ddq_fr = SpatialDyn::ForwardDynamics(ab, tau, {}, { false, true, true });
+    Eigen::VectorXd ddq_aba_fr = SpatialDyn::ForwardDynamicsAba(ab, tau, {}, { false, true, true });
 
     Eigen::VectorXd ddq_des = tau;
-    Eigen::VectorXd tau_cmd = SpatialDyn::InverseDynamics(ab, ddq_des, {{ab.dof()-1, f_ext}}, true, true, true);
-    Eigen::VectorXd ddq_res = SpatialDyn::ForwardDynamics(ab, tau_cmd, {{ab.dof()-1, f_ext}}, true, true, true);
+    Eigen::VectorXd tau_cmd = SpatialDyn::InverseDynamics(ab, ddq_des, {{ab.dof()-1, f_ext}}, { true, true, true });
+    Eigen::VectorXd ddq_res = SpatialDyn::ForwardDynamics(ab, tau_cmd, {{ab.dof()-1, f_ext}}, { true, true, true });
 
     REQUIRE((ddq - ddq_aba).norm() < 1e-10);
     REQUIRE((ddq_f_ext - ddq_aba_f_ext).norm() < 1e-10);

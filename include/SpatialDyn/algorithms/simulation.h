@@ -14,15 +14,13 @@
 
 #include <map>  // std::map
 
-namespace SpatialDyn {
+#include "SpatialDyn/structs/options.h"
 
-enum class IntegrationMethod { EULER, HEUNS, RK4 };
+namespace SpatialDyn {
 
 void Integrate(ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt,
                const std::map<int, SpatialForced>& f_external = {},
-               bool gravity = true, bool centrifugal_coriolis = true, bool friction = false,
-               bool joint_limits = false, double stiction_epsilon = 0.01, bool aba = false,
-               IntegrationMethod method = IntegrationMethod::RK4);
+               const IntegrationOptions& options = {});
 
 }  // namespace SpatialDyn
 

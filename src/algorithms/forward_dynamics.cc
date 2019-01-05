@@ -21,19 +21,18 @@ namespace SpatialDyn {
 Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab,
                                 Eigen::Ref<const Eigen::VectorXd> tau,
                                 const std::map<int, SpatialForced>& f_external,
-                                bool gravity, bool centrifugal_coriolis, bool friction,
-                                double stiction_epsilon) {
-  Eigen::VectorXd dtau = tau - InverseDynamics(ab, Eigen::VectorXd::Zero(ab.dof()),
-                                               f_external, gravity, centrifugal_coriolis);
-  if (friction) dtau -= Friction(ab, dtau, false, stiction_epsilon);
-  return InertiaInverse(ab).solve(dtau);
+                                const ForwardDynamicsOptions& options) {
+  Eigen::VectorXd dtau = tau - InverseDynamics(ab, Eigen::VectorXd::Zero(ab.dof()), f_external,
+      { options.gravity, options.centrifugal_coriolis, false });
+  if (options.friction) dtau -= Friction(ab, dtau, false, options.stiction_epsilon);
+  Eigen::VectorXd ddq = InertiaInverse(ab).solve(dtau);
+  return ddq;
 }
 
 Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
                                    Eigen::Ref<const Eigen::VectorXd> tau,
                                    const std::map<int, SpatialForced>& f_external,
-                                   bool gravity, bool centrifugal_coriolis, bool friction,
-                                   double stiction_epsilon) {
+                                   const ForwardDynamicsOptions& options) {
   auto& aba = ab.cache_->aba_data_;
   auto& vel = ab.cache_->vel_data_;
   auto& rnea = ab.cache_->rnea_data_;
@@ -43,9 +42,9 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
     const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     const int parent = ab.rigid_bodies(i).id_parent();
-    const double dq_i = centrifugal_coriolis ? ab.dq(i) : 0.;
+    const double dq_i = options.centrifugal_coriolis ? ab.dq(i) : 0.;
 
-    if (!vel.is_computed || !centrifugal_coriolis) {
+    if (!vel.is_computed || !options.centrifugal_coriolis) {
       vel.v[i] = dq_i * s;
       if (parent >= 0) {
         vel.v[i] += ab.T_from_parent(i) * vel.v[parent];
@@ -66,7 +65,7 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
       rnea.f[i] -= ab.T_from_world(i) * f_external.at(i);
     }
   }
-  vel.is_computed = centrifugal_coriolis;
+  vel.is_computed = options.centrifugal_coriolis;
 
   // Backward pass
   Eigen::VectorXd ddq(ab.dof());
@@ -88,14 +87,14 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
     // TODO: Fix friction computation
     // Decouple friction from centrifugal/Coriolis
     // Incorporate gravity
-    if (friction) {
+    if (options.friction) {
       const Joint& joint = ab.rigid_bodies(i).joint();
 
       // Viscous friction
       tau_i -= joint.f_viscous() * ab.dq(i);
 
       // Kinetic friction
-      double f_coulomb = joint.f_coulomb() * Signum(ab.dq(i), stiction_epsilon);
+      double f_coulomb = joint.f_coulomb() * Signum(ab.dq(i), options.stiction_epsilon);
 
       // Static friction
       if (f_coulomb == 0.) {
@@ -118,7 +117,7 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
     const int parent = ab.rigid_bodies(i).id_parent();
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     if (parent < 0) {
-      if (gravity) {
+      if (options.gravity) {
         rnea.a[i] = ab.T_from_parent(i) * -ab.g();
       } else {
         rnea.a[i].setZero();

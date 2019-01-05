@@ -170,12 +170,22 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def_readwrite("texture", &Graphics::Material::texture);
 
   // Forward dynamics
-  m.def("forward_dynamics", &ForwardDynamics, "ab"_a, "tau"_a,
-        "f_external"_a = std::map<int, SpatialForced>(),
+  m.def("forward_dynamics",
+        [](const ArticulatedBody& ab, Eigen::Ref<const Eigen::VectorXd> tau,
+           const std::map<int, SpatialForced>& f_external,
+           bool gravity, bool centrifugal_coriolis, bool friction, double stiction_epsilon) {
+          return ForwardDynamics(ab, tau, f_external,
+                                 { gravity, centrifugal_coriolis, friction, stiction_epsilon });
+        }, "ab"_a, "tau"_a, "f_external"_a = std::map<int, SpatialForced>(),
         "gravity"_a = true, "centrifugal_coriolis"_a = true, "friction"_a = false,
         "stiction_epsilon"_a = 0.01)
-   .def("forward_dynamics_aba", &ForwardDynamicsAba, "ab"_a, "tau"_a,
-        "f_external"_a = std::map<int, SpatialForced>(),
+   .def("forward_dynamics_aba",
+        [](const ArticulatedBody& ab, Eigen::Ref<const Eigen::VectorXd> tau,
+           const std::map<int, SpatialForced>& f_external,
+           bool gravity, bool centrifugal_coriolis, bool friction, double stiction_epsilon) {
+          return ForwardDynamicsAba(ab, tau, f_external,
+                                    { gravity, centrifugal_coriolis, friction, stiction_epsilon });
+        }, "ab"_a, "tau"_a, "f_external"_a = std::map<int, SpatialForced>(),
         "gravity"_a = true, "centrifugal_coriolis"_a = true, "friction"_a = false,
         "stiction_epsilon"_a = 0.01)
    .def("inertia_inverse", &InertiaInverse, "ab"_a)
@@ -224,8 +234,13 @@ PYBIND11_MODULE(spatialdyn, m) {
         }, "ab"_a, "link"_a = -1, "offset"_a = Eigen::Vector3d::Zero());
 
   // Inverse dynamics
-  m.def("inverse_dynamics", &InverseDynamics, "ab"_a, "ddq"_a,
-        "f_external"_a = std::map<int, SpatialForced>(),
+  m.def("inverse_dynamics",
+        [](const ArticulatedBody& ab, Eigen::Ref<const Eigen::VectorXd> ddq,
+           const std::map<int, SpatialForced>& f_external,
+           bool gravity, bool centrifugal_coriolis, bool friction, double stiction_epsilon) {
+          return InverseDynamics(ab, ddq, f_external,
+                                 { gravity, centrifugal_coriolis, friction, stiction_epsilon });
+        }, "ab"_a, "ddq"_a, "f_external"_a = std::map<int, SpatialForced>(),
         "gravity"_a = true, "centrifugal_coriolis"_a = false, "friction"_a = false,
         "stiction_epsilon"_a = 0.01)
    .def("centrifugal_coriolis", &CentrifugalCoriolis, "ab"_a)
@@ -239,21 +254,22 @@ PYBIND11_MODULE(spatialdyn, m) {
         [](ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt,
                const std::map<int, SpatialForced>& f_external,
                bool gravity, bool centrifugal_coriolis, bool friction, bool joint_limits,
-               double stiction_epsilon, bool aba, const std::string& method) {
-          static const std::map<std::string, IntegrationMethod> kStringToMethod = {
-            {"EULER", IntegrationMethod::EULER},
-            {"HEUNS", IntegrationMethod::HEUNS},
-            {"RK4", IntegrationMethod::RK4}
+               const std::string& method, bool aba, double stiction_epsilon) {
+          static const std::map<std::string, IntegrationOptions::Method> kStringToMethod = {
+            {"EULER", IntegrationOptions::Method::EULER},
+            {"HEUNS", IntegrationOptions::Method::HEUNS},
+            {"RK4", IntegrationOptions::Method::RK4}
           };
           if (kStringToMethod.find(method) == kStringToMethod.end()) {
             throw std::invalid_argument("spatialdyn.integrate(): Invalid integration method " + method);
           }
-          Integrate(ab, tau, dt, f_external, gravity, centrifugal_coriolis, friction,
-                    joint_limits, stiction_epsilon, aba, kStringToMethod.at(method));
+          Integrate(ab, tau, dt, f_external,
+                    { gravity, centrifugal_coriolis, friction, joint_limits,
+                      kStringToMethod.at(method), aba, stiction_epsilon });
         }, "ab"_a, "tau"_a, "dt"_a, "f_external"_a = std::map<int, SpatialForced>(),
         "gravity"_a = true, "centrifugal_coriolis"_a = true, "friction"_a = false,
-        "joint_limits"_a = false, "stiction_epsilon"_a = 0.01, "aba"_a = false,
-        "method"_a = "RK4");
+        "joint_limits"_a = false, "method"_a = "RK4", "aba"_a = false,
+        "stiction_epsilon"_a = 0.01);
 
   // Spatial inertia
   py::class_<SpatialInertiad>(m, "SpatialInertiad")

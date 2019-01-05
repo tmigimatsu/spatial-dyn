@@ -13,6 +13,7 @@
 #include <map>  // std::map
 
 #include "SpatialDyn/structs/articulated_body.h"
+#include "SpatialDyn/structs/options.h"
 #include "SpatialDyn/utils/spatial_math.h"
 
 namespace SpatialDyn {
@@ -38,17 +39,13 @@ namespace SpatialDyn {
  * @param f_external Map of (index, force) pairs where the force is the sum of
  *                   all external spatial forces (represented in the world
  *                   frame) applied to the associated rigid body index.
- * @param gravity Include gravity torques.
- * @param centrifugal_coriolis Include centrifugal/Coriolis torques.
- * @param friction Include Coulomb and viscous friction torques at the joints.
- * @param stiction_epsilon Velocity threshold for stiction activation.
+ * @param options InverseDynamicsOptions.
  * @return Inverse dynamics torques.
  * @see Python: spatialdyn.inverse_dynamics()
  */
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq,
                                 const std::map<int, SpatialForced>& f_external = {},
-                                bool gravity = true, bool centrifugal_coriolis = false,
-                                bool friction = false, double stiction_epsilon = 0.01);
+                                const InverseDynamicsOptions& options = {});
 
 /**
  * Compute the centrifugal/Coriolis compensation torques.

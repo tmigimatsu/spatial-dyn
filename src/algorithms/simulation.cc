@@ -111,12 +111,11 @@ static Eigen::VectorXd Identity(const ArticulatedBody& ab, const Eigen::VectorXd
 
 void Integrate(ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt,
                const std::map<int, SpatialForced>& f_external,
-               bool gravity, bool centrifugal_coriolis, bool friction, bool joint_limits,
-               double stiction_epsilon, bool aba, IntegrationMethod method) {
+               const IntegrationOptions& options) {
 
-  const auto& f = aba ? ForwardDynamicsAba : ForwardDynamics;
-  const auto& FilterQ = joint_limits ? ClipQ : Identity;
-  const auto& FilterDq = joint_limits ? ClipDq : Identity;
+  const auto& f = options.aba ? ForwardDynamicsAba : ForwardDynamics;
+  const auto& FilterQ = options.joint_limits ? ClipQ : Identity;
+  const auto& FilterDq = options.joint_limits ? ClipDq : Identity;
   // Eigen::VectorXd q_err(ab.dof());
   // Eigen::VectorXd dq_err(ab.dof());
   Eigen::VectorXd* p_q_err = nullptr;//joint_limits ? &q_err : nullptr;
@@ -125,50 +124,50 @@ void Integrate(ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt,
   std::array<Eigen::VectorXd, 4> dq, ddq;
   Eigen::VectorXd q_0 = ab.q();
    dq[0] = ab.dq();
-  ddq[0] = f(ab, tau, f_external, gravity, centrifugal_coriolis, friction, stiction_epsilon);
+  ddq[0] = f(ab, tau, f_external, options);
 
-  switch (method) {
-    case IntegrationMethod::EULER:
-      if (joint_limits) ddq[0] += JointLimitImpulse(ab, ddq[0] + (*p_dq_err) / dt);
+  switch (options.method) {
+    case IntegrationOptions::Method::EULER:
+      if (options.joint_limits) ddq[0] += JointLimitImpulse(ab, ddq[0] + (*p_dq_err) / dt);
       ab.set_q(FilterQ(ab, q_0 + dt * dq[0] + 0.5 * dt * dt * ddq[0], p_q_err));
       ab.set_dq(FilterDq(ab, dq[0] + dt * ddq[0], nullptr));
       break;
-    case IntegrationMethod::HEUNS:
-      if (joint_limits) ddq[0] += JointLimitImpulse(ab, ddq[0]);
+    case IntegrationOptions::Method::HEUNS:
+      if (options.joint_limits) ddq[0] += JointLimitImpulse(ab, ddq[0]);
       // if (joint_limits) ddq[0] += JointLimitImpulse(ab, ddq[0] + (*p_dq_err) / dt);
       ab.set_q(FilterQ(ab, q_0 + dt * dq[0], p_q_err));
       ab.set_dq(FilterDq(ab, dq[0] + dt * ddq[0], p_dq_err));
        dq[1] = ab.dq();
-      ddq[1] = f(ab, tau, f_external, gravity, centrifugal_coriolis, friction, stiction_epsilon);
+      ddq[1] = f(ab, tau, f_external, options);
 
-      if (joint_limits) ddq[1] += JointLimitImpulse(ab, ddq[1]);
+      if (options.joint_limits) ddq[1] += JointLimitImpulse(ab, ddq[1]);
       // if (joint_limits) ddq[1] += JointLimitImpulse(ab, ddq[1] + (*p_dq_err) / dt);
       ab.set_q(FilterQ(ab, q_0 + 0.5 * dt * (dq[0] + dq[1]), p_q_err));
       ab.set_dq(FilterDq(ab, dq[0] + 0.5 * dt * (ddq[0] + ddq[1]), nullptr));
       break;
-    case IntegrationMethod::RK4:
-      if (joint_limits) ddq[0] += JointLimitImpulse(ab, ddq[0]);
+    case IntegrationOptions::Method::RK4:
+      if (options.joint_limits) ddq[0] += JointLimitImpulse(ab, ddq[0]);
       // if (joint_limits) ddq[0] += JointLimitImpulse(ab, ddq[0] + (*p_dq_err) / dt);
       ab.set_q(FilterQ(ab, q_0 + 0.5 * dt * dq[0], p_q_err));
       ab.set_dq(FilterDq(ab, dq[0] + 0.5 * dt * ddq[0], p_dq_err));
        dq[1] = ab.dq();
-      ddq[1] = f(ab, tau, f_external, gravity, centrifugal_coriolis, friction, stiction_epsilon);
+      ddq[1] = f(ab, tau, f_external, options);
 
-      if (joint_limits) ddq[1] += JointLimitImpulse(ab, ddq[1]);
+      if (options.joint_limits) ddq[1] += JointLimitImpulse(ab, ddq[1]);
       // if (joint_limits) ddq[1] += JointLimitImpulse(ab, ddq[1] + (*p_dq_err) / dt);
       ab.set_q(FilterQ(ab, q_0 + 0.5 * dt * dq[1], p_q_err));
       ab.set_dq(FilterDq(ab, dq[0] + 0.5 * dt * ddq[1], p_dq_err));
        dq[2] = ab.dq();
-      ddq[2] = f(ab, tau, f_external, gravity, centrifugal_coriolis, friction, stiction_epsilon);
+      ddq[2] = f(ab, tau, f_external, options);
 
-      if (joint_limits) ddq[2] += JointLimitImpulse(ab, ddq[2]);
+      if (options.joint_limits) ddq[2] += JointLimitImpulse(ab, ddq[2]);
       // if (joint_limits) ddq[2] += JointLimitImpulse(ab, ddq[2] + (*p_dq_err) / dt);
       ab.set_q(FilterQ(ab, q_0 + dt * dq[2], p_q_err));
       ab.set_dq(FilterDq(ab, dq[0] + dt * ddq[2], p_dq_err));
        dq[3] = ab.dq();
-      ddq[3] = f(ab, tau, f_external, gravity, centrifugal_coriolis, friction, stiction_epsilon);
+      ddq[3] = f(ab, tau, f_external, options);
 
-      if (joint_limits) ddq[3] += JointLimitImpulse(ab, ddq[3]);
+      if (options.joint_limits) ddq[3] += JointLimitImpulse(ab, ddq[3]);
       // if (joint_limits) ddq[3] += JointLimitImpulse(ab, ddq[3] + (*p_dq_err) / dt);
       ab.set_q(FilterQ(ab, q_0 + dt / 6. * (dq[0] + 2. * dq[1] + 2. * dq[2] + dq[3]), p_q_err));
       ab.set_dq(FilterDq(ab, dq[0] + dt / 6. * (ddq[0] + 2. * ddq[1] + 2. * ddq[2] + ddq[3]), nullptr));

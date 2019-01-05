@@ -13,6 +13,7 @@
 #include <map>  // std::map
 
 #include "SpatialDyn/structs/articulated_body.h"
+#include "SpatialDyn/structs/options.h"
 #include "SpatialDyn/utils/spatial_math.h"
 
 namespace SpatialDyn {
@@ -38,18 +39,14 @@ namespace SpatialDyn {
  * @param f_external Map of (index, force) pairs where the force is the sum of
  *                   all external spatial forces (represented in the world
  *                   frame) applied to the associated rigid body index.
- * @param gravity Include gravity acceleration.
- * @param centrifugal_coriolis Include centrifugal/Coriolis acceleration.
- * @param friction Include Coulomb and viscous friction acceleration at the joints.
- * @param stiction_epsilon Velocity threshold for stiction activation.
+ * @param options ForwardDynamicsOptions.
  * @return Joint accelerations.
  * @see Python: spatialdyn.forward_dynamics()
  */
 Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab,
                                 Eigen::Ref<const Eigen::VectorXd> tau,
                                 const std::map<int, SpatialForced>& f_external = {},
-                                bool gravity = true, bool centrifugal_coriolis = true,
-                                bool friction = false, double stiction_epsilon = 0.01);
+                                const ForwardDynamicsOptions& options = {});
 
 /**
  * Compute the forward dynamics with ABA.
@@ -62,18 +59,14 @@ Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab,
  * @param f_external Map of (index, force) pairs where the force is the sum of
  *                   all external spatial forces (represented in the world
  *                   frame) applied to the associated rigid body index.
- * @param gravity Include gravity acceleration.
- * @param centrifugal_coriolis Include centrifugal/Coriolis acceleration.
- * @param friction Include Coulomb and viscous friction acceleration at the joints.
- * @param stiction_epsilon Velocity threshold for stiction activation.
+ * @param options ForwardDynamicsOptions.
  * @return Joint accelerations.
  * @see Python: spatialdyn.forward_dynamics_aba()
  */
 Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
                                    Eigen::Ref<const Eigen::VectorXd> tau,
                                    const std::map<int, SpatialForced>& f_external = {},
-                                   bool gravity = true, bool centrifugal_coriolis = true,
-                                   bool friction = false, double stiction_epsilon = 0.01);
+                                   const ForwardDynamicsOptions& options = {});
 
 /**
  * Compute the Cholesky decomposition of the joint space inertia matrix.

@@ -118,6 +118,7 @@ target_sources(${SPATIAL_DYN_LIB} PRIVATE
     ${SPATIAL_DYN_SRC_DIR}/structs/articulated_body.cc
     ${SPATIAL_DYN_SRC_DIR}/structs/graphics.cc
     ${SPATIAL_DYN_SRC_DIR}/structs/joint.cc
+    ${SPATIAL_DYN_SRC_DIR}/structs/options.cc
     ${SPATIAL_DYN_SRC_DIR}/structs/rigid_body.cc
     ${SPATIAL_DYN_SRC_DIR}/parsers/json.cc
     ${SPATIAL_DYN_SRC_DIR}/parsers/urdf.cc
