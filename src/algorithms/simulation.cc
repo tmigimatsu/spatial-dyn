@@ -9,12 +9,15 @@
 
 #include "algorithms/simulation.h"
 
+#ifdef JOINT_LIMITS
 #include <qpOASES.hpp>
+#endif  // JOINT_LIMITS
 
 #include "algorithms/forward_dynamics.h"
 
 namespace SpatialDyn {
 
+#ifdef JOINT_LIMITS
 static qpOASES::Options QpOptions() {
   qpOASES::Options options;
   options.setToMPC();
@@ -71,6 +74,7 @@ static Eigen::VectorXd JointLimitImpulse(const ArticulatedBody& ab,
 
   return ddq_impulse_hat * x;
 }
+#endif  // JOINT_LIMITS
 
 static Eigen::VectorXd ClipQ(const ArticulatedBody& ab, const Eigen::VectorXd& q,
                              Eigen::VectorXd* q_err = nullptr) {
@@ -128,47 +132,61 @@ void Integrate(ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt,
 
   switch (options.method) {
     case IntegrationOptions::Method::EULER:
+#ifdef JOINT_LIMITS
       if (options.joint_limits) ddq[0] += JointLimitImpulse(ab, ddq[0] + (*p_dq_err) / dt);
+#endif  // JOINT_LIMITS
       ab.set_q(FilterQ(ab, q_0 + dt * dq[0] + 0.5 * dt * dt * ddq[0], p_q_err));
       ab.set_dq(FilterDq(ab, dq[0] + dt * ddq[0], nullptr));
       break;
     case IntegrationOptions::Method::HEUNS:
+#ifdef JOINT_LIMITS
       if (options.joint_limits) ddq[0] += JointLimitImpulse(ab, ddq[0]);
       // if (joint_limits) ddq[0] += JointLimitImpulse(ab, ddq[0] + (*p_dq_err) / dt);
+#endif  // JOINT_LIMITS
       ab.set_q(FilterQ(ab, q_0 + dt * dq[0], p_q_err));
       ab.set_dq(FilterDq(ab, dq[0] + dt * ddq[0], p_dq_err));
        dq[1] = ab.dq();
       ddq[1] = f(ab, tau, f_external, options);
 
+#ifdef JOINT_LIMITS
       if (options.joint_limits) ddq[1] += JointLimitImpulse(ab, ddq[1]);
       // if (joint_limits) ddq[1] += JointLimitImpulse(ab, ddq[1] + (*p_dq_err) / dt);
+#endif  // JOINT_LIMITS
       ab.set_q(FilterQ(ab, q_0 + 0.5 * dt * (dq[0] + dq[1]), p_q_err));
       ab.set_dq(FilterDq(ab, dq[0] + 0.5 * dt * (ddq[0] + ddq[1]), nullptr));
       break;
     case IntegrationOptions::Method::RK4:
+#ifdef JOINT_LIMITS
       if (options.joint_limits) ddq[0] += JointLimitImpulse(ab, ddq[0]);
       // if (joint_limits) ddq[0] += JointLimitImpulse(ab, ddq[0] + (*p_dq_err) / dt);
+#endif  // JOINT_LIMITS
       ab.set_q(FilterQ(ab, q_0 + 0.5 * dt * dq[0], p_q_err));
       ab.set_dq(FilterDq(ab, dq[0] + 0.5 * dt * ddq[0], p_dq_err));
        dq[1] = ab.dq();
       ddq[1] = f(ab, tau, f_external, options);
 
+#ifdef JOINT_LIMITS
       if (options.joint_limits) ddq[1] += JointLimitImpulse(ab, ddq[1]);
       // if (joint_limits) ddq[1] += JointLimitImpulse(ab, ddq[1] + (*p_dq_err) / dt);
+#endif  // JOINT_LIMITS
       ab.set_q(FilterQ(ab, q_0 + 0.5 * dt * dq[1], p_q_err));
       ab.set_dq(FilterDq(ab, dq[0] + 0.5 * dt * ddq[1], p_dq_err));
        dq[2] = ab.dq();
       ddq[2] = f(ab, tau, f_external, options);
 
+#ifdef JOINT_LIMITS
       if (options.joint_limits) ddq[2] += JointLimitImpulse(ab, ddq[2]);
       // if (joint_limits) ddq[2] += JointLimitImpulse(ab, ddq[2] + (*p_dq_err) / dt);
+#endif  // JOINT_LIMITS
       ab.set_q(FilterQ(ab, q_0 + dt * dq[2], p_q_err));
       ab.set_dq(FilterDq(ab, dq[0] + dt * ddq[2], p_dq_err));
        dq[3] = ab.dq();
       ddq[3] = f(ab, tau, f_external, options);
 
+#ifdef JOINT_LIMITS
       if (options.joint_limits) ddq[3] += JointLimitImpulse(ab, ddq[3]);
       // if (joint_limits) ddq[3] += JointLimitImpulse(ab, ddq[3] + (*p_dq_err) / dt);
+#endif  // JOINT_LIMITS
       ab.set_q(FilterQ(ab, q_0 + dt / 6. * (dq[0] + 2. * dq[1] + 2. * dq[2] + dq[3]), p_q_err));
       ab.set_dq(FilterDq(ab, dq[0] + dt / 6. * (ddq[0] + 2. * ddq[1] + 2. * ddq[2] + ddq[3]), nullptr));
       break;

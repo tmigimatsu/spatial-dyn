@@ -188,7 +188,7 @@ Eigen::Matrix3Xd LinearJacobian(const ArticulatedBody& ab,
  * The computation is cached such that the first call to Jacobian() runs in O(n)
  * time, and subsequent calls with the same joint position, link, and offset run
  * in O(1) time. AngularJacobian() uses the last offset passed to Jacobian() or
- * LinearJacobian() for caching, and therefroe should be called after Jacobian()
+ * LinearJacobian() for caching, and therefore should be called after Jacobian()
  * or LinearJacobian() to avoid unnecessary computations with a nonzero offset.
  *
  * @param ab Articulated body.

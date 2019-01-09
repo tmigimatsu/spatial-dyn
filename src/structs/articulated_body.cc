@@ -60,7 +60,7 @@ double ArticulatedBody::q(int i) const {
 }
 void ArticulatedBody::set_q(Eigen::Ref<const Eigen::VectorXd> q) {
   if (q.size() != static_cast<int>(dof_)) {
-    throw std::invalid_argument("ArticulatedBody::set_state(): q must be of size " + std::to_string(dof_));
+    throw std::invalid_argument("ArticulatedBody::set_q(): q must be a vector of size " + std::to_string(dof_));
   }
 
   // Return early if q has already been set
@@ -91,7 +91,7 @@ double ArticulatedBody::dq(int i) const {
 }
 void ArticulatedBody::set_dq(Eigen::Ref<const Eigen::VectorXd> dq) {
   if (dq.size() != static_cast<int>(dof_)) {
-    throw std::invalid_argument("ArticulatedBody::set_state(): q must be of size " + std::to_string(dof_));
+    throw std::invalid_argument("ArticulatedBody::set_dq(): dq must be a vector of size " + std::to_string(dof_));
   }
 
   // Return early if q has already been set
@@ -111,10 +111,6 @@ void ArticulatedBody::set_g(const Eigen::Vector3d& g) {
   cache_->aba_data_.is_computed = false;
 }
 
-void ArticulatedBody::set_T_base_to_world(const Eigen::Quaterniond& ori_in_world,
-                                          const Eigen::Vector3d& pos_in_world) {
-  T_base_to_world_ = Eigen::Translation3d(pos_in_world) * ori_in_world;
-}
 void ArticulatedBody::set_T_base_to_world(const Eigen::Isometry3d& T_to_world) {
   T_base_to_world_ = T_to_world;
 }

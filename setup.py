@@ -7,4 +7,4 @@ setup(name="spatialdyn",
       author="Toki Migimatsu",
       license="MIT",
       packages=["spatialdyn"],
-      zip_safe=False)
+      requirements=["numpy"])
