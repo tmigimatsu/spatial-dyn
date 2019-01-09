@@ -26,6 +26,7 @@
 #include "SpatialDyn/algorithms/simulation.h"
 #include "SpatialDyn/parsers/urdf.h"
 #include "SpatialDyn/parsers/json.h"
+#include "SpatialDyn/utils/eigen_string.h"
 
 namespace SpatialDyn {
 
@@ -279,8 +280,8 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def("__repr__",
            [](const SpatialInertiad& inertia) {
              return "<spatialdyn.SpatialInertiad (mass=" + std::to_string(inertia.mass) +
-                    ", com=[" + inertia.com.toMatlab() + "], I_com=[" +
-                    inertia.I_com_flat().toMatlab() + "])>";
+                    ", com=[" + EigenUtils::EncodeMatlab(inertia.com) + "], I_com=[" +
+                    EigenUtils::EncodeMatlab(inertia.I_com_flat()) + "])>";
            });
 
   // Opspace dynamics

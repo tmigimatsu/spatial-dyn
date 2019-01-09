@@ -18,6 +18,8 @@
 
 #include <tinyxml2.h>
 
+#include "utils/eigen_string.h"
+
 namespace SpatialDyn {
 namespace Urdf {
 
@@ -67,12 +69,12 @@ ParseOriginElement(const tinyxml2::XMLElement* xml_element) {
   if (xml_origin != nullptr) {
     const char* attr_xyz = xml_origin->Attribute("xyz");
     if (attr_xyz != nullptr) {
-      pos = Eigen::Vector3d::FromMatlab(attr_xyz);
+      pos = EigenUtils::DecodeMatlab<Eigen::Vector3d>(attr_xyz);
     }
 
     const char* attr_rpy = xml_origin->Attribute("rpy");
     if (attr_rpy != nullptr) {
-      Eigen::Vector3d rpy = Eigen::Vector3d::FromMatlab(std::string(attr_rpy));
+      Eigen::Vector3d rpy = EigenUtils::DecodeMatlab<Eigen::Vector3d>(std::string(attr_rpy));
       // TODO: Check Euler angles
       ori = Eigen::AngleAxisd(rpy(0), Eigen::Vector3d::UnitX()) *
             Eigen::AngleAxisd(rpy(1), Eigen::Vector3d::UnitY()) *
@@ -107,7 +109,7 @@ Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual) {
   std::string str_type = xml_type->Name();
   if (str_type == "box") {
     geometry.type = Graphics::Geometry::Type::BOX;
-    geometry.scale = Eigen::Vector3d::FromMatlab(ParseAttribute(xml_type, "size"));
+    geometry.scale = EigenUtils::DecodeMatlab<Eigen::Vector3d>(ParseAttribute(xml_type, "size"));
   } else if (str_type == "cylinder") {
     geometry.type = Graphics::Geometry::Type::CYLINDER;
     geometry.radius = ParseDoubleAttribute(xml_type, "radius");
@@ -121,7 +123,7 @@ Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual) {
 
     const char* attr_scale = xml_type->Attribute("scale");
     if (attr_scale != nullptr) {
-      geometry.scale = Eigen::Vector3d::FromMatlab(std::string(attr_scale));
+      geometry.scale = EigenUtils::DecodeMatlab<Eigen::Vector3d>(std::string(attr_scale));
     } else {
       geometry.scale.setOnes();
     }
@@ -138,7 +140,7 @@ Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual) {
     const tinyxml2::XMLElement* xml_color = xml_material->FirstChildElement("color");
     if (xml_color != nullptr) {
       std::string str_rgba = ParseAttribute(xml_color, "rgba");
-      material.rgba = Eigen::Vector4d::FromMatlab(str_rgba);
+      material.rgba = EigenUtils::DecodeMatlab<Eigen::Vector4d>(str_rgba);
     }
 
     const tinyxml2::XMLElement* xml_texture = xml_material->FirstChildElement("texture");
@@ -282,7 +284,7 @@ ArticulatedBody LoadModel(const std::string& urdf) {
     const tinyxml2::XMLElement* xml_axis = xml_joint->FirstChildElement("axis");
     if (xml_axis != nullptr) {
       // TODO: Support arbitrary axes
-      Eigen::Vector3d axis = Eigen::Vector3d::FromMatlab(ParseAttribute(xml_axis, "xyz")).normalized();
+      Eigen::Vector3d axis = EigenUtils::DecodeMatlab<Eigen::Vector3d>(ParseAttribute(xml_axis, "xyz")).normalized();
       if (axis(1) > 0.8) {
         axis_num = 1;
       } else if (axis(2) > 0.8) {

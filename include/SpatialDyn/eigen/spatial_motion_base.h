@@ -207,14 +207,14 @@ inline Derived& SpatialMotionBase<Derived>::operator=(const SpatialMotionBase& o
 }
 
 template<typename Derived>
-template <typename OtherDerived>
+template<typename OtherDerived>
 inline Derived& SpatialMotionBase<Derived>::operator=(const DenseBase<OtherDerived>& other) {
   internal::call_assignment(derived(), other.derived());
   return derived();
 }
 
 template<typename Derived>
-template <typename OtherDerived>
+template<typename OtherDerived>
 inline Derived& SpatialMotionBase<Derived>::operator=(const EigenBase<OtherDerived>& other) {
   internal::call_assignment(derived(), other.derived());
   return derived();
