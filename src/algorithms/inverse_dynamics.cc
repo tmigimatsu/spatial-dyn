@@ -24,6 +24,20 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
                                 const InverseDynamicsOptions& options) {
   auto& rnea = ab.cache_->rnea_data_;
   auto& vel  = ab.cache_->vel_data_;
+  auto& crba = ab.cache_->crba_data_;
+  auto& cc   = ab.cache_->cc_data_;
+  auto& grav = ab.cache_->grav_data_;
+
+  Eigen::VectorXd tau(ab.dof());  // Resulting joint torques
+
+  if (crba.is_computed && (!options.centrifugal_coriolis || cc.is_computed) &&
+      (!options.gravity || grav.is_computed)) {
+    tau = crba.A * ddq;
+    if (options.centrifugal_coriolis) tau += cc.C;
+    if (options.gravity) tau += grav.G;
+    if (options.friction) tau += Friction(ab, tau, true, options.stiction_epsilon);
+    return tau;
+  }
 
   // Forward pass
   for (size_t i = 0; i < ab.dof(); i++) {
@@ -57,7 +71,6 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
   vel.is_computed = options.centrifugal_coriolis;
 
   // Backward pass
-  Eigen::VectorXd tau(ab.dof());  // Resulting joint torques
   for (int i = ab.dof() - 1; i >= 0; i--) {
     const Joint& joint = ab.rigid_bodies(i).joint();
     const SpatialMotiond& s = joint.subspace();

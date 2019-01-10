@@ -26,14 +26,14 @@ namespace Urdf {
 const tinyxml2::XMLElement* ParseElement(const tinyxml2::XMLDocument& xml_doc, const std::string& element) {
   const tinyxml2::XMLElement* xml_element = xml_doc.FirstChildElement(element.c_str());
   if (xml_element == nullptr) {
-    throw std::runtime_error("ParseElement(): <" + element + "> element missing from document.");
+    throw std::runtime_error("SpatialDyn::Urdf::ParseElement(): <" + element + "> element missing from document.");
   }
   return xml_element;
 }
 const tinyxml2::XMLElement* ParseElement(const tinyxml2::XMLElement* xml_parent, const std::string& element) {
   const tinyxml2::XMLElement* xml_element = xml_parent->FirstChildElement(element.c_str());
   if (xml_element == nullptr) {
-    throw std::runtime_error("ParseElement(): <" + element +
+    throw std::runtime_error("SpatialDyn::Urdf::ParseElement(): <" + element +
                              "> element missing from <" + xml_parent->Name() + "> element.");
   }
   return xml_element;
@@ -42,7 +42,7 @@ const tinyxml2::XMLElement* ParseElement(const tinyxml2::XMLElement* xml_parent,
 std::string ParseAttribute(const tinyxml2::XMLElement* xml_element, const std::string& attribute) {
   const char *value = xml_element->Attribute(attribute.c_str());
   if (value == nullptr) {
-    throw std::runtime_error("ParseAttribute(): \"link\" attribute missing from <" +
+    throw std::runtime_error("SpatialDyn::Urdf::ParseAttribute(): \"link\" attribute missing from <" +
                              std::string(xml_element->Name()) + "> element.");
   }
   return std::string(value);
@@ -52,7 +52,7 @@ double ParseDoubleAttribute(const tinyxml2::XMLElement* xml_element, const std::
   double value;
   tinyxml2::XMLError status = xml_element->QueryDoubleAttribute(attribute.c_str(), &value);
   if (status != tinyxml2::XMLError::XML_SUCCESS) {
-    throw std::runtime_error("ParseDoubleAttribute(): Invalid \"" + attribute +
+    throw std::runtime_error("SpatialDyn::Urdf::ParseDoubleAttribute(): Invalid \"" + attribute +
                             "\" attribute in <" + std::string(xml_element->Name()) +
                             "> element - " +
                             std::string(tinyxml2::XMLDocument::ErrorIDToName(status)) + ".");
@@ -84,7 +84,7 @@ ParseOriginElement(const tinyxml2::XMLElement* xml_element) {
   return std::make_pair(std::move(pos), std::move(ori));
 }
 
-Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual) {
+Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual, const std::string& urdf_path) {
   Graphics graphics;
 
   // Parse name
@@ -103,7 +103,7 @@ Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual) {
   const tinyxml2::XMLElement* xml_geometry = ParseElement(xml_visual, "geometry");
   const tinyxml2::XMLElement* xml_type = xml_geometry->FirstChildElement();
   if (xml_type == nullptr) {
-    throw std::runtime_error("ParseGraphics(): <box>|<cylinder>|<sphere>|<mesh> element missing from <geometry> element.");
+    throw std::runtime_error("SpatialDyn::Urdf::ParseGraphics(): <box>|<cylinder>|<sphere>|<mesh> element missing from <geometry> element.");
   }
   Graphics::Geometry& geometry = graphics.geometry;
   std::string str_type = xml_type->Name();
@@ -119,7 +119,7 @@ Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual) {
     geometry.radius = ParseDoubleAttribute(xml_type, "radius");
   } else if (str_type == "mesh") {
     geometry.type = Graphics::Geometry::Type::MESH;
-    geometry.mesh = ParseAttribute(xml_type, "filename");
+    geometry.mesh = urdf_path + ParseAttribute(xml_type, "filename");
 
     const char* attr_scale = xml_type->Attribute("scale");
     if (attr_scale != nullptr) {
@@ -128,7 +128,7 @@ Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual) {
       geometry.scale.setOnes();
     }
   } else {
-    throw std::runtime_error("ParseGraphics(): <box>|<cylinder>|<sphere>|<mesh> element missing from <geometry> element. Found <" + str_type + "> instead.");
+    throw std::runtime_error("SpatialDyn::Urdf::ParseGraphics(): <box>|<cylinder>|<sphere>|<mesh> element missing from <geometry> element. Found <" + str_type + "> instead.");
   }
 
   // Parse material
@@ -152,7 +152,7 @@ Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual) {
   return graphics;
 }
 
-RigidBody ParseRigidBody(const tinyxml2::XMLElement* xml_link) {
+RigidBody ParseRigidBody(const tinyxml2::XMLElement* xml_link, const std::string& urdf_path) {
   std::string attr_name = ParseAttribute(xml_link, "name");
   RigidBody rb(attr_name);
 
@@ -186,13 +186,13 @@ RigidBody ParseRigidBody(const tinyxml2::XMLElement* xml_link) {
   // Parse graphics
   const tinyxml2::XMLElement* xml_visual = xml_link->FirstChildElement("visual");
   if (xml_visual != nullptr) {
-    rb.graphics = ParseGraphics(xml_visual);
+    rb.graphics = ParseGraphics(xml_visual, urdf_path);
   }
 
   // Parse collision
   const tinyxml2::XMLElement* xml_collision = xml_link->FirstChildElement("collision");
   if (xml_collision != nullptr) {
-
+    // TODO
   }
 
   return rb;
@@ -228,13 +228,19 @@ void AddRigidBody(ArticulatedBody& ab,
   rb_list.erase(it_rb_list);
 }
 
+std::string ParentPath(const std::string& path) {
+  size_t idx = path.find_last_of("/\\");
+  return path.substr(0, idx+1);
+}
+
 ArticulatedBody LoadModel(const std::string& urdf) {
   // Open xml document
   tinyxml2::XMLDocument doc;
   doc.LoadFile(urdf.c_str());
   if (doc.Error()) {
-    throw std::runtime_error("ParseModel(): Unable to parse " + urdf + " - " + std::string(doc.ErrorName()));
+    throw std::runtime_error("SpatialDyn::Urdf::LoadModel(): Unable to parse " + urdf + " - " + std::string(doc.ErrorName()));
   }
+  std::string urdf_path = ParentPath(urdf);
 
   // Parse robot
   const tinyxml2::XMLElement* xml_robot = ParseElement(doc, "robot");
@@ -246,9 +252,9 @@ ArticulatedBody LoadModel(const std::string& urdf) {
   std::list<std::string> rb_list;
   const tinyxml2::XMLElement* xml_link = ParseElement(xml_robot, "link");
   while (xml_link != nullptr) {
-    RigidBody rb = ParseRigidBody(xml_link);
+    RigidBody rb = ParseRigidBody(xml_link, urdf_path);
     if (rigid_bodies.find(rb.name) != rigid_bodies.end()) {
-      throw std::runtime_error("ParseModel(): Multiple <link> elements with the name " +
+      throw std::runtime_error("SpatialDyn::Urdf::LoadModel(): Multiple <link> elements with the name " +
                                rb.name + " cannot exist.");
     }
     std::string rb_name = rb.name;
@@ -264,14 +270,14 @@ ArticulatedBody LoadModel(const std::string& urdf) {
     const tinyxml2::XMLElement* xml_parent = ParseElement(xml_joint, "parent");
     std::string parent_link = ParseAttribute(xml_parent, "link");
     if (rigid_bodies.find(parent_link) == rigid_bodies.end()) {
-      throw std::runtime_error("ParseModel(): Parent link (" + parent_link + ") does not exist.");
+      throw std::runtime_error("SpatialDyn::Urdf::LoadModel(): Parent link (" + parent_link + ") does not exist.");
     }
 
     // Parse child
     const tinyxml2::XMLElement* xml_child = xml_joint->FirstChildElement("child");
     std::string child_link = ParseAttribute(xml_child, "link");
     if (rigid_bodies.find(child_link) == rigid_bodies.end()) {
-      throw std::runtime_error("ParseModel(): Child link (" + child_link + ") does not exist.");
+      throw std::runtime_error("SpatialDyn::Urdf::LoadModel(): Child link (" + child_link + ") does not exist.");
     }
 
     // Parse origin
@@ -338,7 +344,7 @@ ArticulatedBody LoadModel(const std::string& urdf) {
       }
       if (attr_type == "revolute" || attr_type == "prismatic") {
         if (xml_limit == nullptr) {
-          throw std::runtime_error("ParseGraphics(): <limit> element missing from <joint> element.");
+          throw std::runtime_error("SpatialDyn::Urdf::LoadModel(): <limit> element missing from <joint> element.");
         }
         dq_max = ParseDoubleAttribute(xml_limit, "velocity");
         fq_max = ParseDoubleAttribute(xml_limit, "effort");
