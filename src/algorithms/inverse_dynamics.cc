@@ -20,15 +20,18 @@
 namespace SpatialDyn {
 
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq,
-                                const std::map<int, SpatialForced>& f_external,
+                                const std::map<size_t, SpatialForced>& f_external,
                                 const InverseDynamicsOptions& options) {
   auto& rnea = ab.cache_->rnea_data_;
   auto& vel  = ab.cache_->vel_data_;
 
   // Forward pass
+  SpatialInertiad I_total;
   for (size_t i = 0; i < ab.dof(); i++) {
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
-    const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
+    bool has_load = ab.inertia_load().find(i) != ab.inertia_load().end();
+    if (has_load) I_total = ab.rigid_bodies(i).inertia() + ab.inertia_load().at(i);
+    const SpatialInertiad& I = has_load ? ab.rigid_bodies(i).inertia() : I_total;
     const int parent = ab.rigid_bodies(i).id_parent();
     const double dq_i = options.centrifugal_coriolis ? ab.dq(i) : 0.;
 
@@ -79,9 +82,12 @@ const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
   if (cc.is_computed) return cc.C;
 
   // Forward pass
+  SpatialInertiad I_total;
   for (size_t i = 0; i < ab.dof(); i++) {
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
-    const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
+    bool has_load = ab.inertia_load().find(i) != ab.inertia_load().end();
+    if (has_load) I_total = ab.rigid_bodies(i).inertia() + ab.inertia_load().at(i);
+    const SpatialInertiad& I = has_load ? ab.rigid_bodies(i).inertia() : I_total;
     const int parent = ab.rigid_bodies(i).id_parent();
 
     if (!vel.is_computed) {
@@ -120,8 +126,11 @@ const Eigen::VectorXd& Gravity(const ArticulatedBody& ab) {
   if (grav.is_computed) return grav.G;
 
   // Forward pass
+  SpatialInertiad I_total;
   for (size_t i = 0; i < ab.dof(); i++) {
-    const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
+    bool has_load = ab.inertia_load().find(i) != ab.inertia_load().end();
+    if (has_load) I_total = ab.rigid_bodies(i).inertia() + ab.inertia_load().at(i);
+    const SpatialInertiad& I = has_load ? ab.rigid_bodies(i).inertia() : I_total;
     grav.f_g[i] = I * (ab.T_from_world(i) * -ab.g());
   }
 
@@ -140,7 +149,7 @@ const Eigen::VectorXd& Gravity(const ArticulatedBody& ab) {
 }
 
 Eigen::VectorXd ExternalTorques(const ArticulatedBody& ab,
-                                const std::map<int, SpatialForced>& f_external) {
+                                const std::map<size_t, SpatialForced>& f_external) {
   // Use gravity data structure. TODO: Change to dedicated structure?
   auto& grav = ab.cache_->grav_data_;
 

@@ -45,7 +45,7 @@ namespace SpatialDyn {
  */
 Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab,
                                 Eigen::Ref<const Eigen::VectorXd> tau,
-                                const std::map<int, SpatialForced>& f_external = {},
+                                const std::map<size_t, SpatialForced>& f_external = {},
                                 const ForwardDynamicsOptions& options = {});
 
 /**
@@ -65,7 +65,7 @@ Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab,
  */
 Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
                                    Eigen::Ref<const Eigen::VectorXd> tau,
-                                   const std::map<int, SpatialForced>& f_external = {},
+                                   const std::map<size_t, SpatialForced>& f_external = {},
                                    const ForwardDynamicsOptions& options = {});
 
 /**

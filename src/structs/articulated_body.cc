@@ -111,6 +111,25 @@ void ArticulatedBody::set_g(const Eigen::Vector3d& g) {
   cache_->aba_data_.is_computed = false;
 }
 
+void ArticulatedBody::AddLoad(const SpatialInertiad& inertia, int idx_link) {
+  if (idx_link < 0) idx_link += dof();
+  if (inertia_load_.find(idx_link) == inertia_load_.end()) {
+    inertia_load_[idx_link] = inertia;
+  } else {
+    inertia_load_[idx_link] += inertia;
+  }
+}
+
+void ArticulatedBody::ReplaceLoad(const SpatialInertiad& inertia, int idx_link) {
+  if (idx_link < 0) idx_link += dof();
+  inertia_load_[idx_link] = inertia;
+}
+
+void ArticulatedBody::ClearLoad(int idx_link) {
+  if (idx_link < 0) idx_link += dof();
+  inertia_load_.erase(idx_link);
+}
+
 void ArticulatedBody::set_T_base_to_world(const Eigen::Quaterniond& ori_in_world,
                                           const Eigen::Vector3d& pos_in_world) {
   T_base_to_world_ = Eigen::Translation3d(pos_in_world) * ori_in_world;

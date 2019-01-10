@@ -22,7 +22,7 @@ Eigen::Vector3d OrientationError(const Eigen::Quaterniond &quat, const Eigen::Qu
 
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                 const Eigen::VectorXd& ddx, Eigen::MatrixXd *N = nullptr,
-                                const std::map<int, SpatialForced>& f_external = {},
+                                const std::map<size_t, SpatialForced>& f_external = {},
                                 bool gravity = false, bool centrifugal_coriolis = false,
                                 bool friction = false, double svd_epsilon = 0,
                                 double stiction_epsilon = 0.01);
@@ -45,7 +45,7 @@ Eigen::VectorXd Gravity(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                         double svd_epsilon = 0);
 
 Eigen::VectorXd ExternalForces(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
-                               const std::map<int, SpatialForced>& f_external = {},
+                               const std::map<size_t, SpatialForced>& f_external = {},
                                double svd_epsilon = 0);
 
 Eigen::VectorXd Friction(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
@@ -66,7 +66,7 @@ Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab, int idx_link =
 
 Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link = -1,
                            const Eigen::Vector3d& offset = Eigen::Vector3d::Zero(),
-                           const std::map<int, SpatialForced>& f_external = {},
+                           const std::map<size_t, SpatialForced>& f_external = {},
                            double svd_epsilon = 0);
 
 }  // namespace Opspace

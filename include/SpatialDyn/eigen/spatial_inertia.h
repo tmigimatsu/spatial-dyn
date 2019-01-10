@@ -66,15 +66,25 @@ class SpatialInertia {
     return *this;
   }
 
+  SpatialInertia<_Scalar> operator+(const SpatialInertia<_Scalar>& other) const {
+    SpatialInertia<_Scalar> I_total;
+    I_total.com = (mass * com + other.mass * other.com) / (mass + other.mass);
+    I_total.I_com = I_com + other.I_com -
+                    mass * (I_total.com - com).doubleCrossMatrix() -
+                    other.mass * (I_total.com - other.com).doubleCrossMatrix();
+    I_total.mass = mass + other.mass;
+    return I_total;
+  }
+
   Eigen::Matrix<_Scalar,6,1> I_com_flat() const {
     Eigen::Matrix<_Scalar,6,1> result;
     result << I_com(0,0), I_com(1,1), I_com(2,2), I_com(0,1), I_com(0,2), I_com(1,2);
     return result;
   }
 
-  double mass;
-  Matrix<_Scalar,3,1> com;
-  Matrix<_Scalar,3,3> I_com;
+  double mass = 0;
+  Matrix<_Scalar,3,1> com = Matrix<_Scalar,3,1>::Zero();
+  Matrix<_Scalar,3,3> I_com = Matrix<_Scalar,3,3>::Zero();
 
 };
 

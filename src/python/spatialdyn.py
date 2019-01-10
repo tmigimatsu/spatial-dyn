@@ -42,7 +42,7 @@ class ArticulatedBody:
     # @param id_parent int
     # @return int
     # @see C++: SpatialDyn::ArticulatedBody::AddRigidBody()
-    def add_rigid_body(self, rb: spatialdyn.RigidBody, id_parent = -1):
+    def add_rigid_body(self, rb, id_parent = -1):
         pass
 
     ## List of rigid bodies, indexed by IDs assigned in add_rigid_body().
@@ -60,6 +60,31 @@ class ArticulatedBody:
     ## Gravity vector as a numpy array of size 3.
     # @see C++: SpatialDyn::ArticulatedBody::g()
     g = numpy.array([0., 0., -9.81], dtype=numpy.float64)
+
+    ## Add a spatial inertia to the existing load on the specified link.
+    # @param inertia spatialdyn.SpatialInertiad
+    # @param idx_link int
+    # @see C++: SpatialDyn::ArticulatedBody::AddLoad()
+    def add_load(self, inertia, idx_link = -1):
+        pass
+
+    ## Replace the existing inertial load on the specified link.
+    # @param inertia spatialdyn.SpatialInertiad
+    # @param idx_link int
+    # @see C++: SpatialDyn::ArticulatedBody::ReplaceLoad()
+    def replace_load(self, inertia, idx_link = -1):
+        pass
+
+    ## Clear the existing inertial load on the specified link.
+    # @param idx_link int
+    # @see C++: SpatialDyn::ArticulatedBody::ClearLoad()
+    def clear_load(self, idx_link = -1):
+        pass
+
+    ## Dict[int, spatialdyn.SpatialInertiad] where the inertia is the
+    # inertia of a load attached to the associated rigid body index.
+    # @see C++: SpatialDyn::ArticulatedBody::inertia_load()
+    inertia_load = {}
 
     ## Transform from the articulated body's base frame to the world frame.
     # @see C++: SpatialDyn::ArticulatedBody::T_base_to_world()

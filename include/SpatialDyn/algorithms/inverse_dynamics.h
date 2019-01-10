@@ -44,7 +44,7 @@ namespace SpatialDyn {
  * @see Python: spatialdyn.inverse_dynamics()
  */
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq,
-                                const std::map<int, SpatialForced>& f_external = {},
+                                const std::map<size_t, SpatialForced>& f_external = {},
                                 const InverseDynamicsOptions& options = {});
 
 /**
@@ -88,7 +88,7 @@ const Eigen::VectorXd& Gravity(const ArticulatedBody& ab);
  * @see Python: spatialdyn.external_torque()
  */
 Eigen::VectorXd ExternalTorques(const ArticulatedBody& ab,
-                                const std::map<int, SpatialForced>& f_external = {});
+                                const std::map<size_t, SpatialForced>& f_external = {});
 
 /**
  * Compute Coulomb and viscous joint friction torques.

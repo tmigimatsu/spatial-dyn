@@ -14,6 +14,7 @@
 #include "SpatialDyn/structs/rigid_body.h"
 
 #include <functional>  // std::function
+#include <map>         // std::map
 #include <memory>      // std::unique_ptr
 #include <ostream>     // std::ostream
 #include <string>      // std::string
@@ -158,6 +159,43 @@ class ArticulatedBody {
    * Set the gravity vector acting on the articulated body.
    */
   void set_g(const Eigen::Vector3d& g);
+
+  /**
+   * Add a spatial inertia to the existing load on the specified link.
+   *
+   * If a load doesn't exist on the link, a new load will be created.
+   *
+   * @param inertia Spatial inertia of load to add represented in the link's frame.
+   * @param idx_link Index of the desired link.
+   * @see Python: spatialdyn.ArticulatedBody.add_load
+   */
+  void AddLoad(const SpatialInertiad& inertia, int idx_link = -1);
+
+  /**
+   * Replace the existing inertial load on the specified link.
+   *
+   * If a load doesn't exist on the link, a new load will be created.
+   *
+   * @param inertia Spatial inertia of load to add represented in the link's frame.
+   * @param idx_link Index of the desired link.
+   * @see Python: spatialdyn.ArticulatedBody.replace_load
+   */
+  void ReplaceLoad(const SpatialInertiad& inertia, int idx_link = -1);
+
+  /**
+   * Clear the existing inertial load on the specified link.
+   *
+   * @param idx_link Index of the desired link.
+   * @see Python: spatialdyn.ArticulatedBody.clear_load
+   */
+  void ClearLoad(int idx_link = -1);
+
+  /**
+   * @return Reference to Map of (index, inertia) pairs where the inertia is the
+   *         inertia of a load attached to the associated rigid body index.
+   * @see Python: spatialdyn.ArticulatedBody.inertia_load
+   */
+  const std::map<size_t, SpatialInertiad>& inertia_load() const { return inertia_load_; }
 
   /**
    * Get the transform from the articulated body's base frame to the world frame.
@@ -368,6 +406,8 @@ class ArticulatedBody {
   Eigen::VectorXd q_;
   Eigen::VectorXd dq_;
   SpatialMotiond g_ = -9.81 * SpatialMotiond::UnitLinZ();
+
+  std::map<size_t, SpatialInertiad> inertia_load_;
 
   Eigen::Isometry3d T_base_to_world_ = Eigen::Isometry3d::Identity();
 

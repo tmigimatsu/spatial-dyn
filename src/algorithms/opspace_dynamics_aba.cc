@@ -158,7 +158,7 @@ Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab, int idx_link, 
 }
 
 Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset,
-                           const std::map<int, SpatialForced>& f_external,
+                           const std::map<size_t, SpatialForced>& f_external,
                            double svd_epsilon) {
   if (idx_link < 0) idx_link += ab.dof();
   auto& aba = ab.cache_->aba_data_;

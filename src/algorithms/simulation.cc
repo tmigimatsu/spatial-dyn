@@ -110,7 +110,7 @@ static Eigen::VectorXd Identity(const ArticulatedBody& ab, const Eigen::VectorXd
 }
 
 void Integrate(ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt,
-               const std::map<int, SpatialForced>& f_external,
+               const std::map<size_t, SpatialForced>& f_external,
                const IntegrationOptions& options) {
 
   const auto& f = options.aba ? ForwardDynamicsAba : ForwardDynamics;

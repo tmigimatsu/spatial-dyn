@@ -21,7 +21,7 @@ namespace Opspace {
 
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                 const Eigen::VectorXd& ddx, Eigen::MatrixXd *N,
-                                const std::map<int, SpatialForced>& f_external,
+                                const std::map<size_t, SpatialForced>& f_external,
                                 bool gravity, bool centrifugal_coriolis, bool friction,
                                 double svd_epsilon, double stiction_epsilon) {
   // Project Jacobian in nullspace
@@ -135,7 +135,7 @@ Eigen::VectorXd Gravity(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
 }
 
 Eigen::VectorXd ExternalForces(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
-                               const std::map<int, SpatialForced>& f_external,
+                               const std::map<size_t, SpatialForced>& f_external,
                                double svd_epsilon) {
   return JacobianDynamicInverse(ab, J, svd_epsilon).transpose() * ExternalTorques(ab, f_external);
 }

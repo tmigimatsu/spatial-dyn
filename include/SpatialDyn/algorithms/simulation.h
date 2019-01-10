@@ -47,7 +47,7 @@ namespace SpatialDyn {
  * @see Python: spatialdyn.integrate()
  */
 void Integrate(ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt,
-               const std::map<int, SpatialForced>& f_external = {},
+               const std::map<size_t, SpatialForced>& f_external = {},
                const IntegrationOptions& options = {});
 
 }  // namespace SpatialDyn

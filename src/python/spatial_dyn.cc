@@ -8,10 +8,7 @@
  */
 
 #include <exception>  // std::invalid_argument
-#include <map>        // std::map
 #include <sstream>    // std::stringstream
-#include <string>     // std::string
-#include <vector>     // std::vector
 
 #include <pybind11/pybind11.h>
 #include "SpatialDyn/utils/spatial_math.h"
@@ -54,6 +51,10 @@ PYBIND11_MODULE(spatialdyn, m) {
                     // TODO: Make spatial
                     [](const ArticulatedBody& ab) { return ab.g().linear(); },
                     &ArticulatedBody::set_g)
+      .def("add_load", &ArticulatedBody::AddLoad, "inertia"_a, "idx_link"_a = -1)
+      .def("replace_load", &ArticulatedBody::ReplaceLoad, "inertia"_a, "idx_link"_a = -1)
+      .def("clear_load", &ArticulatedBody::ClearLoad, "idx_link"_a = -1)
+      .def_property_readonly("inertia_load", &ArticulatedBody::inertia_load)
       .def_property("T_base_to_world", &ArticulatedBody::T_base_to_world,
                     (void (ArticulatedBody::*)(const Eigen::Isometry3d&)) &ArticulatedBody::set_T_base_to_world)
       .def("T_to_parent",
@@ -172,20 +173,20 @@ PYBIND11_MODULE(spatialdyn, m) {
   // Forward dynamics
   m.def("forward_dynamics",
         [](const ArticulatedBody& ab, Eigen::Ref<const Eigen::VectorXd> tau,
-           const std::map<int, SpatialForced>& f_external,
+           const std::map<size_t, SpatialForced>& f_external,
            bool gravity, bool centrifugal_coriolis, bool friction, double stiction_epsilon) {
           return ForwardDynamics(ab, tau, f_external,
                                  { gravity, centrifugal_coriolis, friction, stiction_epsilon });
-        }, "ab"_a, "tau"_a, "f_external"_a = std::map<int, SpatialForced>(),
+        }, "ab"_a, "tau"_a, "f_external"_a = std::map<size_t, SpatialForced>(),
         "gravity"_a = true, "centrifugal_coriolis"_a = true, "friction"_a = false,
         "stiction_epsilon"_a = 0.01)
    .def("forward_dynamics_aba",
         [](const ArticulatedBody& ab, Eigen::Ref<const Eigen::VectorXd> tau,
-           const std::map<int, SpatialForced>& f_external,
+           const std::map<size_t, SpatialForced>& f_external,
            bool gravity, bool centrifugal_coriolis, bool friction, double stiction_epsilon) {
           return ForwardDynamicsAba(ab, tau, f_external,
                                     { gravity, centrifugal_coriolis, friction, stiction_epsilon });
-        }, "ab"_a, "tau"_a, "f_external"_a = std::map<int, SpatialForced>(),
+        }, "ab"_a, "tau"_a, "f_external"_a = std::map<size_t, SpatialForced>(),
         "gravity"_a = true, "centrifugal_coriolis"_a = true, "friction"_a = false,
         "stiction_epsilon"_a = 0.01)
    .def("inertia_inverse", &InertiaInverse, "ab"_a)
@@ -236,23 +237,23 @@ PYBIND11_MODULE(spatialdyn, m) {
   // Inverse dynamics
   m.def("inverse_dynamics",
         [](const ArticulatedBody& ab, Eigen::Ref<const Eigen::VectorXd> ddq,
-           const std::map<int, SpatialForced>& f_external,
+           const std::map<size_t, SpatialForced>& f_external,
            bool gravity, bool centrifugal_coriolis, bool friction, double stiction_epsilon) {
           return InverseDynamics(ab, ddq, f_external,
                                  { gravity, centrifugal_coriolis, friction, stiction_epsilon });
-        }, "ab"_a, "ddq"_a, "f_external"_a = std::map<int, SpatialForced>(),
+        }, "ab"_a, "ddq"_a, "f_external"_a = std::map<size_t, SpatialForced>(),
         "gravity"_a = true, "centrifugal_coriolis"_a = false, "friction"_a = false,
         "stiction_epsilon"_a = 0.01)
    .def("centrifugal_coriolis", &CentrifugalCoriolis, "ab"_a)
    .def("gravity", &Gravity, "ab"_a)
-   .def("external_torques", &ExternalTorques, "ab"_a, "f_external"_a = std::map<int, SpatialForced>())
+   .def("external_torques", &ExternalTorques, "ab"_a, "f_external"_a = std::map<size_t, SpatialForced>())
    .def("friction", &Friction, "ab"_a, "tau"_a, "compensate"_a = true, "stiction_epsilon"_a = 0.01)
    .def("inertia", &Inertia, "ab"_a);
 
   // Simulation
   m.def("integrate",
         [](ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt,
-               const std::map<int, SpatialForced>& f_external,
+               const std::map<size_t, SpatialForced>& f_external,
                bool gravity, bool centrifugal_coriolis, bool friction, bool joint_limits,
                const std::string& method, bool aba, double stiction_epsilon) {
           static const std::map<std::string, IntegrationOptions::Method> kStringToMethod = {
@@ -266,7 +267,7 @@ PYBIND11_MODULE(spatialdyn, m) {
           Integrate(ab, tau, dt, f_external,
                     { gravity, centrifugal_coriolis, friction, joint_limits,
                       kStringToMethod.at(method), aba, stiction_epsilon });
-        }, "ab"_a, "tau"_a, "dt"_a, "f_external"_a = std::map<int, SpatialForced>(),
+        }, "ab"_a, "tau"_a, "dt"_a, "f_external"_a = std::map<size_t, SpatialForced>(),
         "gravity"_a = true, "centrifugal_coriolis"_a = true, "friction"_a = false,
         "joint_limits"_a = false, "method"_a = "RK4", "aba"_a = false,
         "stiction_epsilon"_a = 0.01);
@@ -289,7 +290,7 @@ PYBIND11_MODULE(spatialdyn, m) {
   m_op.def("inverse_dynamics",
            [](const ArticulatedBody& ab, const Eigen::MatrixXd& J,
               const Eigen::VectorXd& ddx, py::EigenDRef<Eigen::MatrixXd> N,
-              const std::map<int, SpatialForced>& f_external,
+              const std::map<size_t, SpatialForced>& f_external,
               bool gravity, bool centrifugal_coriolis, bool friction,
               double svd_epsilon, double stiction_epsilon) {
              Eigen::MatrixXd N_temp = N;
@@ -297,7 +298,7 @@ PYBIND11_MODULE(spatialdyn, m) {
              N = N_temp;
              return tau;
            }, "ab"_a, "J"_a, "ddx"_a, "N"_a,
-           "f_external"_a = std::map<int, SpatialForced>(),
+           "f_external"_a = std::map<size_t, SpatialForced>(),
            "gravity"_a = false, "centrifugal_coriolis"_a = false, "friction"_a = false,
            "svd_epsilon"_a = 0, "stiction_epsilon"_a = 0.01);
   m_op.def("inertia", &Opspace::Inertia, "ab"_a, "J"_a, "svd_epsilon"_a = 0);
@@ -318,7 +319,7 @@ PYBIND11_MODULE(spatialdyn, m) {
            "idx_link"_a = -1, "offset"_a = Eigen::Vector3d::Zero(), "svd_epsilon"_a = 0);
   m_op.def("gravity_aba", &Opspace::GravityAba, "ab"_a, "idx_link"_a = -1,
            "offset"_a = Eigen::Vector3d::Zero(),
-           "f_external"_a = std::map<int, SpatialForced>(), "svd_epsilon"_a = 0);
+           "f_external"_a = std::map<size_t, SpatialForced>(), "svd_epsilon"_a = 0);
 
   // Urdf parser
   py::module m_urdf = m.def_submodule("urdf");
