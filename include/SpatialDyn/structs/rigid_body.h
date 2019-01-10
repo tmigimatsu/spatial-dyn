@@ -90,8 +90,11 @@ class RigidBody {
    * @param ori_in_parent Orientation of the rigid body in its parent's frame.
    * @param pos_in_parent Position of the rigid body in its parent's frame.
    */
-  void set_T_to_parent(const Eigen::Quaterniond& ori_in_parent,
-                       const Eigen::Vector3d& pos_in_parent);
+  template<typename Derived>
+  void set_T_to_parent(const Eigen::RotationBase<Derived,3>& ori_in_parent,
+                       const Eigen::Vector3d& pos_in_parent) {
+    T_to_parent_ = Eigen::Translation3d(pos_in_parent) * ori_in_parent;
+  }
 
   /**
    * Set the fixed transform from the rigid body's frame to its parent's frame
@@ -99,7 +102,7 @@ class RigidBody {
    *
    * @param T_to_parent Transform from the rigid body frame to its parent's frame.
    */
-  void set_T_to_parent(const Eigen::Isometry3d& T_to_parent);
+  void set_T_to_parent(const Eigen::Isometry3d& T_to_parent) { T_to_parent_ = T_to_parent; }
 
   /**
    * @return Spatial inertia of the rigid body. Defaults to a 1kg point mass at
@@ -136,7 +139,7 @@ class RigidBody {
    *
    * @param joint Joint.
    */
-  void set_joint(const Joint& joint);
+  void set_joint(const Joint& joint) { joint_ = joint; }
 
  protected:
 

@@ -130,7 +130,7 @@ class ArticulatedBody {
   /**
    * Set the joint positions and internally precompute the frames of the articulated body.
    */
-  void set_q(Eigen::Ref<const Eigen::VectorXd> q);
+  virtual void set_q(Eigen::Ref<const Eigen::VectorXd> q);
 
   /**
    * @return Joint velocities. Uninitialized values will be `0` by default.
@@ -146,7 +146,7 @@ class ArticulatedBody {
   /**
    * Set the joint velocities.
    */
-  void set_dq(Eigen::Ref<const Eigen::VectorXd> dq);
+  virtual void set_dq(Eigen::Ref<const Eigen::VectorXd> dq);
 
   /**
    * @return 6d spatial gravity vector acting on the articulated body. Defaults
@@ -224,8 +224,11 @@ class ArticulatedBody {
    * @param ori_in_world Orientation of the articulated body in the world frame.
    * @param pos_in_world Position of the articulated body in the world frame.
    */
-  void set_T_base_to_world(const Eigen::Quaterniond& ori_in_world,
-                           const Eigen::Vector3d& pos_in_world);
+  template<typename Derived>
+  void set_T_base_to_world(const Eigen::RotationBase<Derived,3>& ori_in_world,
+                           const Eigen::Vector3d& pos_in_world) {
+    T_base_to_world_ = Eigen::Translation3d(pos_in_world) * ori_in_world;
+  }
 
   /**
    * Set the transform from the articulated body's base frame to the world frame.

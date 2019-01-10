@@ -54,7 +54,9 @@ Eigen::Matrix<double,4,3> QuaternionJacobian(const Eigen::Quaterniond& quat) {
 Eigen::Matrix<double,4,3> AngleAxisJacobian(const Eigen::AngleAxisd& aa) {
   Eigen::Matrix<double,4,3> E;
   E << aa.axis().transpose(),
-       -0.5 * (std::sin(aa.angle()) / (1 - std::cos(aa.angle())) * aa.axis().doubleCrossMatrix() + aa.axis().crossMatrix());
+       -0.5 * (std::sin(aa.angle()) / (1 - std::cos(aa.angle())) *
+               EigenUtils::DoubleCrossMatrix(aa.axis()) +
+               EigenUtils::CrossMatrix(aa.axis()));
   return E;
 }
 

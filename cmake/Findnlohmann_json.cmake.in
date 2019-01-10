@@ -8,4 +8,4 @@
 ############################################################
 
 
-find_package(nlohmann_json 3.2 REQUIRED PATHS ${CMAKE_BINARY_DIR}/nlohmann_json/build)
+find_package(nlohmann_json 3.2 REQUIRED PATHS @CMAKE_BINARY_DIR@/nlohmann_json/build)

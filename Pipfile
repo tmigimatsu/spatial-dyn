@@ -8,7 +8,6 @@ name = "pypi"
 [packages]
 redis = "*"
 numpy = "*"
-"e1839a8" = {path = ".", editable = true}
 spatialdyn = {editable = true, path = "."}
 
 [requires]

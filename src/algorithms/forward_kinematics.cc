@@ -89,7 +89,6 @@ Eigen::Matrix6Xd Jacobian(const ArticulatedBody& ab, Eigen::Ref<const Eigen::Vec
   std::vector<Eigen::Isometry3d> T_to_world(ancestors.size());
   for (size_t idx = 0; idx < ancestors.size(); idx++) {
     int i = ancestors[idx];
-    const RigidBody& rb = ab.rigid_bodies(i);
     if (idx == 0) {
       T_to_world[idx] = ab.T_base_to_world() * ab.T_to_parent(i, q(i));
     } else {

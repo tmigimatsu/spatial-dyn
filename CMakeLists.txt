@@ -55,9 +55,9 @@ endfunction()
 configure_file(${SPATIAL_DYN_CMAKE_DIR}/Findcpp_redis.cmake.in
     ${CMAKE_BINARY_DIR}/Findcpp_redis.cmake @ONLY)
 configure_file(${SPATIAL_DYN_CMAKE_DIR}/FindEigen3.cmake.in
-    ${CMAKE_BINARY_DIR}/FindEigen3.cmake)
+    ${CMAKE_BINARY_DIR}/FindEigen3.cmake @ONLY)
 configure_file(${SPATIAL_DYN_CMAKE_DIR}/Findnlohmann_json.cmake.in
-    ${CMAKE_BINARY_DIR}/Findnlohmann_json.cmake)
+    ${CMAKE_BINARY_DIR}/Findnlohmann_json.cmake @ONLY)
 
 
 find_package(Eigen3 3.3.5 QUIET)
