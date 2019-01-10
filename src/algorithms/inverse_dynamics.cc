@@ -45,7 +45,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     bool has_load = ab.inertia_load().find(i) != ab.inertia_load().end();
     if (has_load) I_total = ab.rigid_bodies(i).inertia() + ab.inertia_load().at(i);
-    const SpatialInertiad& I = has_load ? ab.rigid_bodies(i).inertia() : I_total;
+    const SpatialInertiad& I = has_load ? I_total : ab.rigid_bodies(i).inertia();
     const int parent = ab.rigid_bodies(i).id_parent();
     const double dq_i = options.centrifugal_coriolis ? ab.dq(i) : 0.;
 
@@ -100,7 +100,7 @@ const Eigen::VectorXd& CentrifugalCoriolis(const ArticulatedBody& ab) {
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     bool has_load = ab.inertia_load().find(i) != ab.inertia_load().end();
     if (has_load) I_total = ab.rigid_bodies(i).inertia() + ab.inertia_load().at(i);
-    const SpatialInertiad& I = has_load ? ab.rigid_bodies(i).inertia() : I_total;
+    const SpatialInertiad& I = has_load ? I_total : ab.rigid_bodies(i).inertia();
     const int parent = ab.rigid_bodies(i).id_parent();
 
     if (!vel.is_computed) {
@@ -143,7 +143,7 @@ const Eigen::VectorXd& Gravity(const ArticulatedBody& ab) {
   for (size_t i = 0; i < ab.dof(); i++) {
     bool has_load = ab.inertia_load().find(i) != ab.inertia_load().end();
     if (has_load) I_total = ab.rigid_bodies(i).inertia() + ab.inertia_load().at(i);
-    const SpatialInertiad& I = has_load ? ab.rigid_bodies(i).inertia() : I_total;
+    const SpatialInertiad& I = has_load ? I_total : ab.rigid_bodies(i).inertia();
     grav.f_g[i] = I * (ab.T_from_world(i) * -ab.g());
   }
 
@@ -176,7 +176,7 @@ Eigen::VectorXd ExternalTorques(const ArticulatedBody& ab,
   }
 
   // Backward pass
-  Eigen::VectorXd tau;
+  Eigen::VectorXd tau(ab.dof());
   for (int i = ab.dof() - 1; i >= 0; i--) {
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     tau(i) = s.dot(grav.f_g[i]);
@@ -220,6 +220,8 @@ const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab) {
   // Initialize composite rigid body inertia
   for (size_t i = 0; i < ab.dof(); i++) {
     crba.I_c[i] = ab.rigid_bodies(i).inertia();
+    bool has_load = ab.inertia_load().find(i) != ab.inertia_load().end();
+    if (has_load) crba.I_c[i] += ab.inertia_load().at(i);
   }
 
   // Backward pass

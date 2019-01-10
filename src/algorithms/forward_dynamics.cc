@@ -43,7 +43,7 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
     bool has_load = ab.inertia_load().find(i) != ab.inertia_load().end();
     if (has_load) I_total = ab.rigid_bodies(i).inertia() + ab.inertia_load().at(i);
-    const SpatialInertiad& I = has_load ? ab.rigid_bodies(i).inertia() : I_total;
+    const SpatialInertiad& I = has_load ? I_total : ab.rigid_bodies(i).inertia();
     const int parent = ab.rigid_bodies(i).id_parent();
     const double dq_i = options.centrifugal_coriolis ? ab.dq(i) : 0.;
 
@@ -154,7 +154,7 @@ const Eigen::MatrixXd& InertiaInverseAba(const ArticulatedBody& ab) {
   for (size_t i = 0; i < ab.dof(); i++) {
     bool has_load = ab.inertia_load().find(i) != ab.inertia_load().end();
     if (has_load) I_total = ab.rigid_bodies(i).inertia() + ab.inertia_load().at(i);
-    const SpatialInertiad& I = has_load ? ab.rigid_bodies(i).inertia() : I_total;
+    const SpatialInertiad& I = has_load ? I_total : ab.rigid_bodies(i).inertia();
     if (!aba.is_computed) aba.I_a[i] = I;
 
     aba.A[i].setZero();
