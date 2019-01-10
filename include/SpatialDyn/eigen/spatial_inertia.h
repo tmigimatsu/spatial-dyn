@@ -76,6 +76,14 @@ class SpatialInertia {
     return I_total;
   }
 
+  bool operator==(const SpatialInertia<_Scalar>& other) const {
+    return mass == other.mass && com == other.com && I_com == other.I_com;
+  }
+
+  bool operator!=(const SpatialInertia<_Scalar>& other) const {
+    return !(*this == other);
+  }
+
   Eigen::Matrix<_Scalar,6,1> I_com_flat() const {
     Eigen::Matrix<_Scalar,6,1> result;
     result << I_com(0,0), I_com(1,1), I_com(2,2), I_com(0,1), I_com(0,2), I_com(1,2);

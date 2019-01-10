@@ -169,7 +169,7 @@ class ArticulatedBody {
    * @param idx_link Index of the desired link.
    * @see Python: spatialdyn.ArticulatedBody.add_load
    */
-  void AddLoad(const SpatialInertiad& inertia, int idx_link = -1);
+  virtual void AddLoad(const SpatialInertiad& inertia, int idx_link = -1);
 
   /**
    * Replace the existing inertial load on the specified link.
@@ -180,7 +180,7 @@ class ArticulatedBody {
    * @param idx_link Index of the desired link.
    * @see Python: spatialdyn.ArticulatedBody.replace_load
    */
-  void ReplaceLoad(const SpatialInertiad& inertia, int idx_link = -1);
+  virtual void ReplaceLoad(const SpatialInertiad& inertia, int idx_link = -1);
 
   /**
    * Clear the existing inertial load on the specified link.
@@ -188,7 +188,7 @@ class ArticulatedBody {
    * @param idx_link Index of the desired link.
    * @see Python: spatialdyn.ArticulatedBody.clear_load
    */
-  void ClearLoad(int idx_link = -1);
+  virtual void ClearLoad(int idx_link = -1);
 
   /**
    * @return Reference to Map of (index, inertia) pairs where the inertia is the

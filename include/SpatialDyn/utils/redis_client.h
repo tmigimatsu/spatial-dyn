@@ -46,8 +46,7 @@ class RedisClient : public cpp_redis::client {
   template<typename T>
   RedisClient& get(const std::string& key,
                    const std::function<void(T)>& reply_callback,
-                   const std::function<void(const std::string&)>& error_callback =
-                       std::function<void(const std::string&)>());
+                   const std::function<void(const std::string&)>& error_callback = {});
 
   template<typename T>
   std::future<T> get(const std::string& key);

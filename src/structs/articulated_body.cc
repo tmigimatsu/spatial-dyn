@@ -54,6 +54,20 @@ const RigidBody& ArticulatedBody::rigid_bodies(int i) const {
   return rigid_bodies_[i];
 }
 
+void ClearDynamicsCache(const std::unique_ptr<ArticulatedBody::Cache>& cache_) {
+  cache_->cc_data_.is_computed = false;
+  cache_->grav_data_.is_computed = false;
+  cache_->crba_data_.is_computed = false;
+  cache_->crba_data_.is_inv_computed = false;
+  cache_->aba_data_.is_computed = false;
+  cache_->aba_data_.is_A_inv_computed = false;
+  cache_->opspace_data_.is_lambda_computed = false;
+  cache_->opspace_data_.is_lambda_inv_computed = false;
+  cache_->opspace_data_.is_jbar_computed = false;
+  cache_->opspace_aba_data_.is_lambda_computed = false;
+  cache_->opspace_aba_data_.is_lambda_inv_computed = false;
+}
+
 double ArticulatedBody::q(int i) const {
   if (i < 0) i += dof();
   return q_(i);
@@ -72,17 +86,7 @@ void ArticulatedBody::set_q(Eigen::Ref<const Eigen::VectorXd> q) {
   cache_->T_data_.is_T_to_world_computed = false;
   cache_->vel_data_.is_computed = false;
   cache_->jac_data_.is_computed = false;
-  cache_->cc_data_.is_computed = false;
-  cache_->grav_data_.is_computed = false;
-  cache_->crba_data_.is_computed = false;
-  cache_->crba_data_.is_inv_computed = false;
-  cache_->aba_data_.is_computed = false;
-  cache_->aba_data_.is_A_inv_computed = false;
-  cache_->opspace_data_.is_lambda_computed = false;
-  cache_->opspace_data_.is_lambda_inv_computed = false;
-  cache_->opspace_data_.is_jbar_computed = false;
-  cache_->opspace_aba_data_.is_lambda_computed = false;
-  cache_->opspace_aba_data_.is_lambda_inv_computed = false;
+  ClearDynamicsCache(cache_);
 }
 
 double ArticulatedBody::dq(int i) const {
@@ -118,16 +122,19 @@ void ArticulatedBody::AddLoad(const SpatialInertiad& inertia, int idx_link) {
   } else {
     inertia_load_[idx_link] += inertia;
   }
+  ClearDynamicsCache(cache_);
 }
 
 void ArticulatedBody::ReplaceLoad(const SpatialInertiad& inertia, int idx_link) {
   if (idx_link < 0) idx_link += dof();
   inertia_load_[idx_link] = inertia;
+  ClearDynamicsCache(cache_);
 }
 
 void ArticulatedBody::ClearLoad(int idx_link) {
   if (idx_link < 0) idx_link += dof();
   inertia_load_.erase(idx_link);
+  ClearDynamicsCache(cache_);
 }
 
 void ArticulatedBody::set_T_base_to_world(const Eigen::Isometry3d& T_to_world) {
