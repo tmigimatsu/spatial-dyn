@@ -275,6 +275,8 @@ PYBIND11_MODULE(spatialdyn, m) {
 
   // Spatial inertia
   py::class_<SpatialInertiad>(m, "SpatialInertiad")
+      .def(py::init<>())
+      .def(py::init<double, const Eigen::Vector3d&, const Eigen::Vector6d>())
       .def_readwrite("mass", &SpatialInertiad::mass)
       .def_readwrite("com", &SpatialInertiad::com)
       .def_readwrite("I_com", &SpatialInertiad::I_com)
