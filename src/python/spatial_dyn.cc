@@ -44,10 +44,10 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def_property_readonly("rigid_bodies", (const std::vector<RigidBody>& (ArticulatedBody::*)(void) const) &ArticulatedBody::rigid_bodies)
       .def_property("q",
                     (const Eigen::VectorXd& (ArticulatedBody::*)(void) const) &ArticulatedBody::q,
-                    (void (ArticulatedBody::*)(const Eigen::VectorXd&)) &ArticulatedBody::set_q)
+                    &ArticulatedBody::set_q)
       .def_property("dq",
                     (const Eigen::VectorXd& (ArticulatedBody::*)(void) const) &ArticulatedBody::dq,
-                    (void (ArticulatedBody::*)(const Eigen::VectorXd&)) &ArticulatedBody::set_dq)
+                    &ArticulatedBody::set_dq)
       .def_property("g",
                     // TODO: Make spatial
                     [](const ArticulatedBody& ab) { return ab.g().linear(); },
