@@ -15,7 +15,7 @@
 
 #include "algorithms/forward_dynamics.h"
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 #ifdef JOINT_LIMITS
 static qpOASES::Options QpOptions() {
@@ -193,4 +193,4 @@ void Integrate(ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt,
   }
 }
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn

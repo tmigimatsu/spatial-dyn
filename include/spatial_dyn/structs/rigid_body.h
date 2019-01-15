@@ -10,21 +10,21 @@
 #ifndef SPATIAL_DYN_STRUCTS_RIGID_BODY_H_
 #define SPATIAL_DYN_STRUCTS_RIGID_BODY_H_
 
-#include "SpatialDyn/structs/graphics.h"
-#include "SpatialDyn/structs/joint.h"
-#include "SpatialDyn/utils/spatial_math.h"
+#include "spatial_dyn/structs/graphics.h"
+#include "spatial_dyn/structs/joint.h"
+#include "spatial_dyn/utils/spatial_math.h"
 
 #include <ostream>  // std::ostream
 #include <string>   // std::string
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 class ArticulatedBody;
 
 /**
  * @ingroup cpp_structs
  *
- * Rigid body struct for SpatialDyn.
+ * Rigid body struct for spatial_dyn.
  *
  * Comprised of an articulated joint and the attached rigid body.
  *
@@ -162,6 +162,6 @@ class RigidBody {
  */
 std::ostream& operator<<(std::ostream& os, const RigidBody& rb);
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn
 
 #endif  // SPATIAL_DYN_STRUCTS_RIGID_BODY_H_

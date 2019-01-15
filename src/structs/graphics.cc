@@ -11,7 +11,7 @@
 
 #include <map>  // std::map
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 static const std::map<std::string, Graphics::Geometry::Type> kStringToType = {
   {"BOX",       Graphics::Geometry::Type::BOX},
@@ -39,4 +39,4 @@ Graphics::Geometry::Type Graphics::Geometry::StringToType(const std::string& typ
   }
 }
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn

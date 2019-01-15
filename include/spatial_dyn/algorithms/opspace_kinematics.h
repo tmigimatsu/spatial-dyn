@@ -10,10 +10,10 @@
 #ifndef SPATIAL_DYN_ALGORITHMS_OPSPACE_KINEMATICS_H_
 #define SPATIAL_DYN_ALGORITHMS_OPSPACE_KINEMATICS_H_
 
-#include "SpatialDyn/utils/spatial_math.h"
+#include "spatial_dyn/utils/spatial_math.h"
 
-namespace SpatialDyn {
-namespace Opspace {
+namespace spatial_dyn {
+namespace opspace {
 
 Eigen::Vector3d OrientationError(const Eigen::Quaterniond &quat, const Eigen::Quaterniond &quat_des);
 
@@ -29,7 +29,7 @@ Eigen::Matrix<double,4,3> QuaternionJacobian(const Eigen::Quaterniond& quat);
 
 Eigen::Matrix<double,4,3> AngleAxisJacobian(const Eigen::AngleAxisd& aa);
 
-}  // namespace Opspace
-}  // namespace SpatialDyn
+}  // namespace opspace
+}  // namespace spatial_dyn
 
 #endif  // SPATIAL_DYN_ALGORITHMS_OPSPACE_KINEMATICS_H_

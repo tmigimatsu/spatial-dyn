@@ -12,7 +12,7 @@
 #include <exception>  // std::invalid_argument
 #include <map>        // std::map
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 Joint::Joint(Joint::Type type) {
   set_type(type);
@@ -123,11 +123,11 @@ void Joint::set_f_stiction(double f_stiction) {
 Eigen::Isometry3d Joint::T_joint(double q) const {
   switch (type_) {
     case Joint::Type::RX:
-      return Eigen::Isometry3d(EigenUtils::RotationX(q));
+      return Eigen::Isometry3d(utils::Eigen::RotationX(q));
     case Joint::Type::RY:
-      return Eigen::Isometry3d(EigenUtils::RotationY(q));
+      return Eigen::Isometry3d(utils::Eigen::RotationY(q));
     case Joint::Type::RZ:
-      return Eigen::Isometry3d(EigenUtils::RotationZ(q));
+      return Eigen::Isometry3d(utils::Eigen::RotationZ(q));
     case Joint::Type::PX:
       return Eigen::Isometry3d(Eigen::Translation3d(q * Eigen::Vector3d::UnitX()));
     case Joint::Type::PY:
@@ -179,4 +179,4 @@ std::ostream& operator<<(std::ostream& os, const Joint& j) {
   return os;
 }
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn

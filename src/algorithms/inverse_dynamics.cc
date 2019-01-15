@@ -11,13 +11,13 @@
 
 #include <algorithm>  // std::min
 #include <cmath>      // std::abs
+#include <ctrl_utils/math.h>
 
 #include "structs/articulated_body_cache.h"
-#include "utils/math.h"
 
 #define CACHE_INVERSE_DYNAMICS
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq,
                                 const std::map<size_t, SpatialForced>& f_external,
@@ -196,7 +196,7 @@ Eigen::VectorXd Friction(const ArticulatedBody& ab, Eigen::Ref<const Eigen::Vect
     const Joint& joint = ab.rigid_bodies(i).joint();
 
     // Kinetic friction
-    double f_coulomb = joint.f_coulomb() * Signum(ab.dq(i), stiction_epsilon);
+    double f_coulomb = joint.f_coulomb() * utils::math::Signum(ab.dq(i), stiction_epsilon);
 
     // Static friction
     if (f_coulomb == 0.) {
@@ -204,7 +204,7 @@ Eigen::VectorXd Friction(const ArticulatedBody& ab, Eigen::Ref<const Eigen::Vect
       if (!compensate) {
         mu = std::min(mu, std::abs(tau(i)));
       }
-      f_coulomb = mu * Signum(tau(i));
+      f_coulomb = mu * utils::math::Signum(tau(i));
     }
 
     // Add viscous and Coulomb friction
@@ -248,4 +248,4 @@ const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab) {
   return crba.A;
 }
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn

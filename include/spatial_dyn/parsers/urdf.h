@@ -10,16 +10,16 @@
 #ifndef SPATIAL_DYN_PARSERS_URDF_H_
 #define SPATIAL_DYN_PARSERS_URDF_H_
 
-#include "SpatialDyn/structs/articulated_body.h"
+#include "spatial_dyn/structs/articulated_body.h"
 
 #include <string>  // std::string
 
-namespace SpatialDyn {
-namespace Urdf {
+namespace spatial_dyn {
+namespace urdf {
 
 ArticulatedBody LoadModel(const std::string& urdf, bool expand_paths = false);
 
-}  // namespace Urdf
-}  // namespace SpatialDyn
+}  // namespace urdf
+}  // namespace spatial_dyn
 
 #endif  // SPATIAL_DYN_PARSERS_URDF_H_

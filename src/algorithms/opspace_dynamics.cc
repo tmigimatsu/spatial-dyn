@@ -16,8 +16,8 @@
 #include "algorithms/inverse_dynamics.h"
 #include "structs/articulated_body_cache.h"
 
-namespace SpatialDyn {
-namespace Opspace {
+namespace spatial_dyn {
+namespace opspace {
 
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                 const Eigen::VectorXd& ddx, Eigen::MatrixXd *N,
@@ -72,7 +72,7 @@ const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab, const Eigen::MatrixXd&
 
   if (!ops.is_lambda_computed || ops.J.size() != J.size() || ops.J != J ||
       ops.svd_epsilon != svd_epsilon) {
-    ops.Lambda = EigenUtils::PseudoInverse(InertiaInverse(ab, J), svd_epsilon);
+    ops.Lambda = utils::Eigen::PseudoInverse(InertiaInverse(ab, J), svd_epsilon);
     ops.svd_epsilon = svd_epsilon;
     ops.is_lambda_computed = true;
   }
@@ -84,7 +84,7 @@ const Eigen::MatrixXd& InertiaInverse(const ArticulatedBody& ab, const Eigen::Ma
   auto& ops = ab.cache_->opspace_data_;
 
   if (!ops.is_lambda_inv_computed || ops.J.size() != J.size() || ops.J != J) {
-    ops.A_inv_J_bar_T = SpatialDyn::InertiaInverse(ab).solve(J.transpose());
+    ops.A_inv_J_bar_T = spatial_dyn::InertiaInverse(ab).solve(J.transpose());
     ops.Lambda_inv = J * ops.A_inv_J_bar_T;
     ops.J = J;
     ops.is_lambda_inv_computed = true;
@@ -102,7 +102,7 @@ const Eigen::MatrixXd& JacobianDynamicInverse(const ArticulatedBody& ab, const E
   if (!ops.is_jbar_computed || ops.J.size() != J.size() || ops.J != J ||
       ops.svd_epsilon != svd_epsilon) {
     // TODO: Force recompute
-    Opspace::Inertia(ab, J, svd_epsilon);
+    opspace::Inertia(ab, J, svd_epsilon);
     ops.J_bar = ops.A_inv_J_bar_T * ops.Lambda;
     ops.is_jbar_computed = true;
   }
@@ -115,7 +115,7 @@ Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, const Eigen::Matr
                                     int idx_link, const Eigen::Vector3d&,
                                     double svd_epsilon) {
   if (J.rows() != 6) {
-    throw std::invalid_argument("Opspace::CentrifugalCoriolis(): Jacobian must be the basic Jacobian at the origin of the desired link.");
+    throw std::invalid_argument("opspace::CentrifugalCoriolis(): Jacobian must be the basic Jacobian at the origin of the desired link.");
   }
 
   if (idx_link < 0) idx_link += ab.dof();
@@ -123,8 +123,8 @@ Eigen::Vector6d CentrifugalCoriolis(const ArticulatedBody& ab, const Eigen::Matr
 
   // Compute joint space centrifugal/Coriolis first to cache cc.c
   Eigen::Vector6d mu = JacobianDynamicInverse(ab, J, svd_epsilon).transpose() *
-                       SpatialDyn::CentrifugalCoriolis(ab);
-  mu -= Opspace::Inertia(ab, J) *
+                       spatial_dyn::CentrifugalCoriolis(ab);
+  mu -= opspace::Inertia(ab, J) *
         (Eigen::Isometry3d(ab.T_to_world(idx_link).linear()) * cc.c_c[idx_link]).matrix();
   return mu;
 }
@@ -146,5 +146,5 @@ Eigen::VectorXd Friction(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
   return JacobianDynamicInverse(ab, J, svd_epsilon).transpose() * Friction(ab, tau, stiction_epsilon);
 }
 
-}  // namespace Opspace
-}  // namespace SpatialDyn
+}  // namespace opspace
+}  // namespace spatial_dyn

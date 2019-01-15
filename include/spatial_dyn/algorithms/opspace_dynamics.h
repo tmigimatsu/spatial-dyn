@@ -12,11 +12,11 @@
 
 #include <map>  // std::map
 
-#include "SpatialDyn/structs/articulated_body.h"
-#include "SpatialDyn/utils/spatial_math.h"
+#include "spatial_dyn/structs/articulated_body.h"
+#include "spatial_dyn/utils/spatial_math.h"
 
-namespace SpatialDyn {
-namespace Opspace {
+namespace spatial_dyn {
+namespace opspace {
 
 Eigen::Vector3d OrientationError(const Eigen::Quaterniond &quat, const Eigen::Quaterniond &quat_des);
 
@@ -69,7 +69,7 @@ Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link = -1,
                            const std::map<size_t, SpatialForced>& f_external = {},
                            double svd_epsilon = 0);
 
-}  // namespace Opspace
-}  // namespace SpatialDyn
+}  // namespace opspace
+}  // namespace spatial_dyn
 
 #endif  // SPATIAL_DYN_ALGORITHMS_OPSPACE_DYNAMICS_H_

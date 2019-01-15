@@ -10,9 +10,9 @@
 #ifndef SPATIAL_DYN_UTILS_SPATIAL_MATH_H_
 #define SPATIAL_DYN_UTILS_SPATIAL_MATH_H_
 
-#include "SpatialDyn/eigen/spatial_dyn.h"
+#include "spatial_dyn/eigen/spatial_dyn.h"
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 typedef Eigen::SpatialMotion<float,1>  SpatialMotionf;
 typedef Eigen::SpatialMotion<double,1> SpatialMotiond;
@@ -33,6 +33,6 @@ typedef Eigen::SpatialInertia<double> SpatialInertiad;
 typedef Eigen::SpatialInertiaMatrix<float> SpatialInertiaMatrixf;
 typedef Eigen::SpatialInertiaMatrix<double> SpatialInertiaMatrixd;
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn
 
 #endif  // SPATIAL_DYN_UTILS_SPATIAL_MATH_H_

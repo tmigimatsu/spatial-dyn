@@ -12,16 +12,16 @@
 
 #include <string>   // std::string
 
-#include "SpatialDyn/utils/spatial_math.h"
+#include "spatial_dyn/utils/spatial_math.h"
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 // TODO: Finish
 
 /**
  * @ingroup cpp_structs
  *
- * Graphics struct for SpatialDyn.
+ * Graphics struct for spatial_dyn.
  *
  * @see Python: spatialdyn.Graphics
  */
@@ -118,6 +118,6 @@ struct Graphics {
   Material material;
 };
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn
 
 #endif  // SPATIAL_DYN_STRUCTS_RIGID_BODY_H_

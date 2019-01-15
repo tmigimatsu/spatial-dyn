@@ -11,21 +11,21 @@
 #include <sstream>    // std::stringstream
 
 #include <pybind11/pybind11.h>
-#include "SpatialDyn/utils/spatial_math.h"
+#include "spatial_dyn/utils/spatial_math.h"
 #include <pybind11/eigen.h>
 #include <pybind11/functional.h>
 #include <pybind11/stl.h>
+#include <ctrl_utils/eigen_string.h>
 
-#include "SpatialDyn/algorithms/forward_dynamics.h"
-#include "SpatialDyn/algorithms/forward_kinematics.h"
-#include "SpatialDyn/algorithms/inverse_dynamics.h"
-#include "SpatialDyn/algorithms/opspace_dynamics.h"
-#include "SpatialDyn/algorithms/simulation.h"
-#include "SpatialDyn/parsers/urdf.h"
-#include "SpatialDyn/parsers/json.h"
-#include "SpatialDyn/utils/eigen_string.h"
+#include "spatial_dyn/algorithms/forward_dynamics.h"
+#include "spatial_dyn/algorithms/forward_kinematics.h"
+#include "spatial_dyn/algorithms/inverse_dynamics.h"
+#include "spatial_dyn/algorithms/opspace_dynamics.h"
+#include "spatial_dyn/algorithms/simulation.h"
+#include "spatial_dyn/parsers/urdf.h"
+#include "spatial_dyn/parsers/json.h"
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -81,7 +81,7 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def("map", &ArticulatedBody::Map)
       .def("__str__",
            [](const ArticulatedBody& ab) {
-             return SpatialDyn::Json::Serialize(ab).dump();
+             return spatial_dyn::json::Serialize(ab).dump();
            })
       .def("__repr__",
            [](const ArticulatedBody& ab) {
@@ -103,7 +103,7 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def_property("joint", &RigidBody::joint, &RigidBody::set_joint)
       .def("__str__",
            [](const RigidBody& rb) {
-             return SpatialDyn::Json::Serialize(rb).dump();
+             return spatial_dyn::json::Serialize(rb).dump();
            })
       .def("__repr__",
            [](const RigidBody& rb) {
@@ -135,7 +135,7 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def("T_joint", &Joint::T_joint)
       .def("__str__",
            [](const Joint& joint) {
-             return SpatialDyn::Json::Serialize(joint).dump();
+             return spatial_dyn::json::Serialize(joint).dump();
            })
       .def("__repr__",
            [](const Joint& joint) {
@@ -283,13 +283,13 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def("__repr__",
            [](const SpatialInertiad& inertia) {
              return "<spatialdyn.SpatialInertiad (mass=" + std::to_string(inertia.mass) +
-                    ", com=[" + EigenUtils::EncodeMatlab(inertia.com) + "], I_com=[" +
-                    EigenUtils::EncodeMatlab(inertia.I_com_flat()) + "])>";
+                    ", com=[" + utils::Eigen::EncodeMatlab(inertia.com) + "], I_com=[" +
+                    utils::Eigen::EncodeMatlab(inertia.I_com_flat()) + "])>";
            });
 
-  // Opspace dynamics
+  // opspace dynamics
   py::module m_op = m.def_submodule("opspace");
-  m_op.def("orientation_error", &Opspace::OrientationError, "quat"_a, "quat_des"_a);
+  m_op.def("orientation_error", &opspace::OrientationError, "quat"_a, "quat_des"_a);
   m_op.def("inverse_dynamics",
            [](const ArticulatedBody& ab, const Eigen::MatrixXd& J,
               const Eigen::VectorXd& ddx, py::EigenDRef<Eigen::MatrixXd> N,
@@ -297,37 +297,37 @@ PYBIND11_MODULE(spatialdyn, m) {
               bool gravity, bool centrifugal_coriolis, bool friction,
               double svd_epsilon, double stiction_epsilon) {
              Eigen::MatrixXd N_temp = N;
-             Eigen::VectorXd tau = Opspace::InverseDynamics(ab, J, ddx, &N_temp, f_external, gravity, centrifugal_coriolis, friction, svd_epsilon, stiction_epsilon);
+             Eigen::VectorXd tau = opspace::InverseDynamics(ab, J, ddx, &N_temp, f_external, gravity, centrifugal_coriolis, friction, svd_epsilon, stiction_epsilon);
              N = N_temp;
              return tau;
            }, "ab"_a, "J"_a, "ddx"_a, "N"_a,
            "f_external"_a = std::map<size_t, SpatialForced>(),
            "gravity"_a = false, "centrifugal_coriolis"_a = false, "friction"_a = false,
            "svd_epsilon"_a = 0, "stiction_epsilon"_a = 0.01);
-  m_op.def("inertia", &Opspace::Inertia, "ab"_a, "J"_a, "svd_epsilon"_a = 0);
-  m_op.def("inertia_inverse", &Opspace::InertiaInverse, "ab"_a, "J"_a);
-  m_op.def("jacobian_dynamic_inverse", &Opspace::JacobianDynamicInverse, "ab"_a, "J"_a,
+  m_op.def("inertia", &opspace::Inertia, "ab"_a, "J"_a, "svd_epsilon"_a = 0);
+  m_op.def("inertia_inverse", &opspace::InertiaInverse, "ab"_a, "J"_a);
+  m_op.def("jacobian_dynamic_inverse", &opspace::JacobianDynamicInverse, "ab"_a, "J"_a,
            "svd_epsilon"_a = 0);
-  m_op.def("centrifugal_coriolis", &Opspace::CentrifugalCoriolis, "ab"_a, "J"_a,
+  m_op.def("centrifugal_coriolis", &opspace::CentrifugalCoriolis, "ab"_a, "J"_a,
            "idx_link"_a = -1, "offset"_a = Eigen::Vector3d::Zero(), "svd_epsilon"_a = 0);
-  m_op.def("gravity", &Opspace::Gravity, "ab"_a, "J"_a, "svd_epsilon"_a = 0);
-  m_op.def("friction", &Opspace::Friction, "ab"_a, "J"_a, "tau"_a, "svd_epsilon"_a = 0,
+  m_op.def("gravity", &opspace::Gravity, "ab"_a, "J"_a, "svd_epsilon"_a = 0);
+  m_op.def("friction", &opspace::Friction, "ab"_a, "J"_a, "tau"_a, "svd_epsilon"_a = 0,
            "stiction_epsilon"_a = 0.01);
 
-  m_op.def("inertia_aba", &Opspace::InertiaAba, "ab"_a, "idx_link"_a = -1,
+  m_op.def("inertia_aba", &opspace::InertiaAba, "ab"_a, "idx_link"_a = -1,
            "offset"_a = Eigen::Vector3d::Zero(), "svd_epsilon"_a = 0);
-  m_op.def("inertia_inverse_aba", &Opspace::InertiaInverseAba, "ab"_a, "idx_link"_a = -1,
+  m_op.def("inertia_inverse_aba", &opspace::InertiaInverseAba, "ab"_a, "idx_link"_a = -1,
            "offset"_a = Eigen::Vector3d::Zero());
-  m_op.def("centrifugal_coriolis_aba", &Opspace::CentrifugalCoriolisAba, "ab"_a,
+  m_op.def("centrifugal_coriolis_aba", &opspace::CentrifugalCoriolisAba, "ab"_a,
            "idx_link"_a = -1, "offset"_a = Eigen::Vector3d::Zero(), "svd_epsilon"_a = 0);
-  m_op.def("gravity_aba", &Opspace::GravityAba, "ab"_a, "idx_link"_a = -1,
+  m_op.def("gravity_aba", &opspace::GravityAba, "ab"_a, "idx_link"_a = -1,
            "offset"_a = Eigen::Vector3d::Zero(),
            "f_external"_a = std::map<size_t, SpatialForced>(), "svd_epsilon"_a = 0);
 
-  // Urdf parser
+  // urdf parser
   py::module m_urdf = m.def_submodule("urdf");
-  m_urdf.def("load_model", &Urdf::LoadModel, "urdf"_a, "expand_paths"_a = false);
+  m_urdf.def("load_model", &urdf::LoadModel, "urdf"_a, "expand_paths"_a = false);
 
 }
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn

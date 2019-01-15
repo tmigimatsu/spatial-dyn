@@ -17,23 +17,22 @@
 #include <utility>    // std::move, std::pair, std::tie
 
 #include <tinyxml2.h>
+#include <ctrl_utils/eigen_string.h>
 
-#include "utils/eigen_string.h"
-
-namespace SpatialDyn {
-namespace Urdf {
+namespace spatial_dyn {
+namespace urdf {
 
 const tinyxml2::XMLElement* ParseElement(const tinyxml2::XMLDocument& xml_doc, const std::string& element) {
   const tinyxml2::XMLElement* xml_element = xml_doc.FirstChildElement(element.c_str());
   if (xml_element == nullptr) {
-    throw std::runtime_error("SpatialDyn::Urdf::ParseElement(): <" + element + "> element missing from document.");
+    throw std::runtime_error("spatial_dyn::urdf::ParseElement(): <" + element + "> element missing from document.");
   }
   return xml_element;
 }
 const tinyxml2::XMLElement* ParseElement(const tinyxml2::XMLElement* xml_parent, const std::string& element) {
   const tinyxml2::XMLElement* xml_element = xml_parent->FirstChildElement(element.c_str());
   if (xml_element == nullptr) {
-    throw std::runtime_error("SpatialDyn::Urdf::ParseElement(): <" + element +
+    throw std::runtime_error("spatial_dyn::urdf::ParseElement(): <" + element +
                              "> element missing from <" + xml_parent->Name() + "> element.");
   }
   return xml_element;
@@ -42,7 +41,7 @@ const tinyxml2::XMLElement* ParseElement(const tinyxml2::XMLElement* xml_parent,
 std::string ParseAttribute(const tinyxml2::XMLElement* xml_element, const std::string& attribute) {
   const char *value = xml_element->Attribute(attribute.c_str());
   if (value == nullptr) {
-    throw std::runtime_error("SpatialDyn::Urdf::ParseAttribute(): \"link\" attribute missing from <" +
+    throw std::runtime_error("spatial_dyn::urdf::ParseAttribute(): \"link\" attribute missing from <" +
                              std::string(xml_element->Name()) + "> element.");
   }
   return std::string(value);
@@ -52,7 +51,7 @@ double ParseDoubleAttribute(const tinyxml2::XMLElement* xml_element, const std::
   double value;
   tinyxml2::XMLError status = xml_element->QueryDoubleAttribute(attribute.c_str(), &value);
   if (status != tinyxml2::XMLError::XML_SUCCESS) {
-    throw std::runtime_error("SpatialDyn::Urdf::ParseDoubleAttribute(): Invalid \"" + attribute +
+    throw std::runtime_error("spatial_dyn::urdf::ParseDoubleAttribute(): Invalid \"" + attribute +
                             "\" attribute in <" + std::string(xml_element->Name()) +
                             "> element - " +
                             std::string(tinyxml2::XMLDocument::ErrorIDToName(status)) + ".");
@@ -69,12 +68,12 @@ ParseOriginElement(const tinyxml2::XMLElement* xml_element) {
   if (xml_origin != nullptr) {
     const char* attr_xyz = xml_origin->Attribute("xyz");
     if (attr_xyz != nullptr) {
-      pos = EigenUtils::DecodeMatlab<Eigen::Vector3d>(attr_xyz);
+      pos = utils::Eigen::DecodeMatlab<Eigen::Vector3d>(attr_xyz);
     }
 
     const char* attr_rpy = xml_origin->Attribute("rpy");
     if (attr_rpy != nullptr) {
-      Eigen::Vector3d rpy = EigenUtils::DecodeMatlab<Eigen::Vector3d>(std::string(attr_rpy));
+      Eigen::Vector3d rpy = utils::Eigen::DecodeMatlab<Eigen::Vector3d>(std::string(attr_rpy));
       // TODO: Check Euler angles
       ori = Eigen::AngleAxisd(rpy(0), Eigen::Vector3d::UnitX()) *
             Eigen::AngleAxisd(rpy(1), Eigen::Vector3d::UnitY()) *
@@ -103,13 +102,13 @@ Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual, const std::string
   const tinyxml2::XMLElement* xml_geometry = ParseElement(xml_visual, "geometry");
   const tinyxml2::XMLElement* xml_type = xml_geometry->FirstChildElement();
   if (xml_type == nullptr) {
-    throw std::runtime_error("SpatialDyn::Urdf::ParseGraphics(): <box>|<cylinder>|<sphere>|<mesh> element missing from <geometry> element.");
+    throw std::runtime_error("spatial_dyn::urdf::ParseGraphics(): <box>|<cylinder>|<sphere>|<mesh> element missing from <geometry> element.");
   }
   Graphics::Geometry& geometry = graphics.geometry;
   std::string str_type = xml_type->Name();
   if (str_type == "box") {
     geometry.type = Graphics::Geometry::Type::BOX;
-    geometry.scale = EigenUtils::DecodeMatlab<Eigen::Vector3d>(ParseAttribute(xml_type, "size"));
+    geometry.scale = utils::Eigen::DecodeMatlab<Eigen::Vector3d>(ParseAttribute(xml_type, "size"));
   } else if (str_type == "cylinder") {
     geometry.type = Graphics::Geometry::Type::CYLINDER;
     geometry.radius = ParseDoubleAttribute(xml_type, "radius");
@@ -123,12 +122,12 @@ Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual, const std::string
 
     const char* attr_scale = xml_type->Attribute("scale");
     if (attr_scale != nullptr) {
-      geometry.scale = EigenUtils::DecodeMatlab<Eigen::Vector3d>(std::string(attr_scale));
+      geometry.scale = utils::Eigen::DecodeMatlab<Eigen::Vector3d>(std::string(attr_scale));
     } else {
       geometry.scale.setOnes();
     }
   } else {
-    throw std::runtime_error("SpatialDyn::Urdf::ParseGraphics(): <box>|<cylinder>|<sphere>|<mesh> element missing from <geometry> element. Found <" + str_type + "> instead.");
+    throw std::runtime_error("spatial_dyn::urdf::ParseGraphics(): <box>|<cylinder>|<sphere>|<mesh> element missing from <geometry> element. Found <" + str_type + "> instead.");
   }
 
   // Parse material
@@ -140,7 +139,7 @@ Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual, const std::string
     const tinyxml2::XMLElement* xml_color = xml_material->FirstChildElement("color");
     if (xml_color != nullptr) {
       std::string str_rgba = ParseAttribute(xml_color, "rgba");
-      material.rgba = EigenUtils::DecodeMatlab<Eigen::Vector4d>(str_rgba);
+      material.rgba = utils::Eigen::DecodeMatlab<Eigen::Vector4d>(str_rgba);
     }
 
     const tinyxml2::XMLElement* xml_texture = xml_material->FirstChildElement("texture");
@@ -238,7 +237,7 @@ ArticulatedBody LoadModel(const std::string& urdf, bool expand_paths) {
   tinyxml2::XMLDocument doc;
   doc.LoadFile(urdf.c_str());
   if (doc.Error()) {
-    throw std::runtime_error("SpatialDyn::Urdf::LoadModel(): Unable to parse " + urdf + " - " + std::string(doc.ErrorName()));
+    throw std::runtime_error("spatial_dyn::urdf::LoadModel(): Unable to parse " + urdf + " - " + std::string(doc.ErrorName()));
   }
   std::string urdf_path = expand_paths ? ParentPath(urdf) : "";
 
@@ -254,7 +253,7 @@ ArticulatedBody LoadModel(const std::string& urdf, bool expand_paths) {
   while (xml_link != nullptr) {
     RigidBody rb = ParseRigidBody(xml_link, urdf_path);
     if (rigid_bodies.find(rb.name) != rigid_bodies.end()) {
-      throw std::runtime_error("SpatialDyn::Urdf::LoadModel(): Multiple <link> elements with the name " +
+      throw std::runtime_error("spatial_dyn::urdf::LoadModel(): Multiple <link> elements with the name " +
                                rb.name + " cannot exist.");
     }
     std::string rb_name = rb.name;
@@ -270,14 +269,14 @@ ArticulatedBody LoadModel(const std::string& urdf, bool expand_paths) {
     const tinyxml2::XMLElement* xml_parent = ParseElement(xml_joint, "parent");
     std::string parent_link = ParseAttribute(xml_parent, "link");
     if (rigid_bodies.find(parent_link) == rigid_bodies.end()) {
-      throw std::runtime_error("SpatialDyn::Urdf::LoadModel(): Parent link (" + parent_link + ") does not exist.");
+      throw std::runtime_error("spatial_dyn::urdf::LoadModel(): Parent link (" + parent_link + ") does not exist.");
     }
 
     // Parse child
     const tinyxml2::XMLElement* xml_child = xml_joint->FirstChildElement("child");
     std::string child_link = ParseAttribute(xml_child, "link");
     if (rigid_bodies.find(child_link) == rigid_bodies.end()) {
-      throw std::runtime_error("SpatialDyn::Urdf::LoadModel(): Child link (" + child_link + ") does not exist.");
+      throw std::runtime_error("spatial_dyn::urdf::LoadModel(): Child link (" + child_link + ") does not exist.");
     }
 
     // Parse origin
@@ -290,7 +289,7 @@ ArticulatedBody LoadModel(const std::string& urdf, bool expand_paths) {
     const tinyxml2::XMLElement* xml_axis = xml_joint->FirstChildElement("axis");
     if (xml_axis != nullptr) {
       // TODO: Support arbitrary axes
-      Eigen::Vector3d axis = EigenUtils::DecodeMatlab<Eigen::Vector3d>(ParseAttribute(xml_axis, "xyz")).normalized();
+      Eigen::Vector3d axis = utils::Eigen::DecodeMatlab<Eigen::Vector3d>(ParseAttribute(xml_axis, "xyz")).normalized();
       if (axis(1) > 0.8) {
         axis_num = 1;
       } else if (axis(2) > 0.8) {
@@ -344,7 +343,7 @@ ArticulatedBody LoadModel(const std::string& urdf, bool expand_paths) {
       }
       if (attr_type == "revolute" || attr_type == "prismatic") {
         if (xml_limit == nullptr) {
-          throw std::runtime_error("SpatialDyn::Urdf::LoadModel(): <limit> element missing from <joint> element.");
+          throw std::runtime_error("spatial_dyn::urdf::LoadModel(): <limit> element missing from <joint> element.");
         }
         dq_max = ParseDoubleAttribute(xml_limit, "velocity");
         fq_max = ParseDoubleAttribute(xml_limit, "effort");
@@ -385,5 +384,5 @@ ArticulatedBody LoadModel(const std::string& urdf, bool expand_paths) {
   return ab;
 }
 
-}  // namespace Urdf
-}  // namespace SpatialDyn
+}  // namespace urdf
+}  // namespace spatial_dyn

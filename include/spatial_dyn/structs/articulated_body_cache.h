@@ -10,11 +10,11 @@
 #ifndef SPATIAL_DYN_STRUCTS_ARTICULATED_BODY_CACHE_H_
 #define SPATIAL_DYN_STRUCTS_ARTICULATED_BODY_CACHE_H_
 
-#include "SpatialDyn/structs/articulated_body.h"
+#include "spatial_dyn/structs/articulated_body.h"
 
 #include <vector>  // std::vector
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 /// @cond
 struct ArticulatedBody::Cache {
@@ -89,7 +89,7 @@ struct ArticulatedBody::Cache {
   };
   AbaData aba_data_;
 
-  struct OpspaceData {
+  struct opspaceData {
     Eigen::MatrixXd J;
     double svd_epsilon;
 
@@ -103,9 +103,9 @@ struct ArticulatedBody::Cache {
     bool is_jbar_computed = false;
     Eigen::MatrixXd J_bar;
   };
-  OpspaceData opspace_data_;
+  opspaceData opspace_data_;
 
-  struct OpspaceAbaData {
+  struct opspaceAbaData {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     int idx_link;
     Eigen::Vector3d offset;
@@ -120,11 +120,11 @@ struct ArticulatedBody::Cache {
     std::vector<SpatialForce6d> p;
     std::vector<Eigen::Matrix<double,1,6>> u;
   };
-  OpspaceAbaData opspace_aba_data_;
+  opspaceAbaData opspace_aba_data_;
 
 };
 /// @endcond
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn
 
 #endif  // SPATIAL_DYN_STRUCTS_ARTICULATED_BODY_CACHE_H_

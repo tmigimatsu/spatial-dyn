@@ -12,17 +12,17 @@
 
 #include <map>  // std::map
 
-#include "SpatialDyn/structs/articulated_body.h"
-#include "SpatialDyn/structs/options.h"
-#include "SpatialDyn/utils/spatial_math.h"
+#include "spatial_dyn/structs/articulated_body.h"
+#include "spatial_dyn/structs/options.h"
+#include "spatial_dyn/utils/spatial_math.h"
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 /**
  * @defgroup cpp_forward_dynamics Forward Dynamics
  * @ingroup cpp_algorithms
  *
- * C++ implementation of SpatialDyn forward dynamics algorithms.
+ * C++ implementation of spatial_dyn forward dynamics algorithms.
  *
  * @see Python: \ref py_forward_dynamics
  * @{
@@ -97,6 +97,6 @@ const Eigen::MatrixXd& InertiaInverseAba(const ArticulatedBody& ab);
  * @}
  */  // defgroup cpp_forward_dynamics
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn
 
 #endif  // SPATIAL_DYN_ALGORITHMS_FORWARD_DYNAMICS_H_

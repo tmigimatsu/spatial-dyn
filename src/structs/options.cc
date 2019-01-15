@@ -9,7 +9,7 @@
 
 #include "structs/options.h"
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 InverseDynamicsOptions::InverseDynamicsOptions(const ForwardDynamicsOptions& other)
     : gravity(other.gravity), centrifugal_coriolis(other.centrifugal_coriolis),
@@ -23,4 +23,4 @@ ForwardDynamicsOptions::ForwardDynamicsOptions(const IntegrationOptions& other)
     : gravity(other.gravity), centrifugal_coriolis(other.centrifugal_coriolis),
       friction(other.friction), stiction_epsilon(other.stiction_epsilon) {}
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn

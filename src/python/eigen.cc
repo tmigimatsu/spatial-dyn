@@ -11,7 +11,7 @@
 #include <pybind11/eigen.h>
 #include <pybind11/operators.h>
 
-#include "SpatialDyn/utils/spatial_math.h"
+#include "spatial_dyn/utils/spatial_math.h"
 
 namespace Eigen {
 
@@ -34,11 +34,11 @@ PYBIND11_MODULE(eigen, m) {
            py::return_value_policy::reference_internal)
       .def("inverse", &Isometry3d::inverse)
       .def("fdot",
-           [](const Isometry3d& T, const SpatialDyn::SpatialForced& f) {
+           [](const Isometry3d& T, const spatial_dyn::SpatialForced& f) {
              return T * f;
            })
       .def("mdot",
-           [](const Isometry3d& T, const SpatialDyn::SpatialMotiond& m) {
+           [](const Isometry3d& T, const spatial_dyn::SpatialMotiond& m) {
              return T * m;
            });
 

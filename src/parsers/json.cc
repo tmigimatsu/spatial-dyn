@@ -9,8 +9,8 @@
 
 #include "parsers/json.h"
 
-namespace SpatialDyn {
-namespace Json {
+namespace spatial_dyn {
+namespace json {
 
 nlohmann::json Serialize(const ArticulatedBody& ab) {
   nlohmann::json json;
@@ -139,5 +139,5 @@ Deserialize(const nlohmann::json& json) {
 }
 */
 
-}  // namespace Json
-}  // namespace SpatialDyn
+}  // namespace json
+}  // namespace spatial_dyn

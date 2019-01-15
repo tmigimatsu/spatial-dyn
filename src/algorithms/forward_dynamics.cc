@@ -11,12 +11,12 @@
 
 #include <algorithm>  // std::min
 #include <cmath>      // std::abs
+#include <ctrl_utils/math.h>
 
 #include "algorithms/inverse_dynamics.h"
 #include "structs/articulated_body_cache.h"
-#include "utils/math.h"
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 Eigen::VectorXd ForwardDynamics(const ArticulatedBody& ab,
                                 Eigen::Ref<const Eigen::VectorXd> tau,
@@ -97,12 +97,12 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
       tau_i -= joint.f_viscous() * ab.dq(i);
 
       // Kinetic friction
-      double f_coulomb = joint.f_coulomb() * Signum(ab.dq(i), options.stiction_epsilon);
+      double f_coulomb = joint.f_coulomb() * utils::math::Signum(ab.dq(i), options.stiction_epsilon);
 
       // Static friction
       if (f_coulomb == 0.) {
         double mu = std::min(std::abs(tau_i), joint.f_coulomb() + joint.f_stiction());
-        f_coulomb = mu * Signum(tau_i);
+        f_coulomb = mu * utils::math::Signum(tau_i);
       }
       tau_i -= f_coulomb;
 
@@ -199,4 +199,4 @@ const Eigen::MatrixXd& InertiaInverseAba(const ArticulatedBody& ab) {
   return aba.A_inv;
 }
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn

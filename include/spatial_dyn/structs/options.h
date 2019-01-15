@@ -10,7 +10,7 @@
 #ifndef SPATIAL_DYN_STRUCTS_OPTIONS_H_
 #define SPATIAL_DYN_STRUCTS_OPTIONS_H_
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 struct InverseDynamicsOptions;
 struct ForwardDynamicsOptions;
@@ -18,7 +18,7 @@ struct IntegrationOptions;
 
 /**
  * @ingroup cpp_inverse_dynamics
- * Options for SpatialDyn::InverseDynamics().
+ * Options for spatial_dyn::InverseDynamics().
  */
 struct InverseDynamicsOptions {
 
@@ -55,7 +55,7 @@ struct InverseDynamicsOptions {
 
 /**
  * @ingroup cpp_forward_dynamics
- * Options for SpatialDyn::ForwardDynamics().
+ * Options for spatial_dyn::ForwardDynamics().
  */
 struct ForwardDynamicsOptions /*: InverseDynamicsOptions*/ {
 
@@ -133,7 +133,7 @@ struct IntegrationOptions /*: ForwardDynamicsOptions*/ {
   Method method = Method::RK4;
 
   /**
-   * Use SpatialDyn::ForwardDynamicsAba(). If false, uses SpatialDyn::ForwardDynamics().
+   * Use spatial_dyn::ForwardDynamicsAba(). If false, uses spatial_dyn::ForwardDynamics().
    */
   bool aba = false;
 
@@ -144,6 +144,6 @@ struct IntegrationOptions /*: ForwardDynamicsOptions*/ {
 
 };
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn
 
 #endif  // SPATIAL_DYN_STRUCTS_OPTIONS_H_

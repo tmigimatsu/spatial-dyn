@@ -14,14 +14,14 @@
 #include <ostream>  // std::ostream
 #include <string>   // std::string
 
-#include "SpatialDyn/utils/spatial_math.h"
+#include "spatial_dyn/utils/spatial_math.h"
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 /**
  * @ingroup cpp_structs
  *
- * Joint struct for SpatialDyn.
+ * Joint struct for spatial_dyn.
  *
  * @see Python: spatialdyn.Joint
  */
@@ -259,6 +259,6 @@ class Joint {
  */
 std::ostream& operator<<(std::ostream& os, const Joint& j);
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn
 
 #endif  // SPATIAL_DYN_STRUCTS_JOINT_H_

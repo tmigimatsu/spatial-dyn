@@ -11,7 +11,7 @@
 
 #include "structs/articulated_body_cache.h"
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 Eigen::Vector3d Position(const ArticulatedBody& ab, int link,
                          const Eigen::Vector3d& offset) {
@@ -160,4 +160,4 @@ Eigen::Tensor3d Hessian(const ArticulatedBody& ab, int link,
   return H;
 }
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn

@@ -46,7 +46,7 @@ class Timer:
     def freq(self):
         return 1. / self.dt
 
-    @frequency.setter
+    @freq.setter
     def freq(self, frequency):
         self.dt = 1. / frequency
 

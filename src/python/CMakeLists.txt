@@ -21,7 +21,7 @@ if(NOT pybind11_FOUND)
 endif()
 
 pybind11_add_module(spatialdyn spatial_dyn.cc eigen.cc ${SPATIAL_DYN_SRC})
-target_link_libraries(spatialdyn PUBLIC pybind11::pybind11 SpatialDyn::SpatialDyn)
+target_link_libraries(spatialdyn PUBLIC pybind11::pybind11 spatial_dyn::spatial_dyn)
 
 pybind11_add_module(eigen eigen.cc ${SPATIAL_DYN_SRC})
-target_link_libraries(eigen PUBLIC pybind11::pybind11 SpatialDyn::SpatialDyn)
+target_link_libraries(eigen PUBLIC pybind11::pybind11 spatial_dyn::spatial_dyn)

@@ -10,12 +10,12 @@
 #ifndef SPATIAL_DYN_PARSERS_JSON_H_
 #define SPATIAL_DYN_PARSERS_JSON_H_
 
-#include "SpatialDyn/structs/articulated_body.h"
+#include "spatial_dyn/structs/articulated_body.h"
 
 #include "nlohmann/json.hpp"
 
-namespace SpatialDyn {
-namespace Json {
+namespace spatial_dyn {
+namespace json {
 
 nlohmann::json Serialize(const ArticulatedBody& ab);
 nlohmann::json Serialize(const RigidBody& rb);
@@ -61,7 +61,7 @@ nlohmann::json Serialize(const Eigen::QuaternionBase<Derived>& quat) {
   return json;
 }
 
-}  // namespace Json
-}  // namespace SpatialDyn
+}  // namespace json
+}  // namespace spatial_dyn
 
 #endif  // SPATIAL_DYN_PARSERS_JSON_H_

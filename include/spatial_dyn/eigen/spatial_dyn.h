@@ -32,9 +32,9 @@ class SpatialInertiaMatrix;
 
 }  // namespace Eigen
 
-#define EIGEN_TRANSFORM_PLUGIN "SpatialDyn/eigen/spatial_transform.h"
-#define EIGEN_MATRIX_PLUGIN "SpatialDyn/eigen/matrix_plugin.h"
-#include "SpatialDyn/utils/eigen_utils.h"
+#define EIGEN_TRANSFORM_PLUGIN "spatial_dyn/eigen/spatial_transform.h"
+#define EIGEN_MATRIX_PLUGIN "spatial_dyn/eigen/matrix_plugin.h"
+#include <ctrl_utils/eigen.h>
 #include "spatial_motion.h"
 #include "spatial_force.h"
 #include "spatial_inertia.h"

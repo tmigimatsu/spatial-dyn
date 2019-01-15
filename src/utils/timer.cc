@@ -11,7 +11,7 @@
 
 #include <thread>  // std::this_thread
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 void Timer::set_frequency(double frequency) {
   ns_interval_ = std::chrono::nanoseconds(static_cast<unsigned int>(1e9 / frequency));
@@ -76,4 +76,4 @@ void Timer::Sleep() {
   t_next_ += ns_interval_;
 }
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn

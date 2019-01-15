@@ -13,8 +13,8 @@
 #include "algorithms/inverse_dynamics.h"
 #include "structs/articulated_body_cache.h"
 
-namespace SpatialDyn {
-namespace Opspace {
+namespace spatial_dyn {
+namespace opspace {
 
 const Eigen::Matrix6d& InertiaAba(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset, double svd_epsilon) {
   if (idx_link < 0) idx_link += ab.dof();
@@ -22,7 +22,7 @@ const Eigen::Matrix6d& InertiaAba(const ArticulatedBody& ab, int idx_link, const
 
   if (!ops.is_lambda_computed || ops.idx_link != idx_link ||
       ops.offset != offset || ops.svd_epsilon != svd_epsilon) {
-    ops.Lambda = EigenUtils::PseudoInverse(InertiaInverseAba(ab, idx_link, offset), svd_epsilon);
+    ops.Lambda = utils::Eigen::PseudoInverse(InertiaInverseAba(ab, idx_link, offset), svd_epsilon);
     ops.svd_epsilon = svd_epsilon;
     ops.is_lambda_computed = true;
   }
@@ -154,7 +154,7 @@ Eigen::Vector6d CentrifugalCoriolisAba(const ArticulatedBody& ab, int idx_link, 
   }
 
   Eigen::Vector6d mu = Eigen::Isometry3d(ab.T_to_world(idx_link).linear()) * a;
-  return Opspace::InertiaAba(ab, idx_link, offset, svd_epsilon) * -mu;
+  return opspace::InertiaAba(ab, idx_link, offset, svd_epsilon) * -mu;
 }
 
 Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen::Vector3d& offset,
@@ -210,8 +210,8 @@ Eigen::Vector6d GravityAba(const ArticulatedBody& ab, int idx_link, const Eigen:
   }
 
   Eigen::Vector6d p = Eigen::Isometry3d(ab.T_to_world(idx_link).linear()) * a;
-  return Opspace::InertiaAba(ab, idx_link, offset, svd_epsilon) * p;
+  return opspace::InertiaAba(ab, idx_link, offset, svd_epsilon) * p;
 }
 
-}  // namespace Opspace
-}  // namespace SpatialDyn
+}  // namespace opspace
+}  // namespace spatial_dyn

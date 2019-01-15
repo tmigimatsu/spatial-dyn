@@ -12,17 +12,17 @@
 
 #include <map>  // std::map
 
-#include "SpatialDyn/structs/articulated_body.h"
-#include "SpatialDyn/structs/options.h"
-#include "SpatialDyn/utils/spatial_math.h"
+#include "spatial_dyn/structs/articulated_body.h"
+#include "spatial_dyn/structs/options.h"
+#include "spatial_dyn/utils/spatial_math.h"
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 /**
  * @defgroup cpp_inverse_dynamics Inverse Dynamics
  * @ingroup cpp_algorithms
  *
- * C++ implementation of SpatialDyn inverse dynamics algorithms.
+ * C++ implementation of spatial_dyn inverse dynamics algorithms.
  *
  * @see Python: \ref py_inverse_dynamics
  * @{
@@ -115,7 +115,7 @@ Eigen::VectorXd Friction(const ArticulatedBody& ab, Eigen::Ref<const Eigen::Vect
  *
  * @param ab ArticulatedBody.
  * @return Inertia matrix.
- * @see Forward dynamics: SpatialDyn::InertiaInverse()
+ * @see Forward dynamics: spatial_dyn::InertiaInverse()
  * @see Python: spatialdyn.inertia()
  */
 const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab);
@@ -124,6 +124,6 @@ const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab);
  * @}
  */  // defgroup cpp_inverse_dynamics
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn
 
 #endif  // SPATIAL_DYN_ALGORITHMS_INVERSE_DYNAMICS_H_

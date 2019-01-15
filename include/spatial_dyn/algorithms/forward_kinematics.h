@@ -10,16 +10,16 @@
 #ifndef SPATIAL_DYN_ALGORITHMS_FORWARD_KINEMATICS_H_
 #define SPATIAL_DYN_ALGORITHMS_FORWARD_KINEMATICS_H_
 
-#include "SpatialDyn/structs/articulated_body.h"
-#include "SpatialDyn/utils/spatial_math.h"
+#include "spatial_dyn/structs/articulated_body.h"
+#include "spatial_dyn/utils/spatial_math.h"
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 /**
  * @defgroup cpp_forward_kinematics Forward Kinematics
  * @ingroup cpp_algorithms
  *
- * C++ implementation of SpatialDyn forward kinematics algorithms.
+ * C++ implementation of spatial_dyn forward kinematics algorithms.
  *
  * @see Python: \ref py_forward_kinematics
  * @{
@@ -230,6 +230,6 @@ Eigen::Tensor3d Hessian(const ArticulatedBody& ab, int link = -1,
  * @}
  */  // defgroup cpp_forward_kinematics
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn
 
 #endif  // SPATIAL_DYN_ALGORITHMS_FORWARD_KINEMATICS_H_

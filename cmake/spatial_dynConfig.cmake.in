@@ -1,5 +1,5 @@
 ############################################################
-# CMake config for the SpatialDyn library
+# CMake config for the spatial_dyn library
 #
 # Copyright 2018. All Rights Reserved.
 #
@@ -13,9 +13,8 @@ include(CMakeFindDependencyMacro)
 list(APPEND CMAKE_MODULE_PATH ${SPATIAL_DYN_CMAKE_DIR})
 find_dependency(Eigen3 3.3.5 REQUIRED)
 find_dependency(nlohmann_json 3.2 REQUIRED)
-find_dependency(cpp_redis 4.3.1 REQUIRED)
 list(REMOVE_AT CMAKE_MODULE_PATH -1)
 
-if(NOT TARGET SpatialDyn::SpatialDyn)
-    include("${SPATIAL_DYN_CMAKE_DIR}/SpatialDynTargets.cmake")
+if(NOT TARGET spatial_dyn::spatial_dyn)
+    include("${SPATIAL_DYN_CMAKE_DIR}/spatial_dynTargets.cmake")
 endif()

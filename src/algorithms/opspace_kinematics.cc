@@ -11,8 +11,8 @@
 
 #include "structs/articulated_body_cache.h"
 
-namespace SpatialDyn {
-namespace Opspace {
+namespace spatial_dyn {
+namespace opspace {
 
 Eigen::Vector3d OrientationError(const Eigen::Quaterniond &quat, const Eigen::Quaterniond &quat_des) {
   Eigen::Quaterniond quat_err = quat * quat_des.inverse();
@@ -55,10 +55,10 @@ Eigen::Matrix<double,4,3> AngleAxisJacobian(const Eigen::AngleAxisd& aa) {
   Eigen::Matrix<double,4,3> E;
   E << aa.axis().transpose(),
        -0.5 * (std::sin(aa.angle()) / (1 - std::cos(aa.angle())) *
-               EigenUtils::DoubleCrossMatrix(aa.axis()) +
-               EigenUtils::CrossMatrix(aa.axis()));
+               utils::Eigen::DoubleCrossMatrix(aa.axis()) +
+               utils::Eigen::CrossMatrix(aa.axis()));
   return E;
 }
 
-}  // namespace Opspace
-}  // namespace SpatialDyn
+}  // namespace opspace
+}  // namespace spatial_dyn

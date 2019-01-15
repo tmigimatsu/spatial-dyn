@@ -1,5 +1,5 @@
 ############################################################
-# CMakeLists for SpatialDyn tests
+# CMakeLists for spatial_dyn tests
 #
 # Copyright 2018. All Rights Reserved.
 #
@@ -29,7 +29,7 @@ if(NOT Catch2_FOUND)
 endif()
 
 target_link_libraries(${CMAKE_PROJECT_NAME}_tests PRIVATE
-    SpatialDyn::SpatialDyn
+    spatial_dyn::spatial_dyn
     PkgConfig::rbdl
     Catch2::Catch2
 )

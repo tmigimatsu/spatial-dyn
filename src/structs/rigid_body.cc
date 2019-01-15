@@ -11,7 +11,7 @@
 
 #include <exception>  // std::invalid_argument
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 void RigidBody::set_inertia(double mass,
                             const Eigen::Vector3d& com,
@@ -34,4 +34,4 @@ std::ostream& operator<<(std::ostream& os, const RigidBody& rb) {
   return os;
 }
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn

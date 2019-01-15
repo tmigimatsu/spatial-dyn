@@ -1,5 +1,5 @@
 ############################################################
-# CMakeLists for the SpatialDyn library
+# CMakeLists for the spatial_dyn library
 #
 # Copyright 2018. All Rights Reserved.
 #
@@ -22,14 +22,14 @@ if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
 endif()
 
 # Define directories
-set(SPATIAL_DYN_LIB SpatialDyn)
+set(SPATIAL_DYN_LIB spatial_dyn)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 set(SPATIAL_DYN_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 set(SPATIAL_DYN_EXT_DIR ${PROJECT_SOURCE_DIR}/external)
 set(SPATIAL_DYN_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 set(SPATIAL_DYN_SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 
-# Create SpatialDyn library
+# Create spatial_dyn library
 add_library(${SPATIAL_DYN_LIB} SHARED)
 
 # Create namespaced alias for use inside the build tree
@@ -52,27 +52,8 @@ function(download_package PACKAGE_NAME)
 endfunction()
 
 # Export for build tree
-configure_file(${SPATIAL_DYN_CMAKE_DIR}/Findcpp_redis.cmake.in
-    ${CMAKE_BINARY_DIR}/Findcpp_redis.cmake @ONLY)
-configure_file(${SPATIAL_DYN_CMAKE_DIR}/FindEigen3.cmake.in
-    ${CMAKE_BINARY_DIR}/FindEigen3.cmake @ONLY)
 configure_file(${SPATIAL_DYN_CMAKE_DIR}/Findnlohmann_json.cmake.in
     ${CMAKE_BINARY_DIR}/Findnlohmann_json.cmake @ONLY)
-
-
-find_package(Eigen3 3.3.5 QUIET)
-if(NOT Eigen3_FOUND)
-    download_package(Eigen3)
-    find_package(Eigen3 3.3.5 REQUIRED PATHS ${CMAKE_BINARY_DIR}/Eigen3/build)
-endif()
-
-find_package(cpp_redis 4.3.1 QUIET)
-if(NOT cpp_redis_FOUND)
-    download_package(cpp_redis)
-    list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_BINARY_DIR})
-    find_package(cpp_redis 4.3.1 MODULE REQUIRED)
-    list(REMOVE_AT CMAKE_MODULE_PATH 0)
-endif()
 
 find_package(tinyxml2 6.2 QUIET)
 if(NOT tinyxml2_FOUND)
@@ -87,12 +68,16 @@ if(NOT nlohmann_json_FOUND)
     find_package(nlohmann_json 3.2 REQUIRED PATHS ${CMAKE_BINARY_DIR}/nlohmann_json/build)
 endif()
 
+find_package(ctrl_utils 1.0.0 QUIET)
+if(NOT ctrl_utils_FOUND)
+    download_package(ctrl_utils)
+    find_package(ctrl_utils 1.0.0 REQUIRED)
+endif()
+
 target_link_libraries(${SPATIAL_DYN_LIB}
     PUBLIC
-        Eigen3::Eigen
+        ctrl_utils::ctrl_utils
         nlohmann_json::nlohmann_json
-    INTERFACE
-        cpp_redis::cpp_redis
     PRIVATE
         tinyxml2_static
 )
@@ -103,7 +88,7 @@ target_include_directories(${SPATIAL_DYN_LIB}
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${SPATIAL_DYN_INCLUDE_DIR}>
     PRIVATE
-        ${SPATIAL_DYN_INCLUDE_DIR}/SpatialDyn
+        ${SPATIAL_DYN_INCLUDE_DIR}/spatial_dyn
         ${SPATIAL_DYN_SRC_DIR})
 
 # Attach sources

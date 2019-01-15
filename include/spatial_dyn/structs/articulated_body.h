@@ -10,8 +10,8 @@
 #ifndef SPATIAL_DYN_STRUCTS_ARTICULATED_BODY_H_
 #define SPATIAL_DYN_STRUCTS_ARTICULATED_BODY_H_
 
-#include "SpatialDyn/utils/spatial_math.h"
-#include "SpatialDyn/structs/rigid_body.h"
+#include "spatial_dyn/utils/spatial_math.h"
+#include "spatial_dyn/structs/rigid_body.h"
 
 #include <functional>  // std::function
 #include <map>         // std::map
@@ -21,12 +21,12 @@
 #include <utility>     // std::pair
 #include <vector>      // std::vector
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 /**
  * @ingroup cpp_structs
  *
- * Main articulated body struct for SpatialDyn.
+ * Main articulated body struct for spatial_dyn.
  *
  * @see Python: spatialdyn.ArticulatedBody
  */
@@ -427,6 +427,6 @@ class ArticulatedBody {
  */
 std::ostream& operator<<(std::ostream& os, const ArticulatedBody& ab);
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn
 
 #endif  // SPATIAL_DYN_STRUCTS_ARTICULATED_BODY_H_

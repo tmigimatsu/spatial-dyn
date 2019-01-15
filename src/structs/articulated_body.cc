@@ -13,7 +13,7 @@
 
 #include "structs/articulated_body_cache.h"
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 ArticulatedBody::ArticulatedBody() : cache_(new Cache()) {}
 
@@ -311,4 +311,4 @@ std::ostream& operator<<(std::ostream& os, const ArticulatedBody& ab) {
   return os;
 }
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn

@@ -10,19 +10,19 @@
 #ifndef SPATIAL_DYN_ALGORITHMS_SIMULATION_H_
 #define SPATIAL_DYN_ALGORITHMS_SIMULATION_H_
 
-#include "SpatialDyn/structs/articulated_body.h"
+#include "spatial_dyn/structs/articulated_body.h"
 
 #include <map>  // std::map
 
-#include "SpatialDyn/structs/options.h"
+#include "spatial_dyn/structs/options.h"
 
-namespace SpatialDyn {
+namespace spatial_dyn {
 
 /**
  * @defgroup cpp_simulation Simulation
  * @ingroup cpp
  *
- * C++ implementation of SpatialDyn simulation utilities.
+ * C++ implementation of spatial_dyn simulation utilities.
  *
  * @see Python: \ref py_simulation
  * @{
@@ -50,6 +50,6 @@ void Integrate(ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt,
                const std::map<size_t, SpatialForced>& f_external = {},
                const IntegrationOptions& options = {});
 
-}  // namespace SpatialDyn
+}  // namespace spatial_dyn
 
 #endif  // SPATIAL_DYN_ALGORITHMS_SIMULATION_H_
