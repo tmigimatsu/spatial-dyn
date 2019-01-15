@@ -14,7 +14,6 @@ class CMakeExtension(Extension):
         Extension.__init__(self, name, sources=[])
         self.sourcedir = os.path.abspath(sourcedir)
 
-
 class CMakeBuild(build_ext):
     def run(self):
         try:
@@ -39,7 +38,8 @@ class CMakeBuild(build_ext):
         except:
             pass
         ncpus = subprocess.check_output(['./ncpu.sh'], cwd=cmake_dir).strip().decode('utf-8')
-        subprocess.check_call(['cmake', '..'], cwd=build_dir)
+        subprocess.check_call(['cmake', '..', '-DBUILD_TESTING=OFF', '-DBUILD_LIBRARY=OFF'],
+                              cwd=build_dir)
         subprocess.check_call(['cmake', '--build', '.', '--', '-j' + ncpus], cwd=build_dir)
 
 setup(
