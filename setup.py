@@ -38,7 +38,7 @@ class CMakeBuild(build_ext):
         except:
             pass
         ncpus = subprocess.check_output(['./ncpu.sh'], cwd=cmake_dir).strip().decode('utf-8')
-        subprocess.check_call(['cmake', '..', '-DBUILD_TESTING=OFF', '-DBUILD_LIBRARY=OFF'],
+        subprocess.check_call(['cmake', '-DBUILD_TESTING=OFF', '-DBUILD_CPP=OFF', '..'],
                               cwd=build_dir)
         subprocess.check_call(['cmake', '--build', '.', '--', '-j' + ncpus], cwd=build_dir)
 

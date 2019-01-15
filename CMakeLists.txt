@@ -14,7 +14,7 @@ cmake_minimum_required(VERSION 3.6)
 project(spatial_dyn VERSION 1.0.0 LANGUAGES CXX)
 
 # Define options
-option(BUILD_LIBRARY "Build C++ library" ON)
+option(BUILD_CPP "Build C++ library" ON)
 option(BUILD_PYTHON "Build Python library" ON)
 
 # Set CMake flags
@@ -120,7 +120,7 @@ set(SPATIAL_DYN_TARGETS ${SPATIAL_DYN_LIB}Targets)
 set(SPATIAL_DYN_CONFIG ${SPATIAL_DYN_LIB}Config)
 set(SPATIAL_DYN_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${SPATIAL_DYN_LIB})
 
-if(BUILD_LIBRARY)
+if(BUILD_CPP)
     # Install the library
     install(TARGETS ${SPATIAL_DYN_LIB}
         EXPORT ${SPATIAL_DYN_TARGETS}
@@ -166,7 +166,9 @@ if(BUILD_TESTING)
 endif()
 
 # Build python wrapper
-add_subdirectory(${SPATIAL_DYN_SRC_DIR}/python)
+if(BUILD_PYTHON)
+    add_subdirectory(${SPATIAL_DYN_SRC_DIR}/python)
+endif()
 
 export(TARGETS ${SPATIAL_DYN_LIB}
     NAMESPACE ${SPATIAL_DYN_LIB}::
