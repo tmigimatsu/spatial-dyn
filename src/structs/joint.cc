@@ -123,11 +123,11 @@ void Joint::set_f_stiction(double f_stiction) {
 Eigen::Isometry3d Joint::T_joint(double q) const {
   switch (type_) {
     case Joint::Type::RX:
-      return Eigen::Isometry3d(utils::Eigen::RotationX(q));
+      return Eigen::Isometry3d(ctrl_utils::Eigen::RotationX(q));
     case Joint::Type::RY:
-      return Eigen::Isometry3d(utils::Eigen::RotationY(q));
+      return Eigen::Isometry3d(ctrl_utils::Eigen::RotationY(q));
     case Joint::Type::RZ:
-      return Eigen::Isometry3d(utils::Eigen::RotationZ(q));
+      return Eigen::Isometry3d(ctrl_utils::Eigen::RotationZ(q));
     case Joint::Type::PX:
       return Eigen::Isometry3d(Eigen::Translation3d(q * Eigen::Vector3d::UnitX()));
     case Joint::Type::PY:

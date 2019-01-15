@@ -97,12 +97,12 @@ Eigen::VectorXd ForwardDynamicsAba(const ArticulatedBody& ab,
       tau_i -= joint.f_viscous() * ab.dq(i);
 
       // Kinetic friction
-      double f_coulomb = joint.f_coulomb() * utils::math::Signum(ab.dq(i), options.stiction_epsilon);
+      double f_coulomb = joint.f_coulomb() * ctrl_utils::math::Signum(ab.dq(i), options.stiction_epsilon);
 
       // Static friction
       if (f_coulomb == 0.) {
         double mu = std::min(std::abs(tau_i), joint.f_coulomb() + joint.f_stiction());
-        f_coulomb = mu * utils::math::Signum(tau_i);
+        f_coulomb = mu * ctrl_utils::math::Signum(tau_i);
       }
       tau_i -= f_coulomb;
 

@@ -55,8 +55,8 @@ Eigen::Matrix<double,4,3> AngleAxisJacobian(const Eigen::AngleAxisd& aa) {
   Eigen::Matrix<double,4,3> E;
   E << aa.axis().transpose(),
        -0.5 * (std::sin(aa.angle()) / (1 - std::cos(aa.angle())) *
-               utils::Eigen::DoubleCrossMatrix(aa.axis()) +
-               utils::Eigen::CrossMatrix(aa.axis()));
+               ctrl_utils::Eigen::DoubleCrossMatrix(aa.axis()) +
+               ctrl_utils::Eigen::CrossMatrix(aa.axis()));
   return E;
 }
 

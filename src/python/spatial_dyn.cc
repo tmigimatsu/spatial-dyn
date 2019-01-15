@@ -283,8 +283,8 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def("__repr__",
            [](const SpatialInertiad& inertia) {
              return "<spatialdyn.SpatialInertiad (mass=" + std::to_string(inertia.mass) +
-                    ", com=[" + utils::Eigen::EncodeMatlab(inertia.com) + "], I_com=[" +
-                    utils::Eigen::EncodeMatlab(inertia.I_com_flat()) + "])>";
+                    ", com=[" + ctrl_utils::Eigen::EncodeMatlab(inertia.com) + "], I_com=[" +
+                    ctrl_utils::Eigen::EncodeMatlab(inertia.I_com_flat()) + "])>";
            });
 
   // opspace dynamics

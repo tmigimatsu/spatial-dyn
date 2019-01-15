@@ -196,7 +196,7 @@ Eigen::VectorXd Friction(const ArticulatedBody& ab, Eigen::Ref<const Eigen::Vect
     const Joint& joint = ab.rigid_bodies(i).joint();
 
     // Kinetic friction
-    double f_coulomb = joint.f_coulomb() * utils::math::Signum(ab.dq(i), stiction_epsilon);
+    double f_coulomb = joint.f_coulomb() * ctrl_utils::math::Signum(ab.dq(i), stiction_epsilon);
 
     // Static friction
     if (f_coulomb == 0.) {
@@ -204,7 +204,7 @@ Eigen::VectorXd Friction(const ArticulatedBody& ab, Eigen::Ref<const Eigen::Vect
       if (!compensate) {
         mu = std::min(mu, std::abs(tau(i)));
       }
-      f_coulomb = mu * utils::math::Signum(tau(i));
+      f_coulomb = mu * ctrl_utils::math::Signum(tau(i));
     }
 
     // Add viscous and Coulomb friction
