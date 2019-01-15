@@ -233,14 +233,14 @@ std::string ParentPath(const std::string& path) {
   return path.substr(0, idx+1);
 }
 
-ArticulatedBody LoadModel(const std::string& urdf) {
+ArticulatedBody LoadModel(const std::string& urdf, bool expand_paths) {
   // Open xml document
   tinyxml2::XMLDocument doc;
   doc.LoadFile(urdf.c_str());
   if (doc.Error()) {
     throw std::runtime_error("SpatialDyn::Urdf::LoadModel(): Unable to parse " + urdf + " - " + std::string(doc.ErrorName()));
   }
-  std::string urdf_path = ParentPath(urdf);
+  std::string urdf_path = expand_paths ? ParentPath(urdf) : "";
 
   // Parse robot
   const tinyxml2::XMLElement* xml_robot = ParseElement(doc, "robot");

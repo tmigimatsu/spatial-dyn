@@ -324,7 +324,7 @@ PYBIND11_MODULE(spatialdyn, m) {
 
   // Urdf parser
   py::module m_urdf = m.def_submodule("urdf");
-  m_urdf.def("load_model", &Urdf::LoadModel, "urdf"_a);
+  m_urdf.def("load_model", &Urdf::LoadModel, "urdf"_a, "expand_paths"_a = false);
 
 }
 

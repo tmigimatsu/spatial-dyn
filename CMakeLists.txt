@@ -122,7 +122,6 @@ target_sources(${SPATIAL_DYN_LIB} PRIVATE
     ${SPATIAL_DYN_SRC_DIR}/structs/rigid_body.cc
     ${SPATIAL_DYN_SRC_DIR}/parsers/json.cc
     ${SPATIAL_DYN_SRC_DIR}/parsers/urdf.cc
-    ${SPATIAL_DYN_SRC_DIR}/utils/timer.cc
 )
 
 # Use GNUInstalDirs to install ibraries into correct locations on all platforms
