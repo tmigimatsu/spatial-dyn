@@ -120,44 +120,42 @@ set(SPATIAL_DYN_TARGETS ${SPATIAL_DYN_LIB}Targets)
 set(SPATIAL_DYN_CONFIG ${SPATIAL_DYN_LIB}Config)
 set(SPATIAL_DYN_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${SPATIAL_DYN_LIB})
 
-if(BUILD_CPP)
-    # Install the library
-    install(TARGETS ${SPATIAL_DYN_LIB}
-        EXPORT ${SPATIAL_DYN_TARGETS}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    )
+# Install the library
+install(TARGETS ${SPATIAL_DYN_LIB}
+    EXPORT ${SPATIAL_DYN_TARGETS}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
 
-    # Install the headers
-    install(DIRECTORY ${SPATIAL_DYN_INCLUDE_DIR} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+# Install the headers
+install(DIRECTORY ${SPATIAL_DYN_INCLUDE_DIR} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-    # Export targets to Targets.cmake
-    install(EXPORT ${SPATIAL_DYN_TARGETS}
-        DESTINATION ${SPATIAL_DYN_CONFIG_INSTALL_DIR}
-        NAMESPACE ${SPATIAL_DYN_LIB}::
-        FILE ${SPATIAL_DYN_TARGETS}.cmake
-    )
+# Export targets to Targets.cmake
+install(EXPORT ${SPATIAL_DYN_TARGETS}
+    DESTINATION ${SPATIAL_DYN_CONFIG_INSTALL_DIR}
+    NAMESPACE ${SPATIAL_DYN_LIB}::
+    FILE ${SPATIAL_DYN_TARGETS}.cmake
+)
 
-    # Create ConfigVersion.cmake
-    include(CMakePackageConfigHelpers)
-    write_basic_package_version_file(${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}Version.cmake
-        VERSION ${PROJECT_VERSION}
-        COMPATIBILITY AnyNewerVersion
-    )
+# Create ConfigVersion.cmake
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}Version.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY AnyNewerVersion
+)
 
-    # Create Config.cmake
-    configure_package_config_file(${SPATIAL_DYN_CMAKE_DIR}/${SPATIAL_DYN_CONFIG}.cmake.in
-        ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}.cmake
-        INSTALL_DESTINATION ${SPATIAL_DYN_CONFIG_INSTALL_DIR})
+# Create Config.cmake
+configure_package_config_file(${SPATIAL_DYN_CMAKE_DIR}/${SPATIAL_DYN_CONFIG}.cmake.in
+    ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}.cmake
+    INSTALL_DESTINATION ${SPATIAL_DYN_CONFIG_INSTALL_DIR})
 
-    # Install config script files
-    install(FILES
-        ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}.cmake
-        ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}Version.cmake
-        DESTINATION ${SPATIAL_DYN_CONFIG_INSTALL_DIR}
-    )
-endif()
+# Install config script files
+install(FILES
+    ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}.cmake
+    ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}Version.cmake
+    DESTINATION ${SPATIAL_DYN_CONFIG_INSTALL_DIR}
+)
 
 # Build tests
 include(CTest)
@@ -175,5 +173,7 @@ export(TARGETS ${SPATIAL_DYN_LIB}
     FILE ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_TARGETS}.cmake)
 
 # Register package in user registry
-export(PACKAGE ${SPATIAL_DYN_LIB})
+if(BUILD_CPP)
+    export(PACKAGE ${SPATIAL_DYN_LIB})
+endif()
 
