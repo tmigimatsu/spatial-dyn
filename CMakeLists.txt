@@ -55,21 +55,11 @@ function(download_package PACKAGE_NAME)
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${PACKAGE_NAME})
 endfunction()
 
-# Export for build tree
-configure_file(${SPATIAL_DYN_CMAKE_DIR}/Findnlohmann_json.cmake.in
-    ${CMAKE_BINARY_DIR}/Findnlohmann_json.cmake @ONLY)
-
 find_package(tinyxml2 6.2 QUIET)
 if(NOT tinyxml2_FOUND)
     download_package(tinyxml2)
     set(tinyxml2_DIR "${CMAKE_BINARY_DIR}/tinyxml2/build")
     find_package(tinyxml2 QUIET NO_DEFAULT_PATH)
-endif()
-
-find_package(nlohmann_json 3.2 QUIET)
-if(NOT nlohmann_json_FOUND)
-    download_package(nlohmann_json)
-    find_package(nlohmann_json 3.2 REQUIRED PATHS ${CMAKE_BINARY_DIR}/nlohmann_json/build)
 endif()
 
 find_package(ctrl_utils 1.0.0 QUIET)
@@ -81,7 +71,6 @@ endif()
 target_link_libraries(${SPATIAL_DYN_LIB}
     PUBLIC
         ctrl_utils::ctrl_utils
-        nlohmann_json::nlohmann_json
     PRIVATE
         tinyxml2_static
 )
