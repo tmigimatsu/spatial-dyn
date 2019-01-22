@@ -17,7 +17,11 @@ nlohmann::json Serialize(const ArticulatedBody& ab) {
   json["name"] = ab.name;
   json["pos"] = Serialize(ab.T_base_to_world().translation());
   json["quat"] = Serialize(Eigen::Quaterniond(ab.T_base_to_world().linear()));
-  json["graphics"] = Serialize(ab.graphics);
+  nlohmann::json json_graphics;
+  for (const Graphics& graphics : ab.graphics) {
+    json_graphics.push_back(Serialize(graphics));
+  }
+  json["graphics"] = std::move(json_graphics);
   nlohmann::json json_rigid_bodies;
   for (const RigidBody& rb : ab.rigid_bodies()) {
     json_rigid_bodies.push_back(Serialize(rb));
@@ -35,9 +39,11 @@ nlohmann::json Serialize(const RigidBody& rb) {
   json["quat"] = Serialize(Eigen::Quaterniond(rb.T_to_parent().linear()));
   json["inertia"] = Serialize(rb.inertia().I_com_flat());
   json["joint"] = Serialize(rb.joint());
-  if (rb.graphics.geometry.type != Graphics::Geometry::Type::UNDEFINED) {
-    json["graphics"] = Serialize(rb.graphics);
+  nlohmann::json json_graphics;
+  for (const Graphics& graphics : rb.graphics) {
+    json_graphics.push_back(Serialize(graphics));
   }
+  json["graphics"] = std::move(json_graphics);
   return json;
 }
 

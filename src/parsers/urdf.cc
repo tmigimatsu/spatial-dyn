@@ -184,8 +184,9 @@ RigidBody ParseRigidBody(const tinyxml2::XMLElement* xml_link, const std::string
 
   // Parse graphics
   const tinyxml2::XMLElement* xml_visual = xml_link->FirstChildElement("visual");
-  if (xml_visual != nullptr) {
-    rb.graphics = ParseGraphics(xml_visual, urdf_path);
+  while (xml_visual != nullptr) {
+    rb.graphics.push_back(ParseGraphics(xml_visual, urdf_path));
+    xml_visual = xml_visual->NextSiblingElement("visual");
   }
 
   // Parse collision

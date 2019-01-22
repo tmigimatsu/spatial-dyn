@@ -10,6 +10,10 @@
 get_filename_component(SPATIAL_DYN_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 include(CMakeFindDependencyMacro)
 
+list(APPEND CMAKE_MODULE_PATH ${SPATIAL_DYN_CMAKE_DIR})
+find_dependency(ctrl_utils 1.0.0 REQUIRED)
+list(REMOVE_AT CMAKE_MODULE_PATH -1)
+
 if(NOT TARGET spatial_dyn::spatial_dyn)
     include("${SPATIAL_DYN_CMAKE_DIR}/spatial_dynTargets.cmake")
 endif()

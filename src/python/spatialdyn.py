@@ -31,7 +31,7 @@ class ArticulatedBody:
 
     ## %Graphics for the base.
     # @see C++: spatial_dyn::ArticulatedBody::graphics
-    graphics = Graphics()
+    graphics = [Graphics()]
 
     ## Degrees of freedom of the articulated body.
     # @see C++: spatial_dyn::ArticulatedBody::dof()
