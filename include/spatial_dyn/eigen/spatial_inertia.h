@@ -136,6 +136,59 @@ class SpatialInertiaMatrix : public Matrix<_Scalar,6,6> {
 
 };
 
+// Transform operations
+template<typename TransformScalar, int Dim, typename Scalar>
+inline SpatialInertia<Scalar>
+operator*(const Translation<TransformScalar, Dim>& T, const SpatialInertia<Scalar>& I) {
+  EIGEN_STATIC_ASSERT(Dim==3,YOU_CAN_ONLY_APPLY_3D_TRANSFORMS_TO_SPATIAL_INERTIAS);
+
+  SpatialInertia<Scalar> result;
+  result.mass = I.mass;
+  result.com = T.translation() + I.com;
+  result.I_com = I.I_com;
+  return result;
+}
+
+template<typename TransformScalar, int Dim, int Mode, int Options, typename Scalar>
+inline SpatialInertia<Scalar>
+operator*(const Transform<TransformScalar, Dim, Mode, Options>& T, const SpatialInertia<Scalar>& I) {
+  EIGEN_STATIC_ASSERT(Dim==3,YOU_CAN_ONLY_APPLY_3D_TRANSFORMS_TO_SPATIAL_INERTIAS);
+  EIGEN_STATIC_ASSERT(Mode==int(Isometry),YOU_CAN_ONLY_APPLY_ISOMETRY_TRANSFORMS_TO_SPATIAL_INERTIAS);
+
+  SpatialInertia<Scalar> result;
+  result.mass = I.mass;
+  result.com = T * I.com;
+  result.I_com = T.linear() * I.I_com * T.linear().transpose();
+  return result;
+}
+
+template<typename TransformScalar, int Dim, typename Scalar>
+inline SpatialInertiaMatrix<Scalar>
+operator*(const Translation<TransformScalar, Dim>& T, const SpatialInertiaMatrix<Scalar>& I) {
+  EIGEN_STATIC_ASSERT(Dim==3,YOU_CAN_ONLY_APPLY_3D_TRANSFORMS_TO_SPATIAL_INERTIAS);
+
+  SpatialInertiaMatrix<Scalar> result = I;
+  result.template rightCols<3>() -= result.template leftCols<3>().rowwise().cross(T.translation());
+  result.template bottomRows<3>() -= result.template topRows<3>().colwise().cross(T.translation());
+  return result;
+}
+
+template<typename TransformScalar, int Dim, int Mode, int Options, typename Scalar>
+inline SpatialInertiaMatrix<Scalar>
+operator*(const Transform<TransformScalar, Dim, Mode, Options>& T, const SpatialInertiaMatrix<Scalar>& I) {
+  EIGEN_STATIC_ASSERT(Dim==3,YOU_CAN_ONLY_APPLY_3D_TRANSFORMS_TO_SPATIAL_INERTIAS);
+  EIGEN_STATIC_ASSERT(Mode==int(Isometry),YOU_CAN_ONLY_APPLY_ISOMETRY_TRANSFORMS_TO_SPATIAL_INERTIAS);
+
+  SpatialInertiaMatrix<Scalar> result = I;
+  result.template leftCols<3>() = result.template leftCols<3>() * T.linear().transpose();
+  result.template rightCols<3>() = result.template rightCols<3>() * T.linear().transpose() -
+      result.template leftCols<3>().rowwise().cross(T.translation());
+  result.template topRows<3>() = T.linear() * result.template topRows<3>();
+  result.template bottomRows<3>() = T.linear() * result.template bottomRows<3>() -
+      result.template topRows<3>().colwise().cross(T.translation());
+  return result;
+}
+
 template<typename _Scalar>
 SpatialInertiaMatrix<_Scalar> SpatialInertia<_Scalar>::matrix() const {
   const double mcx = mass * com(0);

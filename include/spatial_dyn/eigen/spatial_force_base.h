@@ -196,6 +196,28 @@ class SpatialForceBase : public DenseBase<Derived> {
 
 };
 
+// Transform operations
+template<typename Derived>
+inline typename Derived::PlainObject
+operator*(const Translation<typename Derived::Scalar, 3>& T, const SpatialForceBase<Derived>& f) {
+  typename Derived::PlainObject result = f;
+  result.template bottomRows<3>() -= f.matrix().template topRows<3>().colwise().cross(T.translation());
+  return result;
+}
+
+template<typename Scalar, int Dim, int Mode, int Options, typename Derived>
+inline typename Derived::PlainObject
+operator*(const Transform<Scalar, Dim, Mode, Options>& T, const SpatialForceBase<Derived>& f) {
+  EIGEN_STATIC_ASSERT(Dim==3,YOU_CAN_ONLY_APPLY_3D_TRANSFORMS_TO_SPATIAL_FORCES);
+  EIGEN_STATIC_ASSERT(Mode==int(Isometry),YOU_CAN_ONLY_APPLY_ISOMETRY_TRANSFORMS_TO_SPATIAL_FORCES);
+
+  typename Derived::PlainObject result = f;  // Evaluate expr
+  result.template topRows<3>() = T.linear() * result.matrix().template topRows<3>();
+  result.template bottomRows<3>() = T.linear() * result.matrix().template bottomRows<3>() -
+      result.matrix().template topRows<3>().colwise().cross(T.translation());
+  return result;
+}
+
 // from Assign.h
 template<typename Derived>
 inline Derived& SpatialForceBase<Derived>::operator=(const SpatialForceBase& other) {
