@@ -62,6 +62,14 @@ nlohmann::json Serialize(const Eigen::QuaternionBase<Derived>& quat) {
 }
 
 }  // namespace json
+
+void to_json(nlohmann::json& j, const ArticulatedBody& ab);
+void to_json(nlohmann::json& j, const RigidBody& rb);
+void to_json(nlohmann::json& j, const Joint& joint);
+void to_json(nlohmann::json& j, const Graphics& graphics);
+void to_json(nlohmann::json& j, const Graphics::Geometry& geometry);
+void to_json(nlohmann::json& j, const Graphics::Material& material);
+
 }  // namespace spatial_dyn
 
 #endif  // SPATIAL_DYN_PARSERS_JSON_H_

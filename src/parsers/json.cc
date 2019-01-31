@@ -9,6 +9,8 @@
 
 #include "parsers/json.h"
 
+#include <ctrl_utils/string.h>
+
 namespace spatial_dyn {
 namespace json {
 
@@ -71,7 +73,7 @@ nlohmann::json Serialize(const Graphics& graphics) {
 
 nlohmann::json Serialize(const Graphics::Geometry& geometry) {
   nlohmann::json json;
-  json["type"] = std::string(geometry);
+  json["type"] = ctrl_utils::ToString(geometry.type);
   switch (geometry.type) {
     case Graphics::Geometry::Type::BOX:
       json["scale"] = Serialize(geometry.scale);
@@ -146,4 +148,24 @@ Deserialize(const nlohmann::json& json) {
 */
 
 }  // namespace json
+
+void to_json(nlohmann::json& j, const ArticulatedBody& ab) {
+  j = json::Serialize(ab);
+}
+void to_json(nlohmann::json& j, const RigidBody& rb) {
+  j = json::Serialize(rb);
+}
+void to_json(nlohmann::json& j, const Joint& joint) {
+  j = json::Serialize(joint);
+}
+void to_json(nlohmann::json& j, const Graphics& graphics) {
+  j = json::Serialize(graphics);
+}
+void to_json(nlohmann::json& j, const Graphics::Geometry& geometry) {
+  j = json::Serialize(geometry);
+}
+void to_json(nlohmann::json& j, const Graphics::Material& material) {
+  j = json::Serialize(material);
+}
+
 }  // namespace spatial_dyn

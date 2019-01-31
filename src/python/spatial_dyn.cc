@@ -157,10 +157,10 @@ PYBIND11_MODULE(spatialdyn, m) {
   py::class_<Graphics::Geometry>(m, "Geometry")
       .def_property("type",
                     [](const Graphics::Geometry& geometry) {
-                      return std::string(geometry);
+                      return ctrl_utils::ToString(geometry.type);
                     },
                     [](Graphics::Geometry& geometry, const std::string& type) {
-                      geometry.type = Graphics::Geometry::StringToType(type);
+                      ctrl_utils::FromString(type, geometry.type);
                     })
       .def_readwrite("scale", &Graphics::Geometry::scale)
       .def_readwrite("radius", &Graphics::Geometry::radius)

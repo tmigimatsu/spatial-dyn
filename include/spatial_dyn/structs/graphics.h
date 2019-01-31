@@ -10,7 +10,8 @@
 #ifndef SPATIAL_DYN_STRUCTS_GRAPHICS_H_
 #define SPATIAL_DYN_STRUCTS_GRAPHICS_H_
 
-#include <string>   // std::string
+#include <iostream>  // std::istream, std::ostream
+#include <string>    // std::string
 
 #include "spatial_dyn/utils/spatial_math.h"
 
@@ -75,34 +76,6 @@ struct Graphics {
      * Type::MESH filename.
      */
     std::string mesh;
-
-    /**
-     * Convert the Geometry::Type to a string.
-     *
-     * @param type %Geometry type enum.
-     * @return %Geometry type string.
-     */
-    static std::string TypeToString(const Type& type);
-
-    /**
-     * Convert the string to a Geometry::Type.
-     *
-     * @param type %Geometry type string.
-     * @return %Geometry type enum.
-     */
-    static Type StringToType(const std::string& type);
-
-    /**
-     * Convert the joint type enum to a string.
-     *
-     * Example:
-     * ```
-     * std::string(Graphics::Geometry(Graphics::Geometry::Type::MESH)) -> "MESH"
-     * ```
-     *
-     * @return %Geometry type as a string.
-     */
-    operator std::string() const { return TypeToString(type); }
   };
 
   struct Material {
@@ -112,11 +85,27 @@ struct Graphics {
     std::string texture;  // Texture filename
   };
 
+  Graphics(const std::string& name = "") : name(name) {}
+
   std::string name;
   Eigen::Isometry3d T_to_parent = Eigen::Isometry3d::Identity();
   Geometry geometry;
   Material material;
 };
+
+/**
+ * Output the Geometry::Type to an output stream.
+ *
+ * The string representations of the type are equivalent to their C++ names.
+ */
+std::ostream& operator<<(std::ostream& os, const Graphics::Geometry::Type& type);
+
+/**
+ * Parse one token from the input stream to a Geometry::Type.
+ *
+ * The string representations of the type are equivalent to their C++ names.
+ */
+std::istream& operator>>(std::istream& is, Graphics::Geometry::Type& type);
 
 }  // namespace spatial_dyn
 
