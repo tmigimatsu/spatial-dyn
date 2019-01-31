@@ -13,19 +13,18 @@
 #include <map>  // std::map
 
 #include "spatial_dyn/structs/articulated_body.h"
+#include "spatial_dyn/structs/options.h"
 #include "spatial_dyn/utils/spatial_math.h"
 
 namespace spatial_dyn {
 namespace opspace {
 
-Eigen::Vector3d OrientationError(const Eigen::Quaterniond &quat, const Eigen::Quaterniond &quat_des);
+bool IsSingular(const ArticulatedBody& ab, const Eigen::MatrixXd& J, double svd_epsilon = 0);
 
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                 const Eigen::VectorXd& ddx, Eigen::MatrixXd *N = nullptr,
                                 const std::map<size_t, SpatialForced>& f_external = {},
-                                bool gravity = false, bool centrifugal_coriolis = false,
-                                bool friction = false, double svd_epsilon = 0,
-                                double stiction_epsilon = 0.01);
+                                const InverseDynamicsOptions& options = {});
 
 const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                double svd_epsilon = 0);

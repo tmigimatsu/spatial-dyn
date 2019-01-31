@@ -16,11 +16,13 @@
 #include <pybind11/functional.h>
 #include <pybind11/stl.h>
 #include <ctrl_utils/eigen_string.h>
+#include <ctrl_utils/string.h>
 
 #include "spatial_dyn/algorithms/forward_dynamics.h"
 #include "spatial_dyn/algorithms/forward_kinematics.h"
 #include "spatial_dyn/algorithms/inverse_dynamics.h"
 #include "spatial_dyn/algorithms/opspace_dynamics.h"
+#include "spatial_dyn/algorithms/opspace_kinematics.h"
 #include "spatial_dyn/algorithms/simulation.h"
 #include "spatial_dyn/parsers/urdf.h"
 #include "spatial_dyn/parsers/json.h"
@@ -297,7 +299,8 @@ PYBIND11_MODULE(spatialdyn, m) {
               bool gravity, bool centrifugal_coriolis, bool friction,
               double svd_epsilon, double stiction_epsilon) {
              Eigen::MatrixXd N_temp = N;
-             Eigen::VectorXd tau = opspace::InverseDynamics(ab, J, ddx, &N_temp, f_external, gravity, centrifugal_coriolis, friction, svd_epsilon, stiction_epsilon);
+             Eigen::VectorXd tau = opspace::InverseDynamics(ab, J, ddx, &N_temp, f_external,
+                 { gravity, centrifugal_coriolis, friction, svd_epsilon, stiction_epsilon });
              N = N_temp;
              return tau;
            }, "ab"_a, "J"_a, "ddx"_a, "N"_a,

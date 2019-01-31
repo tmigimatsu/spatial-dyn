@@ -144,6 +144,46 @@ struct IntegrationOptions /*: ForwardDynamicsOptions*/ {
 
 };
 
+namespace opspace {
+
+struct InverseDynamicsOptions {
+
+  InverseDynamicsOptions(bool gravity = false, bool centrifugal_coriolis = false,
+                         bool friction = false, double svd_epsilon = 0.,
+                         double stiction_epsilon = 0.01)
+      : gravity(gravity), centrifugal_coriolis(centrifugal_coriolis),
+        friction(friction), svd_epsilon(svd_epsilon),
+        stiction_epsilon(stiction_epsilon) {}
+
+  /**
+   * Include gravity torques.
+   */
+  bool gravity = false;
+
+  /**
+   * Include centrifugal/Coriolis torques.
+   */
+  bool centrifugal_coriolis = false;
+
+  /**
+   * Include Coulomb and viscous friction torques at the joints.
+   */
+  bool friction = false;
+
+  /**
+   * Threshold for singular value inversion in the computation of Lambda.
+   */
+  double svd_epsilon = 0.;
+
+  /**
+   * Velocity threshold for stiction activation.
+   */
+  double stiction_epsilon = 0.01;
+
+};
+
+}  // namespace opspace
+
 }  // namespace spatial_dyn
 
 #endif  // SPATIAL_DYN_STRUCTS_OPTIONS_H_

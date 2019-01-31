@@ -22,6 +22,9 @@ Eigen::Vector3d LookatError(const Eigen::Vector3d &vec, const Eigen::Vector3d &v
 Eigen::Quaterniond NearQuaternion(const Eigen::Quaterniond& quat,
                                   const Eigen::Quaterniond& quat_reference);
 
+Eigen::Quaterniond NearQuaternion(Eigen::Ref<const Eigen::Matrix3d> ori,
+                                  const Eigen::Quaterniond& quat_reference);
+
 Eigen::Quaterniond FarQuaternion(const Eigen::Quaterniond& quat,
                                  const Eigen::Quaterniond& quat_reference);
 

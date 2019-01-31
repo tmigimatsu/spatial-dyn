@@ -264,6 +264,7 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
     REQUIRE((tau_Aq - tau_crba_Aq).norm() < 1e-10);
     REQUIRE((tau_Aq_v_g_fr - tau_crba_Aq_v_g_fr).norm() < 1e-10);
 
+    REQUIRE((J.transpose() * f_ext.matrix() + spatial_dyn::ExternalTorques(ab, {{ab.dof()-1, f_ext}})).norm() < 1e-10);
     REQUIRE((tau_f_ext - tau_crba_f_ext).norm() < 1e-10);
     REQUIRE((tau_f_ext - tau_crba_f_ext_2).norm() < 1e-10);
   }
