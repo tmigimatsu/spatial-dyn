@@ -15,23 +15,23 @@
 namespace spatial_dyn {
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
-class SpatialMotion : public ::Eigen::PlainObjectBase<SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>> {
+class SpatialMotion : public Eigen::PlainObjectBase<SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>> {
 
  public:
-  typedef ::Eigen::PlainObjectBase<SpatialMotion> Base;
+  typedef Eigen::PlainObjectBase<SpatialMotion> Base;
   enum { Options = _Options };
 
   // EIGEN_GENERIC_PUBLIC_INTERFACE(SpatialMotion)
-  typedef typename ::Eigen::internal::traits<SpatialMotion>::Scalar Scalar;
-  typedef typename ::Eigen::NumTraits<Scalar>::Real RealScalar;
+  typedef typename Eigen::internal::traits<SpatialMotion>::Scalar Scalar;
+  typedef typename Eigen::NumTraits<Scalar>::Real RealScalar;
   typedef typename Base::CoeffReturnType CoeffReturnType;
-  typedef typename ::Eigen::internal::ref_selector<SpatialMotion>::type Nested;
-  typedef typename ::Eigen::internal::traits<SpatialMotion>::StorageKind StorageKind;
-  typedef typename ::Eigen::internal::traits<SpatialMotion>::StorageIndex StorageIndex;
+  typedef typename Eigen::internal::ref_selector<SpatialMotion>::type Nested;
+  typedef typename Eigen::internal::traits<SpatialMotion>::StorageKind StorageKind;
+  typedef typename Eigen::internal::traits<SpatialMotion>::StorageIndex StorageIndex;
   enum CompileTimeTraits {
-    RowsAtCompileTime = ::Eigen::internal::traits<SpatialMotion>::RowsAtCompileTime,
-    ColsAtCompileTime = ::Eigen::internal::traits<SpatialMotion>::ColsAtCompileTime,
-    Flags = ::Eigen::internal::traits<SpatialMotion>::Flags,
+    RowsAtCompileTime = Eigen::internal::traits<SpatialMotion>::RowsAtCompileTime,
+    ColsAtCompileTime = Eigen::internal::traits<SpatialMotion>::ColsAtCompileTime,
+    Flags = Eigen::internal::traits<SpatialMotion>::Flags,
     SizeAtCompileTime = Base::SizeAtCompileTime,
     MaxSizeAtCompileTime = Base::MaxSizeAtCompileTime,
     IsVectorAtCompileTime = Base::IsVectorAtCompileTime
@@ -57,14 +57,14 @@ class SpatialMotion : public ::Eigen::PlainObjectBase<SpatialMotion<_Scalar, _Co
   EIGEN_NOEXCEPT_IF(std::is_nothrow_move_constructible<_Scalar>::value);
 
   template<typename OtherDerived>
-  SpatialMotion(const ::Eigen::EigenBase<OtherDerived>& other);
+  SpatialMotion(const Eigen::EigenBase<OtherDerived>& other);
 
   SpatialMotion(const _Scalar& lin_x, const _Scalar& lin_y, const _Scalar& lin_z,
                 const _Scalar& ang_x, const _Scalar& ang_y, const _Scalar& ang_z);
 
   template<typename DerivedLin, typename DerivedAng>
-  SpatialMotion(const ::Eigen::EigenBase<DerivedLin>& lin,
-                const ::Eigen::EigenBase<DerivedAng>& ang);
+  SpatialMotion(const Eigen::EigenBase<DerivedLin>& lin,
+                const Eigen::EigenBase<DerivedAng>& ang);
 
   SpatialMotion& operator=(const SpatialMotion& other);
 
@@ -72,20 +72,20 @@ class SpatialMotion : public ::Eigen::PlainObjectBase<SpatialMotion<_Scalar, _Co
   EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<_Scalar>::value);
 
   template<typename OtherDerived>
-  SpatialMotion& operator=(const ::Eigen::DenseBase<OtherDerived>& other);
+  SpatialMotion& operator=(const Eigen::DenseBase<OtherDerived>& other);
 
   template<typename OtherDerived>
-  SpatialMotion& operator=(const ::Eigen::EigenBase<OtherDerived>& other);
+  SpatialMotion& operator=(const Eigen::EigenBase<OtherDerived>& other);
 
   template<typename OtherDerived>
-  SpatialMotion& operator=(const ::Eigen::ReturnByValue<OtherDerived>& func);
+  SpatialMotion& operator=(const Eigen::ReturnByValue<OtherDerived>& func);
 
   SpatialMotion& operator=(const _Scalar &value);
 
-  SpatialMotion& operator*=(const ::Eigen::Isometry3d& T);
+  SpatialMotion& operator*=(const Eigen::Isometry3d& T);
 
-  ::Eigen::Index innerStride() const;
-  ::Eigen::Index outerStride() const;
+  Eigen::Index innerStride() const;
+  Eigen::Index outerStride() const;
 
  protected:
   using Base::m_storage;
@@ -114,13 +114,13 @@ inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::SpatialMotion(SpatialM
 EIGEN_NOEXCEPT_IF(std::is_nothrow_move_constructible<_Scalar>::value)
     : SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::Base(std::move(other)) {
   Base::_check_template_params();
-  if (ColsAtCompileTime != ::Eigen::Dynamic) Base::_set_noalias(other);
+  if (ColsAtCompileTime != Eigen::Dynamic) Base::_set_noalias(other);
 }
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 template<typename OtherDerived>
 inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::SpatialMotion(
-    const ::Eigen::EigenBase<OtherDerived>& other)
+    const Eigen::EigenBase<OtherDerived>& other)
     : Base(other.derived()) {}
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
@@ -138,7 +138,7 @@ inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::SpatialMotion(
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 template<typename DerivedLin, typename DerivedAng>
 inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::SpatialMotion(
-    const ::Eigen::EigenBase<DerivedLin>& lin, const ::Eigen::EigenBase<DerivedAng>& ang) {
+    const Eigen::EigenBase<DerivedLin>& lin, const Eigen::EigenBase<DerivedAng>& ang) {
   this->linear() = lin;
   this->angular() = ang;
 }
@@ -161,7 +161,7 @@ template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 template<typename OtherDerived>
 inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>&
 SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator=(
-    const ::Eigen::DenseBase<OtherDerived>& other) {
+    const Eigen::DenseBase<OtherDerived>& other) {
   return Base::_set(other);
 }
 
@@ -169,7 +169,7 @@ template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 template<typename OtherDerived>
 inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>&
 SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator=(
-    const ::Eigen::EigenBase<OtherDerived>& other) {
+    const Eigen::EigenBase<OtherDerived>& other) {
   return Base::operator=(other);
 }
 
@@ -177,7 +177,7 @@ template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 template<typename OtherDerived>
 inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>&
 SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator=(
-    const ::Eigen::ReturnByValue<OtherDerived>& func) {
+    const Eigen::ReturnByValue<OtherDerived>& func) {
   return Base::operator=(func);
 }
 
@@ -190,18 +190,18 @@ SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator=(const _Scalar& valu
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>&
-SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator*=(const ::Eigen::Isometry3d& T) {
+SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::operator*=(const Eigen::Isometry3d& T) {
   *this = T * (*this);
   return *this;
 }
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
-inline ::Eigen::Index SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::innerStride() const {
+inline Eigen::Index SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::innerStride() const {
   return 1;
 }
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
-inline ::Eigen::Index SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::outerStride() const {
+inline Eigen::Index SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::outerStride() const {
   return 6;
 }
 
