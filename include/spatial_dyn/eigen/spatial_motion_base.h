@@ -79,123 +79,101 @@ class SpatialMotionBase : public ::Eigen::DenseBase<Derived> {
   template<typename OtherDerived>
   struct SpatialOpTraits {
     typedef typename ::Eigen::ScalarBinaryOpTraits<Scalar,
-                                                   typename OtherDerived::Scalar>::ReturnType Scalar;
-    typedef SpatialMotion<Scalar, ColsAtCompileTime> MotionReturnType;
-    typedef SpatialForce<Scalar, ColsAtCompileTime> ForceReturnType;
+                                                   typename OtherDerived::Scalar>::ReturnType ScalarT;
+    typedef SpatialMotion<ScalarT, ColsAtCompileTime> MotionReturnType;
+    typedef SpatialForce<ScalarT, ColsAtCompileTime> ForceReturnType;
   };
 
-// #define EIGEN_CURRENT_STORAGE_BASE_CLASS Eigen::SpatialMotionBase
-// #define EIGEN_DOC_UNARY_ADDONS(X,Y)
-// #include "Eigen/src/plugins/MatrixCwiseUnaryOps.h"
-// #include "Eigen/src/plugins/MatrixCwiseBinaryOps.h"
-// #undef EIGEN_CURRENT_STORAGE_BASE_CLASS
-// #undef EIGEN_DOC_UNARY_ADDONS
-
   // #include "Eigen/src/plugins/CommonCwiseUnaryOps.h"
-  // typedef typename ::Eigen::internal::conditional<NumTraits<Scalar>::IsComplex,
-  //     const ::Eigen::CwiseUnaryOp<internal::scalar_conjugate_op<Scalar>, const Derived>,
-  //     const Derived&>::type ConjugateReturnType;
-
-  // typedef typename ::Eigen::internal::conditional<NumTraits<Scalar>::IsComplex,
-  //     const CwiseUnaryOp<::Eigen::internal::scalar_real_op<Scalar>, const Derived>,
-  //     const Derived&>::type RealReturnType;
-
-  // typedef typename ::Eigen::internal::conditional<NumTraits<Scalar>::IsComplex,
-  //     ::Eigen::CwiseUnaryView<::Eigen::internal::scalar_real_ref_op<Scalar>, Derived>,
-  //     Derived&>::type NonConstRealReturnType;
-
-  // typedef ::Eigen::CwiseUnaryOp<::Eigen::internal::scalar_imag_op<Scalar>,
-  //                               const Derived> ImagReturnType;
-
-  // typedef ::Eigen::CwiseUnaryView<::Eigen::internal::scalar_imag_ref_op<Scalar>,
-  //                                 Derived> NonConstImagReturnType;
-
   typedef ::Eigen::CwiseUnaryOp<::Eigen::internal::scalar_opposite_op<Scalar>,
                                 const Derived> NegativeReturnType;
 
-  inline const NegativeReturnType operator-() const { return NegativeReturnType(derived()); }
+  const NegativeReturnType operator-() const;
+
+  template<class NewType>
+  struct CastXpr {
+    typedef typename ::Eigen::internal::cast_return_type<Derived,
+        const ::Eigen::CwiseUnaryOp<::Eigen::internal::scalar_cast_op<Scalar, NewType>,
+                                    const Derived>>::type Type;
+  };
+
+  template<typename NewType>
+  typename CastXpr<NewType>::Type cast() const;
 
   template<typename CustomUnaryOp>
   inline const ::Eigen::CwiseUnaryOp<CustomUnaryOp, const Derived>
-  unaryExpr(const CustomUnaryOp& func = CustomUnaryOp()) const {
-    return ::Eigen::CwiseUnaryOp<CustomUnaryOp, const Derived>(derived(), func);
-  }
+  unaryExpr(const CustomUnaryOp& func = CustomUnaryOp()) const;
 
   template<typename CustomViewOp>
   inline const ::Eigen::CwiseUnaryView<CustomViewOp, const Derived>
-  unaryViewExpr(const CustomViewOp& func = CustomViewOp()) const {
-    return ::Eigen::CwiseUnaryView<CustomViewOp, const Derived>(derived(), func);
-  }
+  unaryViewExpr(const CustomViewOp& func = CustomViewOp()) const;
 
   // #include "Eigen/src/plugins/CommonCwiseBinaryOps.h"
-  // EIGEN_MAKE_CWISE_BINARY_OP(operator-,difference)
   template<typename OtherDerived>
-  struct ScalarDifferenceTraits {
+  struct BinaryOpTraits {
     typedef ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_difference_op<Scalar,
                                                                            typename OtherDerived::Scalar>,
-                                   const Derived, const OtherDerived> ReturnType;
+                                   const Derived, const OtherDerived> DifferenceType;
+    typedef ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_sum_op<Scalar,
+                                                                    typename OtherDerived::Scalar>,
+                                   const Derived, const OtherDerived> SumType;
   };
+
+  // EIGEN_MAKE_CWISE_BINARY_OP(operator-,difference)
   template<typename OtherDerived>
-  inline const typename ScalarDifferenceTraits<OtherDerived>::ReturnType
-  operator-(const SpatialMotionBase<OtherDerived> &other) const {
-    return typename ScalarDifferenceTraits<OtherDerived>::ReturnType(derived(), other.derived());
-  }
+  const typename BinaryOpTraits<OtherDerived>::DifferenceType
+  operator-(const SpatialMotionBase<OtherDerived> &other) const;
 
   // EIGEN_MAKE_CWISE_BINARY_OP(operator+,sum)
   template<typename OtherDerived>
-  struct ScalarSumTraits {
-    typedef ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_sum_op<Scalar,
-                                                                    typename OtherDerived::Scalar>,
-                                   const Derived, const OtherDerived> ReturnType;
+  inline const typename BinaryOpTraits<OtherDerived>::SumType
+  operator+(const SpatialMotionBase<OtherDerived> &other) const;
+
+  template<typename T>
+  struct ScalarOpTraits {
+    typedef typename ::Eigen::ScalarBinaryOpTraits<Scalar, T,
+        ::Eigen::internal::scalar_product_op<Scalar, T>> RightProduct;
+    typedef typename ::Eigen::ScalarBinaryOpTraits<T, Scalar,
+        ::Eigen::internal::scalar_product_op<T, Scalar>> LeftProduct;
+    typedef typename ::Eigen::ScalarBinaryOpTraits<Scalar, T,
+        ::Eigen::internal::scalar_product_op<Scalar, T>> RightQuotient;
   };
-  template<typename OtherDerived>
-  inline const typename ScalarSumTraits<OtherDerived>::ReturnType
-  operator+(const SpatialMotionBase<OtherDerived> &other) const {
-    return typename ScalarSumTraits<OtherDerived>::ReturnType(derived(), other.derived());
-  }
 
-  // EIGEN_MAKE_SCALAR_BINARY_OP(operator*,product)
+  // EIGEN_MAKE_SCALAR_BINARY_OP_ONTHERIGHT(operator*,product)
   template<typename T>
-  inline
-  ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_product_op<Scalar, typename ::Eigen::internal::promote_scalar_arg<Scalar, T, ::Eigen::internal::has_ReturnType<::Eigen::ScalarBinaryOpTraits<Scalar, T, ::Eigen::internal::scalar_product_op<Scalar, T>>>::value>::type>, const Derived, const typename ::Eigen::internal::plain_constant_type<Derived, typename ::Eigen::internal::promote_scalar_arg<Scalar, T, ::Eigen::internal::has_ReturnType<::Eigen::ScalarBinaryOpTraits<Scalar, T, ::Eigen::internal::scalar_product_op<Scalar, T>>>::value>::type>::type>
-  operator*(const T& scalar) const {
-    typedef typename ::Eigen::internal::promote_scalar_arg<Scalar, T, ::Eigen::internal::has_ReturnType<::Eigen::ScalarBinaryOpTraits<Scalar, T, ::Eigen::internal::scalar_product_op<Scalar, T>>>::value>::type PromotedT;
-    return ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_product_op<Scalar, PromotedT>, const Derived, const typename ::Eigen::internal::plain_constant_type<Derived, PromotedT>::type>
-        (derived(),
-         typename ::Eigen::internal::plain_constant_type<Derived, PromotedT>::type(derived().rows(),
-             derived().cols(), ::Eigen::internal::scalar_constant_op<PromotedT>(scalar)));
-  }
+  ::Eigen::CwiseBinaryOp<
+      ::Eigen::internal::scalar_product_op<
+          Scalar,
+          typename ::Eigen::internal::promote_scalar_arg<Scalar, T,
+              ::Eigen::internal::has_ReturnType<typename ScalarOpTraits<T>::RightProduct>::value>::type>,
+      const Derived,
+      const typename ::Eigen::internal::plain_constant_type<
+          Derived,
+          typename ::Eigen::internal::promote_scalar_arg<Scalar, T,
+              ::Eigen::internal::has_ReturnType<typename ScalarOpTraits<T>::RightProduct>::value>::type>::type>
+  operator*(const T& scalar) const;
 
-  template<typename T>
-  inline friend
-  ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_product_op<typename ::Eigen::internal::promote_scalar_arg<Scalar, T, ::Eigen::internal::has_ReturnType<::Eigen::ScalarBinaryOpTraits<T, Scalar, ::Eigen::internal::scalar_product_op<T, Scalar>>>::value>::type , Scalar>, const typename ::Eigen::internal::plain_constant_type<Derived, typename ::Eigen::internal::promote_scalar_arg<Scalar, T, ::Eigen::internal::has_ReturnType<::Eigen::ScalarBinaryOpTraits<T, Scalar, ::Eigen::internal::scalar_product_op<T, Scalar>>>::value>::type >::type, const Derived>
-  operator*(const T& scalar, const SpatialMotionBase<Derived>& matrix) {
-    typedef typename ::Eigen::internal::promote_scalar_arg<Scalar, T, ::Eigen::internal::has_ReturnType<::Eigen::ScalarBinaryOpTraits<T, Scalar, ::Eigen::internal::scalar_product_op<T, Scalar>>>::value>::type PromotedT;
-    return ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_product_op<PromotedT, Scalar>, const typename ::Eigen::internal::plain_constant_type<Derived, PromotedT>::type, const Derived>
-        (typename ::Eigen::internal::plain_constant_type<Derived, PromotedT>::type(matrix.derived().rows(),
-             matrix.derived().cols(), ::Eigen::internal::scalar_constant_op<PromotedT>(scalar)),
-         matrix.derived());
-  }
+  // EIGEN_MAKE_SCALAR_BINARY_OP_ONTHELEFT(operator*,product)
+  // See defined function below
 
   // EIGEN_MAKE_SCALAR_BINARY_OP_ONTHERIGHT(operator/,quotient)
   template<typename T>
-  inline
-  ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_quotient_op<Scalar, typename ::Eigen::internal::promote_scalar_arg<Scalar, T, ::Eigen::internal::has_ReturnType<::Eigen::ScalarBinaryOpTraits<Scalar, T, ::Eigen::internal::scalar_quotient_op<Scalar, T>>>::value>::type>, const Derived, const typename ::Eigen::internal::plain_constant_type<Derived, typename ::Eigen::internal::promote_scalar_arg<Scalar, T, ::Eigen::internal::has_ReturnType<::Eigen::ScalarBinaryOpTraits<Scalar, T, ::Eigen::internal::scalar_quotient_op<Scalar, T>>>::value>::type>::type>
-  operator/(const T& scalar) const {
-    typedef typename ::Eigen::internal::promote_scalar_arg<Scalar, T, ::Eigen::internal::has_ReturnType<::Eigen::ScalarBinaryOpTraits<Scalar, T, ::Eigen::internal::scalar_quotient_op<Scalar, T>>>::value>::type PromotedT;
-    return ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_quotient_op<Scalar, PromotedT>, const Derived, const typename ::Eigen::internal::plain_constant_type<Derived, PromotedT>::type>
-        (derived(),
-         typename ::Eigen::internal::plain_constant_type<Derived, PromotedT>::type(derived().rows(),
-             derived().cols(), ::Eigen::internal::scalar_constant_op<PromotedT>(scalar)));
-  }
+  ::Eigen::CwiseBinaryOp<
+      ::Eigen::internal::scalar_quotient_op<
+          Scalar,
+          typename ::Eigen::internal::promote_scalar_arg<Scalar, T,
+              ::Eigen::internal::has_ReturnType<typename ScalarOpTraits<T>::RightQuotient>::value>::type>,
+      const Derived,
+      const typename ::Eigen::internal::plain_constant_type<
+          Derived,
+          typename ::Eigen::internal::promote_scalar_arg<Scalar, T,
+              ::Eigen::internal::has_ReturnType<typename ScalarOpTraits<T>::RightQuotient>::value>::type>::type>
+  operator/(const T& scalar) const;
 
   template<typename CustomBinaryOp, typename OtherDerived>
   inline const ::Eigen::CwiseBinaryOp<CustomBinaryOp, const Derived, const OtherDerived>
   binaryExpr(const SpatialMotionBase<OtherDerived> &other,
-             const CustomBinaryOp& func = CustomBinaryOp()) const {
-    return ::Eigen::CwiseBinaryOp<CustomBinaryOp, const Derived,
-                                  const OtherDerived>(derived(), other.derived(), func);
-  }
+             const CustomBinaryOp& func = CustomBinaryOp()) const;
 
   Derived& operator=(const SpatialMotionBase& other);
 
@@ -225,7 +203,7 @@ class SpatialMotionBase : public ::Eigen::DenseBase<Derived> {
   operator*(const SpatialMotionBase<OtherDerived>& other) const;
 
   template<typename OtherDerived>
-  SpatialMotion<typename SpatialOpTraits<OtherDerived>::Scalar, OtherDerived::ColsAtCompileTime>
+  SpatialMotion<typename SpatialOpTraits<OtherDerived>::ScalarT, OtherDerived::ColsAtCompileTime>
   operator*(const ::Eigen::MatrixBase<OtherDerived>& other) const;
 
   template<typename OtherDerived>
@@ -265,11 +243,11 @@ class SpatialMotionBase : public ::Eigen::DenseBase<Derived> {
   Derived& setUnit(::Eigen::Index i);
 
   template<typename OtherDerived>
-  typename SpatialOpTraits<OtherDerived>::Scalar
+  typename SpatialOpTraits<OtherDerived>::ScalarT
   dot(const SpatialForceBase<OtherDerived>& other) const;
 
   template<typename OtherDerived>
-  typename SpatialOpTraits<OtherDerived>::Scalar
+  typename SpatialOpTraits<OtherDerived>::ScalarT
   dot(const SpatialMotionBase<OtherDerived>& other) const;
 
   template<typename OtherDerived>
@@ -332,6 +310,132 @@ operator*(const ::Eigen::Transform<Scalar, Dim, Mode, Options>& T, const Spatial
   result.template topRows<3>() = T.linear() * result.matrix().template topRows<3>() -
       result.matrix().template bottomRows<3>().colwise().cross(T.translation());
   return result;
+}
+
+// from src/plugins/CommonCwiseUnaryOps.h
+template<typename Derived>
+inline const typename SpatialMotionBase<Derived>::NegativeReturnType
+SpatialMotionBase<Derived>::operator-() const {
+  return NegativeReturnType(derived());
+}
+
+template<typename Derived>
+template<typename NewType>
+inline typename SpatialMotionBase<Derived>::template CastXpr<NewType>::Type
+SpatialMotionBase<Derived>::cast() const {
+  return typename CastXpr<NewType>::Type(derived());
+}
+
+template<typename Derived>
+template<typename CustomUnaryOp>
+inline const ::Eigen::CwiseUnaryOp<CustomUnaryOp, const Derived>
+SpatialMotionBase<Derived>::unaryExpr(const CustomUnaryOp& func) const {
+  return ::Eigen::CwiseUnaryOp<CustomUnaryOp, const Derived>(derived(), func);
+}
+
+template<typename Derived>
+template<typename CustomViewOp>
+inline const ::Eigen::CwiseUnaryView<CustomViewOp, const Derived>
+SpatialMotionBase<Derived>::unaryViewExpr(const CustomViewOp& func) const {
+  return ::Eigen::CwiseUnaryView<CustomViewOp, const Derived>(derived(), func);
+}
+
+// from src/plugins/CommonCwiseBinaryOps.h
+template<typename Derived>
+template<typename OtherDerived>
+inline const typename SpatialMotionBase<Derived>::template BinaryOpTraits<OtherDerived>::DifferenceType
+SpatialMotionBase<Derived>::operator-(const SpatialMotionBase<OtherDerived> &other) const {
+  return typename BinaryOpTraits<OtherDerived>::DifferenceType(derived(), other.derived());
+}
+
+template<typename Derived>
+template<typename OtherDerived>
+inline const typename SpatialMotionBase<Derived>::template BinaryOpTraits<OtherDerived>::SumType
+SpatialMotionBase<Derived>::operator+(const SpatialMotionBase<OtherDerived> &other) const {
+  return typename BinaryOpTraits<OtherDerived>::SumType(derived(), other.derived());
+}
+
+template<typename Derived>
+template<typename T>
+inline ::Eigen::CwiseBinaryOp<
+    ::Eigen::internal::scalar_product_op<
+        typename SpatialMotionBase<Derived>::Scalar,
+        typename ::Eigen::internal::promote_scalar_arg<typename SpatialMotionBase<Derived>::Scalar, T,
+            ::Eigen::internal::has_ReturnType<
+                typename SpatialMotionBase<Derived>::template ScalarOpTraits<T>::RightProduct>::value>::type>,
+    const Derived,
+    const typename ::Eigen::internal::plain_constant_type<
+        Derived,
+        typename ::Eigen::internal::promote_scalar_arg<typename SpatialMotionBase<Derived>::Scalar, T,
+            ::Eigen::internal::has_ReturnType<
+                typename SpatialMotionBase<Derived>::template ScalarOpTraits<T>::RightProduct>::value>::type>::type>
+SpatialMotionBase<Derived>::operator*(const T& scalar) const {
+  typedef typename ::Eigen::internal::promote_scalar_arg<Scalar, T,
+      ::Eigen::internal::has_ReturnType<typename ScalarOpTraits<T>::RightProduct>::value>::type PromotedT;
+  typedef typename ::Eigen::internal::plain_constant_type<Derived, PromotedT>::type PlainType;
+  typedef typename ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_product_op<Scalar, PromotedT>,
+                                          const Derived, const PlainType> ReturnType;
+  typedef typename ::Eigen::internal::scalar_constant_op<PromotedT> ScalarOp;
+  return ReturnType(derived(), PlainType(derived().rows(), derived().cols(), ScalarOp(scalar)));
+}
+
+template<typename T, typename Derived>
+inline ::Eigen::CwiseBinaryOp<
+    ::Eigen::internal::scalar_product_op<
+        typename ::Eigen::internal::promote_scalar_arg<typename SpatialMotionBase<Derived>::Scalar, T,
+            ::Eigen::internal::has_ReturnType<
+                typename SpatialMotionBase<Derived>::template ScalarOpTraits<T>::LeftProduct>::value>::type,
+        typename SpatialMotionBase<Derived>::Scalar>,
+    const typename ::Eigen::internal::plain_constant_type<
+        Derived,
+        typename ::Eigen::internal::promote_scalar_arg<typename SpatialMotionBase<Derived>::Scalar, T,
+            ::Eigen::internal::has_ReturnType<
+              typename SpatialMotionBase<Derived>::template ScalarOpTraits<T>::LeftProduct>::value>::type>::type,
+    const Derived>
+operator*(const T& scalar, const SpatialMotionBase<Derived>& m) {
+  typedef typename SpatialMotionBase<Derived>::template ScalarOpTraits<T> ScalarOpTraits;
+  typedef typename SpatialMotionBase<Derived>::Scalar Scalar;
+
+  typedef typename ::Eigen::internal::promote_scalar_arg<Scalar, T,
+      ::Eigen::internal::has_ReturnType<typename ScalarOpTraits::LeftProduct>::value>::type PromotedT;
+  typedef typename ::Eigen::internal::plain_constant_type<Derived, PromotedT>::type PlainType;
+  typedef typename ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_product_op<PromotedT, Scalar>,
+                                          const PlainType, const Derived> ReturnType;
+  typedef typename ::Eigen::internal::scalar_constant_op<PromotedT> ScalarOp;
+  return ReturnType(PlainType(m.derived().rows(), m.derived().cols(), ScalarOp(scalar)), m.derived());
+}
+
+template<typename Derived>
+template<typename T>
+inline ::Eigen::CwiseBinaryOp<
+    ::Eigen::internal::scalar_quotient_op<
+        typename SpatialMotionBase<Derived>::Scalar,
+        typename ::Eigen::internal::promote_scalar_arg<typename SpatialMotionBase<Derived>::Scalar, T,
+            ::Eigen::internal::has_ReturnType<
+                typename SpatialMotionBase<Derived>::template ScalarOpTraits<T>::RightQuotient>::value>::type>,
+    const Derived,
+    const typename ::Eigen::internal::plain_constant_type<
+        Derived,
+        typename ::Eigen::internal::promote_scalar_arg<typename SpatialMotionBase<Derived>::Scalar, T,
+            ::Eigen::internal::has_ReturnType<
+                typename SpatialMotionBase<Derived>::template ScalarOpTraits<T>::RightQuotient>::value>::type>::type>
+SpatialMotionBase<Derived>::operator/(const T& scalar) const {
+  typedef typename ::Eigen::internal::promote_scalar_arg<Scalar, T,
+      ::Eigen::internal::has_ReturnType<typename ScalarOpTraits<T>::RightQuotient>::value>::type PromotedT;
+  typedef typename ::Eigen::internal::plain_constant_type<Derived, PromotedT>::type PlainType;
+  typedef typename ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_quotient_op<Scalar, PromotedT>,
+                                          const Derived, const PlainType> ReturnType;
+  typedef typename ::Eigen::internal::scalar_constant_op<PromotedT> ScalarOp;
+  return ReturnType(derived(), PlainType(derived().rows(), derived().cols(), ScalarOp(scalar)));
+}
+
+template<typename Derived>
+template<typename CustomBinaryOp, typename OtherDerived>
+inline const ::Eigen::CwiseBinaryOp<CustomBinaryOp, const Derived, const OtherDerived>
+SpatialMotionBase<Derived>::binaryExpr(const SpatialMotionBase<OtherDerived> &other,
+                                       const CustomBinaryOp& func) const {
+  return ::Eigen::CwiseBinaryOp<CustomBinaryOp, const Derived,
+                                const OtherDerived>(derived(), other.derived(), func);
 }
 
 // from Assign.h
@@ -405,7 +509,7 @@ SpatialMotionBase<Derived>::operator*(const SpatialMotionBase<OtherDerived>&) co
 
 template<typename Derived>
 template<typename OtherDerived>
-inline SpatialMotion<typename SpatialMotionBase<Derived>::template SpatialOpTraits<OtherDerived>::Scalar,
+inline SpatialMotion<typename SpatialMotionBase<Derived>::template SpatialOpTraits<OtherDerived>::ScalarT,
                      OtherDerived::ColsAtCompileTime>
 SpatialMotionBase<Derived>::operator*(const ::Eigen::MatrixBase<OtherDerived>& other) const {
   static_assert(ColsAtCompileTime == ::Eigen::Dynamic ||
@@ -566,7 +670,7 @@ inline Derived& SpatialMotionBase<Derived>::setUnit(::Eigen::Index i) {
 // from Dot.h
 template<typename Derived>
 template<typename OtherDerived>
-inline typename SpatialMotionBase<Derived>::template SpatialOpTraits<OtherDerived>::Scalar
+inline typename SpatialMotionBase<Derived>::template SpatialOpTraits<OtherDerived>::ScalarT
 SpatialMotionBase<Derived>::dot(const SpatialMotionBase<OtherDerived>&) const {
   static_assert(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar)) == -1,
                 "YOU_CANNOT_DOT_TWO_SPATIAL_MOTION_VECTORS");
@@ -575,7 +679,7 @@ SpatialMotionBase<Derived>::dot(const SpatialMotionBase<OtherDerived>&) const {
 
 template<typename Derived>
 template<typename OtherDerived>
-inline typename SpatialMotionBase<Derived>::template SpatialOpTraits<OtherDerived>::Scalar
+inline typename SpatialMotionBase<Derived>::template SpatialOpTraits<OtherDerived>::ScalarT
 SpatialMotionBase<Derived>::dot(const SpatialForceBase<OtherDerived>& other) const {
   static_assert(ColsAtCompileTime == 1, "MATRIX_MUST_BE_A_VECTOR");
   static_assert(OtherDerived::ColsAtCompileTime == 1, "MATRIX_MUST_BE_A_VECTOR");
