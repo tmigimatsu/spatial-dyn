@@ -16,6 +16,7 @@
 
 #include <ostream>  // std::ostream
 #include <string>   // std::string
+#include <vector>   // std::vector
 
 namespace spatial_dyn {
 
@@ -62,7 +63,7 @@ class RigidBody {
    *
    * @see Python: spatialdyn.RigidBody.graphics
    */
-  Graphics graphics;
+  std::vector<Graphics> graphics;
 
   /**
    * @return ID of the rigid body as assigned by ArticulatedBody::AddRigidBody().

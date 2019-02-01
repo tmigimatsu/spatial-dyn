@@ -9,6 +9,8 @@
 
 #include "parsers/json.h"
 
+#include <ctrl_utils/string.h>
+
 namespace spatial_dyn {
 namespace json {
 
@@ -17,7 +19,11 @@ nlohmann::json Serialize(const ArticulatedBody& ab) {
   json["name"] = ab.name;
   json["pos"] = Serialize(ab.T_base_to_world().translation());
   json["quat"] = Serialize(Eigen::Quaterniond(ab.T_base_to_world().linear()));
-  json["graphics"] = Serialize(ab.graphics);
+  nlohmann::json json_graphics;
+  for (const Graphics& graphics : ab.graphics) {
+    json_graphics.push_back(Serialize(graphics));
+  }
+  json["graphics"] = std::move(json_graphics);
   nlohmann::json json_rigid_bodies;
   for (const RigidBody& rb : ab.rigid_bodies()) {
     json_rigid_bodies.push_back(Serialize(rb));
@@ -35,15 +41,17 @@ nlohmann::json Serialize(const RigidBody& rb) {
   json["quat"] = Serialize(Eigen::Quaterniond(rb.T_to_parent().linear()));
   json["inertia"] = Serialize(rb.inertia().I_com_flat());
   json["joint"] = Serialize(rb.joint());
-  if (rb.graphics.geometry.type != Graphics::Geometry::Type::UNDEFINED) {
-    json["graphics"] = Serialize(rb.graphics);
+  nlohmann::json json_graphics;
+  for (const Graphics& graphics : rb.graphics) {
+    json_graphics.push_back(Serialize(graphics));
   }
+  json["graphics"] = std::move(json_graphics);
   return json;
 }
 
 nlohmann::json Serialize(const Joint& joint) {
   nlohmann::json json;
-  json["type"] = std::string(joint);
+  json["type"] = ctrl_utils::ToString(joint.type());
   json["q_min"] = joint.q_min();
   json["q_max"] = joint.q_max();
   json["dq_max"] = joint.dq_max();
@@ -65,19 +73,19 @@ nlohmann::json Serialize(const Graphics& graphics) {
 
 nlohmann::json Serialize(const Graphics::Geometry& geometry) {
   nlohmann::json json;
-  json["type"] = std::string(geometry);
+  json["type"] = ctrl_utils::ToString(geometry.type);
   switch (geometry.type) {
-    case Graphics::Geometry::Type::BOX:
+    case Graphics::Geometry::Type::kBox:
       json["scale"] = Serialize(geometry.scale);
       break;
-    case Graphics::Geometry::Type::CYLINDER:
+    case Graphics::Geometry::Type::kCylinder:
       json["radius"] = geometry.radius;
       json["length"] = geometry.length;
       break;
-    case Graphics::Geometry::Type::SPHERE:
+    case Graphics::Geometry::Type::kSphere:
       json["radius"] = geometry.radius;
       break;
-    case Graphics::Geometry::Type::MESH:
+    case Graphics::Geometry::Type::kMesh:
       json["mesh"] = geometry.mesh;
       json["scale"] = Serialize(geometry.scale);
       break;
@@ -140,4 +148,24 @@ Deserialize(const nlohmann::json& json) {
 */
 
 }  // namespace json
+
+void to_json(nlohmann::json& j, const ArticulatedBody& ab) {
+  j = json::Serialize(ab);
+}
+void to_json(nlohmann::json& j, const RigidBody& rb) {
+  j = json::Serialize(rb);
+}
+void to_json(nlohmann::json& j, const Joint& joint) {
+  j = json::Serialize(joint);
+}
+void to_json(nlohmann::json& j, const Graphics& graphics) {
+  j = json::Serialize(graphics);
+}
+void to_json(nlohmann::json& j, const Graphics::Geometry& geometry) {
+  j = json::Serialize(geometry);
+}
+void to_json(nlohmann::json& j, const Graphics::Material& material) {
+  j = json::Serialize(material);
+}
+
 }  // namespace spatial_dyn

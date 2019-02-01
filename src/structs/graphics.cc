@@ -9,34 +9,40 @@
 
 #include "structs/graphics.h"
 
+#include <algorithm>  // std::transform
+#include <cctype>     // std::tolower
 #include <map>  // std::map
 
 namespace spatial_dyn {
 
 static const std::map<std::string, Graphics::Geometry::Type> kStringToType = {
-  {"BOX",       Graphics::Geometry::Type::BOX},
-  {"CYLINDER",  Graphics::Geometry::Type::CYLINDER},
-  {"SPHERE",    Graphics::Geometry::Type::SPHERE},
-  {"MESH",      Graphics::Geometry::Type::MESH},
-  {"UNDEFINED", Graphics::Geometry::Type::UNDEFINED}
+  {"box",       Graphics::Geometry::Type::kBox},
+  {"cylinder",  Graphics::Geometry::Type::kCylinder},
+  {"sphere",    Graphics::Geometry::Type::kSphere},
+  {"mesh",      Graphics::Geometry::Type::kMesh},
+  {"undefined", Graphics::Geometry::Type::kUndefined}
 };
 
-std::string Graphics::Geometry::TypeToString(const Type& type) {
-  switch (type) {
-    case Type::BOX:      return "BOX";
-    case Type::CYLINDER: return "CYLINDER";
-    case Type::SPHERE:   return "SPHERE";
-    case Type::MESH:     return "MESH";
-    default:             return "UNDEFINED";
-  }
+static const std::map<Graphics::Geometry::Type, std::string> kTypeToString = {
+  {Graphics::Geometry::Type::kBox,       "box"},
+  {Graphics::Geometry::Type::kCylinder,  "cylinder"},
+  {Graphics::Geometry::Type::kSphere,    "sphere"},
+  {Graphics::Geometry::Type::kMesh,      "mesh"},
+  {Graphics::Geometry::Type::kUndefined, "undefined"}
+};
+
+std::ostream& operator<<(std::ostream& os, const Graphics::Geometry::Type& type) {
+  os << kTypeToString.at(type);
+  return os;
 }
 
-Graphics::Geometry::Type Graphics::Geometry::StringToType(const std::string& type) {
-  try {
-    return kStringToType.at(type);
-  } catch (...) {
-    return Type::UNDEFINED;
-  }
+std::istream& operator>>(std::istream& is, Graphics::Geometry::Type& type) {
+  std::string str;
+  is >> str;
+  std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::tolower(c); });
+  type = kStringToType.at(str);
+  return is;
 }
+
 
 }  // namespace spatial_dyn

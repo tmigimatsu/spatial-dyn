@@ -32,7 +32,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
 
   if (crba.is_computed && (!options.centrifugal_coriolis || cc.is_computed) &&
       (!options.gravity || grav.is_computed)) {
-    tau = crba.A * ddq;
+    tau = crba.A * ddq + ExternalTorques(ab, f_external);
     if (options.centrifugal_coriolis) tau += cc.C;
     if (options.gravity) tau += grav.G;
     if (options.friction) tau += Friction(ab, tau, true, options.stiction_epsilon);

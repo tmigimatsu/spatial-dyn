@@ -68,8 +68,9 @@ const Eigen::Matrix6Xd& Jacobian(const ArticulatedBody& ab, int link,
   jac.J.setZero();
   const Eigen::Vector3d p_0n = ab.T_to_world(link) * offset;
   for (const int i : ab.ancestors(link)) {
-    auto T_i_to_point = Eigen::Translation3d(ab.T_to_world(i).translation() - p_0n) *
-                        ab.T_to_world(i).linear();
+    Eigen::Isometry3d T_i_to_point;
+    T_i_to_point.linear() = ab.T_to_world(i).linear();
+    T_i_to_point.translation() = ab.T_to_world(i).translation() - p_0n;
     jac.J.col(i) = (T_i_to_point * ab.rigid_bodies(i).joint().subspace()).matrix();
   }
 
@@ -101,8 +102,9 @@ Eigen::Matrix6Xd Jacobian(const ArticulatedBody& ab, Eigen::Ref<const Eigen::Vec
   const Eigen::Vector3d p_0n = T_to_world.back() * offset;
   for (size_t idx = 0; idx < ancestors.size(); idx++) {
     int i = ancestors[idx];
-    auto T_i_to_point = Eigen::Translation3d(T_to_world[idx].translation() - p_0n) *
-                        T_to_world[idx].linear();
+    Eigen::Isometry3d T_i_to_point;
+    T_i_to_point.linear() = T_to_world[idx].linear();
+    T_i_to_point.translation() = T_to_world[idx].translation() - p_0n;
     J.col(i) = (T_i_to_point * ab.rigid_bodies(i).joint().subspace()).matrix();
   }
   return J;

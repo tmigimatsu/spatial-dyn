@@ -94,14 +94,14 @@ struct IntegrationOptions /*: ForwardDynamicsOptions*/ {
    * Integration methods.
    */
   enum class Method {
-    EULER,  ///< Euler's method (order 1).
-    HEUNS,  ///< Heun's method (order 2).
-    RK4     ///< Runge-Kutta 4 (order 4).
+    kEuler,  ///< Euler's method (order 1).
+    kHeuns,  ///< Heun's method (order 2).
+    kRk4     ///< Runge-Kutta 4 (order 4).
   };
 
   IntegrationOptions(bool gravity = true, bool centrifugal_coriolis = true,
                      bool friction = false, bool joint_limits = false,
-                     Method method = Method::RK4, bool aba = false,
+                     Method method = Method::kRk4, bool aba = false,
                      double stiction_epsilon = 0.01)
       : gravity(gravity), centrifugal_coriolis(centrifugal_coriolis),
         friction(friction), joint_limits(joint_limits), method(method),
@@ -130,7 +130,7 @@ struct IntegrationOptions /*: ForwardDynamicsOptions*/ {
   /**
    * Integration method.
    */
-  Method method = Method::RK4;
+  Method method = Method::kRk4;
 
   /**
    * Use spatial_dyn::ForwardDynamicsAba(). If false, uses spatial_dyn::ForwardDynamics().
@@ -143,6 +143,46 @@ struct IntegrationOptions /*: ForwardDynamicsOptions*/ {
   double stiction_epsilon = 0.01;
 
 };
+
+namespace opspace {
+
+struct InverseDynamicsOptions {
+
+  InverseDynamicsOptions(bool gravity = false, bool centrifugal_coriolis = false,
+                         bool friction = false, double svd_epsilon = 0.,
+                         double stiction_epsilon = 0.01)
+      : gravity(gravity), centrifugal_coriolis(centrifugal_coriolis),
+        friction(friction), svd_epsilon(svd_epsilon),
+        stiction_epsilon(stiction_epsilon) {}
+
+  /**
+   * Include gravity torques.
+   */
+  bool gravity = false;
+
+  /**
+   * Include centrifugal/Coriolis torques.
+   */
+  bool centrifugal_coriolis = false;
+
+  /**
+   * Include Coulomb and viscous friction torques at the joints.
+   */
+  bool friction = false;
+
+  /**
+   * Threshold for singular value inversion in the computation of Lambda.
+   */
+  double svd_epsilon = 0.;
+
+  /**
+   * Velocity threshold for stiction activation.
+   */
+  double stiction_epsilon = 0.01;
+
+};
+
+}  // namespace opspace
 
 }  // namespace spatial_dyn
 

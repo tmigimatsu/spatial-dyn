@@ -9,8 +9,12 @@
 
 #include "structs/joint.h"
 
+#include <algorithm>  // std::transform
+#include <cctype>     // std::tolower
 #include <exception>  // std::invalid_argument
 #include <map>        // std::map
+
+#include <ctrl_utils/string.h>
 
 namespace spatial_dyn {
 
@@ -19,28 +23,28 @@ Joint::Joint(Joint::Type type) {
 }
 
 Joint::Joint(const std::string& type) {
-  set_type(StringToType(type));
+  set_type(ctrl_utils::FromString<Joint::Type>(type));
 }
 
 void Joint::set_type(Joint::Type type) {
   type_ = type;
   switch (type_) {
-    case Joint::Type::RX:
+    case Joint::Type::kRx:
       subspace_ = SpatialMotiond::UnitAngX();
       break;
-    case Joint::Type::RY:
+    case Joint::Type::kRy:
       subspace_ = SpatialMotiond::UnitAngY();
       break;
-    case Joint::Type::RZ:
+    case Joint::Type::kRz:
       subspace_ = SpatialMotiond::UnitAngZ();
       break;
-    case Joint::Type::PX:
+    case Joint::Type::kPx:
       subspace_ = SpatialMotiond::UnitLinX();
       break;
-    case Joint::Type::PY:
+    case Joint::Type::kPy:
       subspace_ = SpatialMotiond::UnitLinY();
       break;
-    case Joint::Type::PZ:
+    case Joint::Type::kPz:
       subspace_ = SpatialMotiond::UnitLinZ();
       break;
     default:
@@ -49,10 +53,10 @@ void Joint::set_type(Joint::Type type) {
 }
 
 bool Joint::is_prismatic() const {
-  return type_ == Joint::Type::PX || type_ == Joint::Type::PY || type_ == Joint::Type::PZ;
+  return type_ == Joint::Type::kPx || type_ == Joint::Type::kPy || type_ == Joint::Type::kPz;
 }
 bool Joint::is_revolute() const {
-  return type_ == Joint::Type::RX || type_ == Joint::Type::RY || type_ == Joint::Type::RZ;
+  return type_ == Joint::Type::kRx || type_ == Joint::Type::kRy || type_ == Joint::Type::kRz;
 }
 
 void Joint::set_q_min(double q_min) {
@@ -122,17 +126,17 @@ void Joint::set_f_stiction(double f_stiction) {
 
 Eigen::Isometry3d Joint::T_joint(double q) const {
   switch (type_) {
-    case Joint::Type::RX:
+    case Joint::Type::kRx:
       return Eigen::Isometry3d(ctrl_utils::Eigen::RotationX(q));
-    case Joint::Type::RY:
+    case Joint::Type::kRy:
       return Eigen::Isometry3d(ctrl_utils::Eigen::RotationY(q));
-    case Joint::Type::RZ:
+    case Joint::Type::kRz:
       return Eigen::Isometry3d(ctrl_utils::Eigen::RotationZ(q));
-    case Joint::Type::PX:
+    case Joint::Type::kPx:
       return Eigen::Isometry3d(Eigen::Translation3d(q * Eigen::Vector3d::UnitX()));
-    case Joint::Type::PY:
+    case Joint::Type::kPy:
       return Eigen::Isometry3d(Eigen::Translation3d(q * Eigen::Vector3d::UnitY()));
-    case Joint::Type::PZ:
+    case Joint::Type::kPz:
       return Eigen::Isometry3d(Eigen::Translation3d(q * Eigen::Vector3d::UnitZ()));
     default:
       return Eigen::Isometry3d::Identity();
@@ -140,40 +144,32 @@ Eigen::Isometry3d Joint::T_joint(double q) const {
 }
 
 static const std::map<std::string, Joint::Type> kStringToJointType = {
-  {"RX", Joint::Type::RX}, {"RY", Joint::Type::RY}, {"RZ", Joint::Type::RZ},
-  {"PX", Joint::Type::PX}, {"PY", Joint::Type::PY}, {"PZ", Joint::Type::PZ},
-  {"UNDEFINED", Joint::Type::UNDEFINED}
+  {"rx", Joint::Type::kRx}, {"ry", Joint::Type::kRy}, {"rz", Joint::Type::kRz},
+  {"px", Joint::Type::kPx}, {"py", Joint::Type::kPy}, {"pz", Joint::Type::kPz},
+  {"undefined", Joint::Type::kUndefined}
 };
 
-std::string Joint::TypeToString(const Type& type) {
-  switch (type) {
-    case Joint::Type::RX:
-      return "RX";
-    case Joint::Type::RY:
-      return "RY";
-    case Joint::Type::RZ:
-      return "RZ";
-    case Joint::Type::PX:
-      return "PX";
-    case Joint::Type::PY:
-      return "PY";
-    case Joint::Type::PZ:
-      return "PZ";
-    default:
-      return "UNDEFINED";
-  }
+static const std::map<Joint::Type, std::string> kJointTypeToString = {
+  {Joint::Type::kRx, "rx"}, {Joint::Type::kRy, "ry"}, {Joint::Type::kRz, "rz"},
+  {Joint::Type::kPx, "px"}, {Joint::Type::kPy, "py"}, {Joint::Type::kPz, "pz"},
+  {Joint::Type::kUndefined, "undefined"}
+};
+
+std::ostream& operator<<(std::ostream& os, const Joint::Type& type) {
+  os << kJointTypeToString.at(type);
+  return os;
 }
 
-Joint::Type Joint::StringToType(const std::string& type) {
-  try {
-    return kStringToJointType.at(type);
-  } catch (...) {
-    return Joint::Type::UNDEFINED;
-  }
+std::istream& operator>>(std::istream& is, Joint::Type& type) {
+  std::string str;
+  is >> str;
+  std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::tolower(c); });
+  type = kStringToJointType.at(str);
+  return is;
 }
 
 std::ostream& operator<<(std::ostream& os, const Joint& j) {
-  os << "Joint(type=" << std::string(j) << ", q_lim=[" << j.q_min() << " " << j.q_max() 
+  os << "Joint(type=" << j.type() << ", q_lim=[" << j.q_min() << " " << j.q_max() 
      << "], dq_max=" << j.dq_max() << ", fq_max=" << j.fq_max() << ", f_coulomb="
      << j.f_coulomb() << ", f_viscous=" << j.f_viscous() << ", f_stiction=" << j.f_stiction() << ")";
   return os;

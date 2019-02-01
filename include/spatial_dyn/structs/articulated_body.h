@@ -82,7 +82,7 @@ class ArticulatedBody {
    *
    * @see Python: spatialdyn.ArticulatedBody.graphics
    */
-  Graphics graphics;
+  std::vector<Graphics> graphics;
 
   /**
    * @return Degrees of freedom of the articulated body.

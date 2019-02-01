@@ -41,6 +41,9 @@ class SpatialMotion : public PlainObjectBase<SpatialMotion<_Scalar, _Cols, _Opti
   SpatialMotion(const Scalar& lin_x, const Scalar& lin_y, const Scalar& lin_z,
                 const Scalar& ang_x, const Scalar& ang_y, const Scalar& ang_z);
 
+  template<typename DerivedLin, typename DerivedAng>
+  SpatialMotion(const EigenBase<DerivedLin>& lin, const EigenBase<DerivedAng>& ang);
+
   SpatialMotion& operator=(const SpatialMotion& other);
 
   SpatialMotion& operator=(SpatialMotion&& other)
@@ -107,6 +110,14 @@ inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::SpatialMotion(
   m_storage.data()[3] = ang_x;
   m_storage.data()[4] = ang_y;
   m_storage.data()[5] = ang_z;
+}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+template<typename DerivedLin, typename DerivedAng>
+inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::SpatialMotion(
+    const EigenBase<DerivedLin>& lin, const EigenBase<DerivedAng>& ang) {
+  this->linear() = lin;
+  this->angular() = ang;
 }
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>

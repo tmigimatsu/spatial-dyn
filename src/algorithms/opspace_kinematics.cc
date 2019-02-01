@@ -35,6 +35,13 @@ Eigen::Quaterniond NearQuaternion(const Eigen::Quaterniond& quat,
   return result;
 }
 
+Eigen::Quaterniond NearQuaternion(Eigen::Ref<const Eigen::Matrix3d> ori,
+                                  const Eigen::Quaterniond& quat_reference) {
+  Eigen::Quaterniond result(ori);
+  if (result.dot(quat_reference) < 0) result.coeffs() *= -1;
+  return result;
+}
+
 Eigen::Quaterniond FarQuaternion(const Eigen::Quaterniond& quat,
                                  const Eigen::Quaterniond& quat_reference) {
   Eigen::Quaterniond result = quat;

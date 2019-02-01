@@ -13,6 +13,10 @@ cmake_minimum_required(VERSION 3.6)
 # Define project
 project(spatial_dyn VERSION 1.0.0 LANGUAGES CXX)
 
+# Define options
+option(BUILD_CPP "Build C++ library" ON)
+option(BUILD_PYTHON "Build Python library" ON)
+
 # Set CMake flags
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_VERBOSE_MAKEFILE ON) # TODO: Remove
@@ -51,21 +55,11 @@ function(download_package PACKAGE_NAME)
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${PACKAGE_NAME})
 endfunction()
 
-# Export for build tree
-configure_file(${SPATIAL_DYN_CMAKE_DIR}/Findnlohmann_json.cmake.in
-    ${CMAKE_BINARY_DIR}/Findnlohmann_json.cmake @ONLY)
-
 find_package(tinyxml2 6.2 QUIET)
 if(NOT tinyxml2_FOUND)
     download_package(tinyxml2)
     set(tinyxml2_DIR "${CMAKE_BINARY_DIR}/tinyxml2/build")
     find_package(tinyxml2 QUIET NO_DEFAULT_PATH)
-endif()
-
-find_package(nlohmann_json 3.2 QUIET)
-if(NOT nlohmann_json_FOUND)
-    download_package(nlohmann_json)
-    find_package(nlohmann_json 3.2 REQUIRED PATHS ${CMAKE_BINARY_DIR}/nlohmann_json/build)
 endif()
 
 find_package(ctrl_utils 1.0.0 QUIET)
@@ -77,7 +71,6 @@ endif()
 target_link_libraries(${SPATIAL_DYN_LIB}
     PUBLIC
         ctrl_utils::ctrl_utils
-        nlohmann_json::nlohmann_json
     PRIVATE
         tinyxml2_static
 )
@@ -160,12 +153,16 @@ if(BUILD_TESTING)
 endif()
 
 # Build python wrapper
-add_subdirectory(${SPATIAL_DYN_SRC_DIR}/python)
+if(BUILD_PYTHON)
+    add_subdirectory(${SPATIAL_DYN_SRC_DIR}/python)
+endif()
 
 export(TARGETS ${SPATIAL_DYN_LIB}
     NAMESPACE ${SPATIAL_DYN_LIB}::
     FILE ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_TARGETS}.cmake)
 
 # Register package in user registry
-export(PACKAGE ${SPATIAL_DYN_LIB})
+if(BUILD_CPP)
+    export(PACKAGE ${SPATIAL_DYN_LIB})
+endif()
 

@@ -19,11 +19,18 @@
 namespace spatial_dyn {
 namespace opspace {
 
+bool IsSingular(const ArticulatedBody& ab, const Eigen::MatrixXd& J, double svd_epsilon) {
+  auto& ops = ab.cache_->opspace_data_;
+
+  Inertia(ab, J, svd_epsilon);
+
+  return ops.is_singular;
+}
+
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd& J,
                                 const Eigen::VectorXd& ddx, Eigen::MatrixXd *N,
                                 const std::map<size_t, SpatialForced>& f_external,
-                                bool gravity, bool centrifugal_coriolis, bool friction,
-                                double svd_epsilon, double stiction_epsilon) {
+                                const InverseDynamicsOptions& options) {
   // Project Jacobian in nullspace
   Eigen::MatrixXd JN;
   bool use_nullspace = N != nullptr && N->size() > 0;
@@ -33,28 +40,28 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
   const Eigen::MatrixXd& J_x = (use_nullspace) ? JN : J;
 
   // Compute opspace dynamics
-  Eigen::VectorXd F_x = Inertia(ab, J_x, svd_epsilon) * ddx;
+  Eigen::VectorXd F_x = Inertia(ab, J_x, options.svd_epsilon) * ddx;
 
   if (!f_external.empty()) {
-    F_x += ExternalForces(ab, J_x, f_external, svd_epsilon);
+    F_x += ExternalForces(ab, J_x, f_external, options.svd_epsilon);
   }
 
-  if (gravity) {
-    F_x += Gravity(ab, J_x, svd_epsilon);
+  if (options.gravity) {
+    F_x += Gravity(ab, J_x, options.svd_epsilon);
   }
 
   // TODO: Only works for 6d pos_ori tasks at the origin of the ee frame
-  if (centrifugal_coriolis) {
-    F_x += CentrifugalCoriolis(ab, J_x, svd_epsilon);
+  if (options.centrifugal_coriolis) {
+    F_x += CentrifugalCoriolis(ab, J_x, options.svd_epsilon);
   }
 
-  if (friction) {
-    F_x += Friction(ab, J_x, J_x.transpose() * F_x, svd_epsilon, stiction_epsilon);
+  if (options.friction) {
+    F_x += Friction(ab, J_x, J_x.transpose() * F_x, options.svd_epsilon, options.stiction_epsilon);
   }
 
   // Update nullspace
   if (N != nullptr) {
-    const Eigen::MatrixXd& J_bar = JacobianDynamicInverse(ab, J_x, svd_epsilon);
+    const Eigen::MatrixXd& J_bar = JacobianDynamicInverse(ab, J_x, options.svd_epsilon);
     if (N->size() == 0) {
       *N = Eigen::MatrixXd::Identity(ab.dof(), ab.dof()) - J_bar * J_x;
     } else {
@@ -72,7 +79,7 @@ const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab, const Eigen::MatrixXd&
 
   if (!ops.is_lambda_computed || ops.J.size() != J.size() || ops.J != J ||
       ops.svd_epsilon != svd_epsilon) {
-    ops.Lambda = ctrl_utils::Eigen::PseudoInverse(InertiaInverse(ab, J), svd_epsilon);
+    ops.Lambda = ctrl_utils::Eigen::PseudoInverse(InertiaInverse(ab, J), svd_epsilon, &ops.is_singular);
     ops.svd_epsilon = svd_epsilon;
     ops.is_lambda_computed = true;
   }
