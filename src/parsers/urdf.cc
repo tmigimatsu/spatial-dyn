@@ -107,17 +107,17 @@ Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual, const std::string
   Graphics::Geometry& geometry = graphics.geometry;
   std::string str_type = xml_type->Name();
   if (str_type == "box") {
-    geometry.type = Graphics::Geometry::Type::BOX;
+    geometry.type = Graphics::Geometry::Type::kBox;
     geometry.scale = ctrl_utils::Eigen::DecodeMatlab<Eigen::Vector3d>(ParseAttribute(xml_type, "size"));
   } else if (str_type == "cylinder") {
-    geometry.type = Graphics::Geometry::Type::CYLINDER;
+    geometry.type = Graphics::Geometry::Type::kCylinder;
     geometry.radius = ParseDoubleAttribute(xml_type, "radius");
     geometry.length = ParseDoubleAttribute(xml_type, "length");
   } else if (str_type == "sphere") {
-    geometry.type = Graphics::Geometry::Type::SPHERE;
+    geometry.type = Graphics::Geometry::Type::kSphere;
     geometry.radius = ParseDoubleAttribute(xml_type, "radius");
   } else if (str_type == "mesh") {
-    geometry.type = Graphics::Geometry::Type::MESH;
+    geometry.type = Graphics::Geometry::Type::kMesh;
     geometry.mesh = urdf_path + ParseAttribute(xml_type, "filename");
 
     const char* attr_scale = xml_type->Attribute("scale");
@@ -329,17 +329,17 @@ ArticulatedBody LoadModel(const std::string& urdf, bool expand_paths) {
       Joint::Type type;
       if (attr_type == "prismatic") {
         switch (axis_num) {
-          case 0: type = Joint::Type::PX; break;
-          case 1: type = Joint::Type::PY; break;
-          case 2: type = Joint::Type::PZ; break;
-          default: type = Joint::Type::UNDEFINED; break;
+          case 0: type = Joint::Type::kPx; break;
+          case 1: type = Joint::Type::kPy; break;
+          case 2: type = Joint::Type::kPz; break;
+          default: type = Joint::Type::kUndefined; break;
         }
       } else {
         switch (axis_num) {
-          case 0: type = Joint::Type::RX; break;
-          case 1: type = Joint::Type::RY; break;
-          case 2: type = Joint::Type::RZ; break;
-          default: type = Joint::Type::UNDEFINED; break;
+          case 0: type = Joint::Type::kRx; break;
+          case 1: type = Joint::Type::kRy; break;
+          case 2: type = Joint::Type::kRz; break;
+          default: type = Joint::Type::kUndefined; break;
         }
       }
       if (attr_type == "revolute" || attr_type == "prismatic") {

@@ -36,13 +36,13 @@ class Joint {
    * %Joint types.
    */
   enum class Type {
-    UNDEFINED,  ///< Undefined.
-    RX,         ///< Revolute about X.
-    RY,         ///< Revolute about Y.
-    RZ,         ///< Revolute about Z.
-    PX,         ///< Prismatic along X.
-    PY,         ///< Prismatic along Y.
-    PZ          ///< Prismatic along Z.
+    kUndefined,  ///< Undefined.
+    kRx,         ///< Revolute about X.
+    kRy,         ///< Revolute about Y.
+    kRz,         ///< Revolute about Z.
+    kPx,         ///< Prismatic along X.
+    kPy,         ///< Prismatic along Y.
+    kPz          ///< Prismatic along Z.
   };
 
   /**
@@ -60,7 +60,7 @@ class Joint {
   /**
    * Constructor that sets the joint type from a string.
    *
-   * Valid values: `"UNDEFINED"`, `"RX"`, `"RY"`, `"RZ"`, `"PX"`, `"PY"`, `"PZ"`.
+   * Valid values: `"undefined"`, `"rx"`, `"ry"`, `"rz"`, `"px"`, `"py"`, `"pz"`.
    *
    * @param type %Joint type string.
    * @see Python: spatialdyn.Joint.__init__()
@@ -207,38 +207,10 @@ class Joint {
    */
   Eigen::Isometry3d T_joint(double q) const;
 
-  /**
-   * Convert the Joint::Type to a string.
-   *
-   * @param type %Joint type enum.
-   * @return %Joint type string.
-   */
-  static std::string TypeToString(const Type& type);
-
-  /**
-   * Convert the string to a Joint::Type.
-   *
-   * @param type %Joint type string.
-   * @return %Joint type enum.
-   */
-  static Type StringToType(const std::string& type);
-
-  /**
-   * Convert the joint type enum to a string.
-   *
-   * Example:
-   * ```
-   * std::string(Joint(Joint::Type::RX)) -> "RX"
-   * ```
-   *
-   * @return %Joint type as a string.
-   */
-  operator std::string() const { return TypeToString(type_); }
-
  protected:
 
   /// @cond
-  Type type_ = Type::UNDEFINED;
+  Type type_ = Type::kUndefined;
   SpatialMotiond subspace_ = SpatialMotiond::Zero();
 
   double q_min_  = -std::numeric_limits<double>::infinity();
@@ -251,6 +223,24 @@ class Joint {
   /// @endcond
 
 };
+
+/**
+ * @ingroup cpp_structs
+ * Output the Joint::Type to an output stream.
+ *
+ * The string representations of the type are "undefined", "rx", "ry", "rz",
+ * "px", "py", and "pz".
+ */
+std::ostream& operator<<(std::ostream& os, const Joint::Type& type);
+
+/**
+ * @ingroup cpp_structs
+ * Parse one token from the input stream to a Joint::Type.
+ *
+ * The string representations of the type are "undefined", "rx", "ry", "rz",
+ * "px", "py", and "pz".
+ */
+std::istream& operator>>(std::istream& is, Joint::Type& type);
 
 /**
  * @ingroup cpp_structs

@@ -124,27 +124,27 @@ void AddBody(spatial_dyn::ArticulatedBody *ab, RigidBodyDynamics::Model *ab_rbdl
     RigidBodyDynamics::JointType joint_type_rbdl;
     RigidBodyDynamics::Math::Vector3d joint_axis_rbdl;
     switch (joint_type) {
-      case spatial_dyn::Joint::Type::RX:
+      case spatial_dyn::Joint::Type::kRx:
         joint_type_rbdl = RigidBodyDynamics::JointTypeRevolute;
         joint_axis_rbdl = Eigen::Vector3d::UnitX();
         break;
-      case spatial_dyn::Joint::Type::RY:
+      case spatial_dyn::Joint::Type::kRy:
         joint_type_rbdl = RigidBodyDynamics::JointTypeRevolute;
         joint_axis_rbdl = Eigen::Vector3d::UnitY();
         break;
-      case spatial_dyn::Joint::Type::RZ:
+      case spatial_dyn::Joint::Type::kRz:
         joint_type_rbdl = RigidBodyDynamics::JointTypeRevolute;
         joint_axis_rbdl = Eigen::Vector3d::UnitZ();
         break;
-      case spatial_dyn::Joint::Type::PX:
+      case spatial_dyn::Joint::Type::kPx:
         joint_type_rbdl = RigidBodyDynamics::JointTypePrismatic;
         joint_axis_rbdl = Eigen::Vector3d::UnitX();
         break;
-      case spatial_dyn::Joint::Type::PY:
+      case spatial_dyn::Joint::Type::kPy:
         joint_type_rbdl = RigidBodyDynamics::JointTypePrismatic;
         joint_axis_rbdl = Eigen::Vector3d::UnitY();
         break;
-      case spatial_dyn::Joint::Type::PZ:
+      case spatial_dyn::Joint::Type::kPz:
         joint_type_rbdl = RigidBodyDynamics::JointTypePrismatic;
         joint_axis_rbdl = Eigen::Vector3d::UnitZ();
         break;
@@ -162,32 +162,32 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
   AddBody(&ab, &ab_rbdl, -1, "shoulder_pan",
           Eigen::AngleAxisd::Identity(), Eigen::Vector3d(0, 0, 0.089159),
           3.7, Eigen::Vector3d(0, 0, 0.14), Eigen::Vector6d(0.010267495893, 0.010267495893, 0.00666, 0, 0, 0),
-          spatial_dyn::Joint::Type::RZ);
+          spatial_dyn::Joint::Type::kRz);
 
   AddBody(&ab, &ab_rbdl, 0, "shoulder_lift",
           Eigen::AngleAxisd(M_PI/2, Eigen::Vector3d::UnitY()), Eigen::Vector3d(0, 0.13585, 0),
           8.393, Eigen::Vector3d(0, 0, 0.28), Eigen::Vector6d(0.22689067591, 0.22689067591, 0.0151074, 0, 0, 0),
-          spatial_dyn::Joint::Type::RY);
+          spatial_dyn::Joint::Type::kRy);
 
   AddBody(&ab, &ab_rbdl, 1, "forearm",
           Eigen::AngleAxisd::Identity(), Eigen::Vector3d(0, -0.1197, 0.425),
           2.275, Eigen::Vector3d(0, 0, 0.25), Eigen::Vector6d(0.049443313556, 0.049443313556, 0.004095, 0, 0, 0),
-          spatial_dyn::Joint::Type::RY);
+          spatial_dyn::Joint::Type::kRy);
 
   AddBody(&ab, &ab_rbdl, 2, "wrist_1",
           Eigen::AngleAxisd(M_PI/2, Eigen::Vector3d::UnitY()), Eigen::Vector3d(0, 0, 0.39225),
           1.219, Eigen::Vector3d(0, 0, 0), Eigen::Vector6d(0.111172755531, 0.111172755531, 0.21942, 0, 0, 0),
-          spatial_dyn::Joint::Type::RY);
+          spatial_dyn::Joint::Type::kRy);
 
   AddBody(&ab, &ab_rbdl, 3, "wrist_2",
           Eigen::AngleAxisd::Identity(), Eigen::Vector3d(0, 0.093, 0),
           1.219, Eigen::Vector3d(0, 0, 0), Eigen::Vector6d(0.111172755531, 0.111172755531, 0.21942, 0, 0, 0),
-          spatial_dyn::Joint::Type::RZ);
+          spatial_dyn::Joint::Type::kRz);
 
   AddBody(&ab, &ab_rbdl, 4, "wrist_3",
           Eigen::AngleAxisd(M_PI/2, Eigen::Vector3d::UnitY()), Eigen::Vector3d(0, 0, 0.09465),
           0.1879, Eigen::Vector3d(0, 0, 0), Eigen::Vector6d(0.0171364731454, 0.0171364731454, 0.033822, 0, 0, 0),
-          spatial_dyn::Joint::Type::RY);
+          spatial_dyn::Joint::Type::kRy);
 
   Eigen::VectorXd q = Eigen::VectorXd::LinSpaced(ab.dof(), 0., 2.);
   ab.set_q(q);

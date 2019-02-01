@@ -220,7 +220,7 @@ class Joint:
 
     ## %Joint type.
     #
-    # Valid values: `"UNDEFINED"`, `"RX"`, `"RY"`, `"RZ"`, `"PX"`, `"PY"`, `"PZ"`.
+    # Valid values: `"undefined"`, `"rx"`, `"ry"`, `"rz"`, `"px"`, `"py"`, `"pz"`.
     #
     # @see C++: spatial_dyn::Joint::type()
     type = "UNDEFINED"

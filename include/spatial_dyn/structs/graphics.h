@@ -45,17 +45,17 @@ struct Graphics {
      * %Geometry types.
      */
     enum class Type {
-      UNDEFINED,  ///< Undefined.
-      BOX,        ///< Box.
-      CYLINDER,   ///< Cylinder.
-      SPHERE,     ///< Sphere.
-      MESH        ///< Mesh.
+      kUndefined,  ///< Undefined.
+      kBox,        ///< Box.
+      kCylinder,   ///< Cylinder.
+      kSphere,     ///< Sphere.
+      kMesh        ///< Mesh.
     };
 
     /**
      * Geometry type.
      */
-    Type type = Type::UNDEFINED;
+    Type type = Type::kUndefined;
 
     /**
      * Type::BOX size or Type::MESH scale.
@@ -96,14 +96,16 @@ struct Graphics {
 /**
  * Output the Geometry::Type to an output stream.
  *
- * The string representations of the type are equivalent to their C++ names.
+ * The string representations of the type are "undefined", "box", "cylinder",
+ * "sphere", and "mesh".
  */
 std::ostream& operator<<(std::ostream& os, const Graphics::Geometry::Type& type);
 
 /**
  * Parse one token from the input stream to a Geometry::Type.
  *
- * The string representations of the type are equivalent to their C++ names.
+ * The string representations of the type are "undefined", "box", "cylinder",
+ * "sphere", and "mesh".
  */
 std::istream& operator>>(std::istream& is, Graphics::Geometry::Type& type);
 

@@ -42,6 +42,22 @@ PYBIND11_MODULE(eigen, m) {
              return T * m;
            });
 
+  // Translation3d
+  py::class_<Translation3d>(m, "Translation3d")
+      .def(py::init<const Translation3d&>())
+      .def(py::init<const Vector3d&>())
+      .def("translation", (Vector3d& (Translation3d::*)(void)) &Translation3d::translation,
+           py::return_value_policy::reference_internal)
+      .def("inverse", &Translation3d::inverse)
+      .def("fdot",
+           [](const Translation3d& T, const spatial_dyn::SpatialForced& f) {
+             return T * f;
+           })
+      .def("mdot",
+           [](const Translation3d& T, const spatial_dyn::SpatialMotiond& m) {
+             return T * m;
+           });
+
   // Quaterniond
   py::class_<Quaterniond>(m, "Quaterniond")
       .def(py::init<const Quaterniond&>())

@@ -30,7 +30,7 @@ void RigidBody::set_inertia(const SpatialInertiad& inertia) {
 
 std::ostream& operator<<(std::ostream& os, const RigidBody& rb) {
   os << "RigidBody(name=\"" << rb.name << "\", id=" << rb.id() << ", id_parent=" << rb.id_parent()
-     << ", joint=" << std::string(rb.joint()) << ")";
+     << ", joint=" << rb.joint().type() << ")";
   return os;
 }
 

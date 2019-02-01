@@ -94,14 +94,14 @@ struct IntegrationOptions /*: ForwardDynamicsOptions*/ {
    * Integration methods.
    */
   enum class Method {
-    EULER,  ///< Euler's method (order 1).
-    HEUNS,  ///< Heun's method (order 2).
-    RK4     ///< Runge-Kutta 4 (order 4).
+    kEuler,  ///< Euler's method (order 1).
+    kHeuns,  ///< Heun's method (order 2).
+    kRk4     ///< Runge-Kutta 4 (order 4).
   };
 
   IntegrationOptions(bool gravity = true, bool centrifugal_coriolis = true,
                      bool friction = false, bool joint_limits = false,
-                     Method method = Method::RK4, bool aba = false,
+                     Method method = Method::kRk4, bool aba = false,
                      double stiction_epsilon = 0.01)
       : gravity(gravity), centrifugal_coriolis(centrifugal_coriolis),
         friction(friction), joint_limits(joint_limits), method(method),
@@ -130,7 +130,7 @@ struct IntegrationOptions /*: ForwardDynamicsOptions*/ {
   /**
    * Integration method.
    */
-  Method method = Method::RK4;
+  Method method = Method::kRk4;
 
   /**
    * Use spatial_dyn::ForwardDynamicsAba(). If false, uses spatial_dyn::ForwardDynamics().

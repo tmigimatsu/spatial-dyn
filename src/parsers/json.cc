@@ -51,7 +51,7 @@ nlohmann::json Serialize(const RigidBody& rb) {
 
 nlohmann::json Serialize(const Joint& joint) {
   nlohmann::json json;
-  json["type"] = std::string(joint);
+  json["type"] = ctrl_utils::ToString(joint.type());
   json["q_min"] = joint.q_min();
   json["q_max"] = joint.q_max();
   json["dq_max"] = joint.dq_max();
@@ -75,17 +75,17 @@ nlohmann::json Serialize(const Graphics::Geometry& geometry) {
   nlohmann::json json;
   json["type"] = ctrl_utils::ToString(geometry.type);
   switch (geometry.type) {
-    case Graphics::Geometry::Type::BOX:
+    case Graphics::Geometry::Type::kBox:
       json["scale"] = Serialize(geometry.scale);
       break;
-    case Graphics::Geometry::Type::CYLINDER:
+    case Graphics::Geometry::Type::kCylinder:
       json["radius"] = geometry.radius;
       json["length"] = geometry.length;
       break;
-    case Graphics::Geometry::Type::SPHERE:
+    case Graphics::Geometry::Type::kSphere:
       json["radius"] = geometry.radius;
       break;
-    case Graphics::Geometry::Type::MESH:
+    case Graphics::Geometry::Type::kMesh:
       json["mesh"] = geometry.mesh;
       json["scale"] = Serialize(geometry.scale);
       break;

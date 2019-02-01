@@ -131,14 +131,14 @@ void Integrate(ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt,
   ddq[0] = f(ab, tau, f_external, options);
 
   switch (options.method) {
-    case IntegrationOptions::Method::EULER:
+    case IntegrationOptions::Method::kEuler:
 #ifdef JOINT_LIMITS
       if (options.joint_limits) ddq[0] += JointLimitImpulse(ab, ddq[0] + (*p_dq_err) / dt);
 #endif  // JOINT_LIMITS
       ab.set_q(FilterQ(ab, q_0 + dt * dq[0] + 0.5 * dt * dt * ddq[0], p_q_err));
       ab.set_dq(FilterDq(ab, dq[0] + dt * ddq[0], nullptr));
       break;
-    case IntegrationOptions::Method::HEUNS:
+    case IntegrationOptions::Method::kHeuns:
 #ifdef JOINT_LIMITS
       if (options.joint_limits) ddq[0] += JointLimitImpulse(ab, ddq[0]);
       // if (joint_limits) ddq[0] += JointLimitImpulse(ab, ddq[0] + (*p_dq_err) / dt);
@@ -155,7 +155,7 @@ void Integrate(ArticulatedBody &ab, const Eigen::VectorXd& tau, double dt,
       ab.set_q(FilterQ(ab, q_0 + 0.5 * dt * (dq[0] + dq[1]), p_q_err));
       ab.set_dq(FilterDq(ab, dq[0] + 0.5 * dt * (ddq[0] + ddq[1]), nullptr));
       break;
-    case IntegrationOptions::Method::RK4:
+    case IntegrationOptions::Method::kRk4:
 #ifdef JOINT_LIMITS
       if (options.joint_limits) ddq[0] += JointLimitImpulse(ab, ddq[0]);
       // if (joint_limits) ddq[0] += JointLimitImpulse(ab, ddq[0] + (*p_dq_err) / dt);

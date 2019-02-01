@@ -41,6 +41,9 @@ class SpatialForce : public PlainObjectBase<SpatialForce<_Scalar, _Cols, _Option
   SpatialForce(const Scalar& lin_x, const Scalar& lin_y, const Scalar& lin_z,
                 const Scalar& ang_x, const Scalar& ang_y, const Scalar& ang_z);
 
+  template<typename DerivedLin, typename DerivedAng>
+  SpatialForce(const EigenBase<DerivedLin>& lin, const EigenBase<DerivedAng>& ang);
+
   SpatialForce& operator=(const SpatialForce& other);
 
   SpatialForce& operator=(SpatialForce&& other)
@@ -107,6 +110,14 @@ inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::SpatialForce(
   m_storage.data()[3] = ang_x;
   m_storage.data()[4] = ang_y;
   m_storage.data()[5] = ang_z;
+}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+template<typename DerivedLin, typename DerivedAng>
+inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::SpatialForce(
+    const EigenBase<DerivedLin>& lin, const EigenBase<DerivedAng>& ang) {
+  this->linear() = lin;
+  this->angular() = ang;
 }
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>

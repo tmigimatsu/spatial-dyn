@@ -7,6 +7,8 @@
  * Authors: Toki Migimatsu
  */
 
+#include <algorithm>  // std::transform
+#include <cctype>     // std::tolower
 #include <exception>  // std::invalid_argument
 #include <sstream>    // std::stringstream
 
@@ -118,10 +120,10 @@ PYBIND11_MODULE(spatialdyn, m) {
   py::class_<Joint>(m, "Joint")
       .def_property("type",
                     [](const Joint& joint) {
-                      return std::string(joint);
+                      return ctrl_utils::ToString(joint.type());
                     },
                     [](Joint& joint, const std::string& type) {
-                      joint.set_type(Joint::StringToType(type));
+                      joint.set_type(ctrl_utils::FromString<Joint::Type>(type));
                     })
       .def_property_readonly("is_prismatic", &Joint::is_prismatic)
       .def_property_readonly("is_revolute", &Joint::is_revolute)
@@ -148,10 +150,21 @@ PYBIND11_MODULE(spatialdyn, m) {
 
   // Graphics
   py::class_<Graphics>(m, "Graphics")
+      .def(py::init<const std::string&>())
       .def_readwrite("name", &Graphics::name)
       .def_readwrite("T_to_parent", &Graphics::T_to_parent)
       .def_readwrite("geometry", &Graphics::geometry)
-      .def_readwrite("material", &Graphics::material);
+      .def_readwrite("material", &Graphics::material)
+      .def("__str__",
+           [](const Graphics& graphics) {
+             return spatial_dyn::json::Serialize(graphics).dump();
+           });
+      // .def("__repr__",
+      //      [](const Graphics& graphics) {
+      //        std::stringstream ss;
+      //        ss << "spatialdyn." << graphics;
+      //        return ss.str();
+      //      });
 
   // Geometry
   py::class_<Graphics::Geometry>(m, "Geometry")
@@ -260,19 +273,21 @@ PYBIND11_MODULE(spatialdyn, m) {
                bool gravity, bool centrifugal_coriolis, bool friction, bool joint_limits,
                const std::string& method, bool aba, double stiction_epsilon) {
           static const std::map<std::string, IntegrationOptions::Method> kStringToMethod = {
-            {"EULER", IntegrationOptions::Method::EULER},
-            {"HEUNS", IntegrationOptions::Method::HEUNS},
-            {"RK4", IntegrationOptions::Method::RK4}
+            {"euler", IntegrationOptions::Method::kEuler},
+            {"heuns", IntegrationOptions::Method::kHeuns},
+            {"rk4", IntegrationOptions::Method::kRk4}
           };
-          if (kStringToMethod.find(method) == kStringToMethod.end()) {
+          std::string str = method;
+          std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::tolower(c); });
+          if (kStringToMethod.find(str) == kStringToMethod.end()) {
             throw std::invalid_argument("spatialdyn.integrate(): Invalid integration method " + method);
           }
           Integrate(ab, tau, dt, f_external,
                     { gravity, centrifugal_coriolis, friction, joint_limits,
-                      kStringToMethod.at(method), aba, stiction_epsilon });
+                      kStringToMethod.at(str), aba, stiction_epsilon });
         }, "ab"_a, "tau"_a, "dt"_a, "f_external"_a = std::map<size_t, SpatialForced>(),
         "gravity"_a = true, "centrifugal_coriolis"_a = true, "friction"_a = false,
-        "joint_limits"_a = false, "method"_a = "RK4", "aba"_a = false,
+        "joint_limits"_a = false, "method"_a = "rk4", "aba"_a = false,
         "stiction_epsilon"_a = 0.01);
 
   // Spatial inertia
@@ -292,6 +307,10 @@ PYBIND11_MODULE(spatialdyn, m) {
   // opspace dynamics
   py::module m_op = m.def_submodule("opspace");
   m_op.def("orientation_error", &opspace::OrientationError, "quat"_a, "quat_des"_a);
+  m_op.def("near_quaternion",
+           (Eigen::Quaterniond (*)(const Eigen::Quaterniond&, const Eigen::Quaterniond&))
+           &opspace::NearQuaternion, "quat"_a, "quat_reference"_a);
+  m_op.def("is_singular", &opspace::IsSingular, "ab"_a, "J"_a, "svd_epsilon"_a = 0.);
   m_op.def("inverse_dynamics",
            [](const ArticulatedBody& ab, const Eigen::MatrixXd& J,
               const Eigen::VectorXd& ddx, py::EigenDRef<Eigen::MatrixXd> N,
@@ -306,26 +325,26 @@ PYBIND11_MODULE(spatialdyn, m) {
            }, "ab"_a, "J"_a, "ddx"_a, "N"_a,
            "f_external"_a = std::map<size_t, SpatialForced>(),
            "gravity"_a = false, "centrifugal_coriolis"_a = false, "friction"_a = false,
-           "svd_epsilon"_a = 0, "stiction_epsilon"_a = 0.01);
+           "svd_epsilon"_a = 0., "stiction_epsilon"_a = 0.01);
   m_op.def("inertia", &opspace::Inertia, "ab"_a, "J"_a, "svd_epsilon"_a = 0);
   m_op.def("inertia_inverse", &opspace::InertiaInverse, "ab"_a, "J"_a);
   m_op.def("jacobian_dynamic_inverse", &opspace::JacobianDynamicInverse, "ab"_a, "J"_a,
-           "svd_epsilon"_a = 0);
+           "svd_epsilon"_a = 0.);
   m_op.def("centrifugal_coriolis", &opspace::CentrifugalCoriolis, "ab"_a, "J"_a,
-           "idx_link"_a = -1, "offset"_a = Eigen::Vector3d::Zero(), "svd_epsilon"_a = 0);
+           "idx_link"_a = -1, "offset"_a = Eigen::Vector3d::Zero(), "svd_epsilon"_a = 0.);
   m_op.def("gravity", &opspace::Gravity, "ab"_a, "J"_a, "svd_epsilon"_a = 0);
-  m_op.def("friction", &opspace::Friction, "ab"_a, "J"_a, "tau"_a, "svd_epsilon"_a = 0,
+  m_op.def("friction", &opspace::Friction, "ab"_a, "J"_a, "tau"_a, "svd_epsilon"_a = 0.,
            "stiction_epsilon"_a = 0.01);
 
   m_op.def("inertia_aba", &opspace::InertiaAba, "ab"_a, "idx_link"_a = -1,
-           "offset"_a = Eigen::Vector3d::Zero(), "svd_epsilon"_a = 0);
+           "offset"_a = Eigen::Vector3d::Zero(), "svd_epsilon"_a = 0.);
   m_op.def("inertia_inverse_aba", &opspace::InertiaInverseAba, "ab"_a, "idx_link"_a = -1,
            "offset"_a = Eigen::Vector3d::Zero());
   m_op.def("centrifugal_coriolis_aba", &opspace::CentrifugalCoriolisAba, "ab"_a,
-           "idx_link"_a = -1, "offset"_a = Eigen::Vector3d::Zero(), "svd_epsilon"_a = 0);
+           "idx_link"_a = -1, "offset"_a = Eigen::Vector3d::Zero(), "svd_epsilon"_a = 0.);
   m_op.def("gravity_aba", &opspace::GravityAba, "ab"_a, "idx_link"_a = -1,
            "offset"_a = Eigen::Vector3d::Zero(),
-           "f_external"_a = std::map<size_t, SpatialForced>(), "svd_epsilon"_a = 0);
+           "f_external"_a = std::map<size_t, SpatialForced>(), "svd_epsilon"_a = 0.);
 
   // urdf parser
   py::module m_urdf = m.def_submodule("urdf");
