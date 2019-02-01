@@ -7,25 +7,25 @@
  * Authors: Toki Migimatsu
  */
 
-#ifndef EIGEN_SPATIAL_FORCE_BASE_H_
-#define EIGEN_SPATIAL_FORCE_BASE_H_
+#ifndef SPATIAL_DYN_EIGEN_SPATIAL_FORCE_BASE_H_
+#define SPATIAL_DYN_EIGEN_SPATIAL_FORCE_BASE_H_
 
 #include "spatial_declarations.h"
 
-namespace Eigen {
+namespace spatial_dyn {
 
 template<typename Derived>
-class SpatialForceBase : public DenseBase<Derived> {
+class SpatialForceBase : public ::Eigen::DenseBase<Derived> {
 
  public:
   typedef SpatialForceBase StorageBaseType;
-  typedef typename internal::traits<Derived>::StorageKind StorageKind;
-  typedef typename internal::traits<Derived>::StorageIndex StorageIndex;
-  typedef typename internal::traits<Derived>::Scalar Scalar;
-  typedef typename internal::packet_traits<Scalar>::type PacketScalar;
-  typedef typename NumTraits<Scalar>::Real RealScalar;
+  typedef typename ::Eigen::internal::traits<Derived>::StorageKind StorageKind;
+  typedef typename ::Eigen::internal::traits<Derived>::StorageIndex StorageIndex;
+  typedef typename ::Eigen::internal::traits<Derived>::Scalar Scalar;
+  typedef typename ::Eigen::internal::packet_traits<Scalar>::type PacketScalar;
+  typedef typename ::Eigen::NumTraits<Scalar>::Real RealScalar;
 
-  typedef DenseBase<Derived> Base;
+  typedef ::Eigen::DenseBase<Derived> Base;
   using Base::RowsAtCompileTime;
   using Base::ColsAtCompileTime;
   using Base::SizeAtCompileTime;
@@ -56,43 +56,138 @@ class SpatialForceBase : public DenseBase<Derived> {
 
   typedef SpatialForce<Scalar,6> SquareMatrixType;
 
-  typedef SpatialForce<Scalar, ColsAtCompileTime, AutoAlign | (Flags & RowMajorBit ? RowMajor : ColMajor),
-                        MaxColsAtCompileTime> PlainObject;
+  typedef SpatialForce<Scalar, ColsAtCompileTime,
+                       ::Eigen::AutoAlign |
+                       (Flags & ::Eigen::RowMajorBit ? ::Eigen::RowMajor : ::Eigen::ColMajor),
+                       MaxColsAtCompileTime> PlainObject;
 
-  typedef CwiseNullaryOp<internal::scalar_constant_op<Scalar>,PlainObject> ConstantReturnType;
+  typedef ::Eigen::CwiseNullaryOp<::Eigen::internal::scalar_constant_op<Scalar>,
+                                  PlainObject> ConstantReturnType;
 
-  typedef CwiseNullaryOp<internal::scalar_identity_op<Scalar>,PlainObject> IdentityReturnType;
+  typedef ::Eigen::CwiseNullaryOp<::Eigen::internal::scalar_identity_op<Scalar>,
+                                  PlainObject> IdentityReturnType;
 
-  typedef Block<const CwiseNullaryOp<internal::scalar_identity_op<Scalar>, SquareMatrixType>,
-                6, internal::traits<Derived>::ColsAtCompileTime> BasisReturnType;
+  typedef ::Eigen::Block<const ::Eigen::CwiseNullaryOp<::Eigen::internal::scalar_identity_op<Scalar>,
+                                                       SquareMatrixType>,
+                         6, ::Eigen::internal::traits<Derived>::ColsAtCompileTime> BasisReturnType;
 
-  typedef Block<MatrixWrapper<Derived>, 3, ColsAtCompileTime> CartesianBlockType;
-  typedef const Block<const MatrixWrapper<const Derived>, 3, ColsAtCompileTime> ConstCartesianBlockType;
+  typedef ::Eigen::Block<::Eigen::MatrixWrapper<Derived>, 3, ColsAtCompileTime> CartesianBlockType;
 
-  template<typename OtherDerived> struct cross_product_return_type {
-    typedef typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,typename internal::traits<OtherDerived>::Scalar>::ReturnType Scalar;
-    typedef SpatialForce<Scalar,SpatialForceBase::ColsAtCompileTime> type;
+  typedef const ::Eigen::Block<const ::Eigen::MatrixWrapper<const Derived>, 3,
+                               ColsAtCompileTime> ConstCartesianBlockType;
+
+  template<typename OtherDerived>
+  struct SpatialOpTraits {
+    typedef typename ::Eigen::ScalarBinaryOpTraits<Scalar,
+                                                   typename OtherDerived::Scalar>::ReturnType Scalar;
   };
 
-#define EIGEN_CURRENT_STORAGE_BASE_CLASS Eigen::SpatialForceBase
-#define EIGEN_DOC_UNARY_ADDONS(X,Y)
-#include "Eigen/src/plugins/CommonCwiseUnaryOps.h"
-#include "Eigen/src/plugins/CommonCwiseBinaryOps.h"
-#include "Eigen/src/plugins/MatrixCwiseUnaryOps.h"
-#include "Eigen/src/plugins/MatrixCwiseBinaryOps.h"
-#undef EIGEN_CURRENT_STORAGE_BASE_CLASS
-#undef EIGEN_DOC_UNARY_ADDONS
+// #define EIGEN_CURRENT_STORAGE_BASE_CLASS Eigen::SpatialForceBase
+// #define EIGEN_DOC_UNARY_ADDONS(X,Y)
+// #include "Eigen/src/plugins/CommonCwiseUnaryOps.h"
+// #include "Eigen/src/plugins/CommonCwiseBinaryOps.h"
+// #include "Eigen/src/plugins/MatrixCwiseUnaryOps.h"
+// #include "Eigen/src/plugins/MatrixCwiseBinaryOps.h"
+// #undef EIGEN_CURRENT_STORAGE_BASE_CLASS
+// #undef EIGEN_DOC_UNARY_ADDONS
+
+  typedef ::Eigen::CwiseUnaryOp<::Eigen::internal::scalar_opposite_op<Scalar>,
+                                const Derived> NegativeReturnType;
+
+  inline const NegativeReturnType operator-() const { return NegativeReturnType(derived()); }
+
+  template<typename CustomUnaryOp>
+  inline const ::Eigen::CwiseUnaryOp<CustomUnaryOp, const Derived>
+  unaryExpr(const CustomUnaryOp& func = CustomUnaryOp()) const {
+    return ::Eigen::CwiseUnaryOp<CustomUnaryOp, const Derived>(derived(), func);
+  }
+
+  template<typename CustomViewOp>
+  inline const ::Eigen::CwiseUnaryView<CustomViewOp, const Derived>
+  unaryViewExpr(const CustomViewOp& func = CustomViewOp()) const {
+    return ::Eigen::CwiseUnaryView<CustomViewOp, const Derived>(derived(), func);
+  }
+
+  // #include "Eigen/src/plugins/CommonCwiseBinaryOps.h"
+  // EIGEN_MAKE_CWISE_BINARY_OP(operator-,difference)
+  template<typename OtherDerived>
+  struct ScalarDifferenceTraits {
+    typedef ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_difference_op<Scalar,
+                                                                           typename OtherDerived::Scalar>,
+                                   const Derived, const OtherDerived> ReturnType;
+  };
+  template<typename OtherDerived>
+  inline const typename ScalarDifferenceTraits<OtherDerived>::ReturnType
+  operator-(const SpatialForceBase<OtherDerived> &other) const {
+    return typename ScalarDifferenceTraits<OtherDerived>::ReturnType(derived(), other.derived());
+  }
+
+  // EIGEN_MAKE_CWISE_BINARY_OP(operator+,sum)
+  template<typename OtherDerived>
+  struct ScalarSumTraits {
+    typedef ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_sum_op<Scalar,
+                                                                    typename OtherDerived::Scalar>,
+                                   const Derived, const OtherDerived> ReturnType;
+  };
+  template<typename OtherDerived>
+  inline const typename ScalarSumTraits<OtherDerived>::ReturnType
+  operator+(const SpatialForceBase<OtherDerived> &other) const {
+    return typename ScalarSumTraits<OtherDerived>::ReturnType(derived(), other.derived());
+  }
+
+  // EIGEN_MAKE_SCALAR_BINARY_OP(operator*,product)
+  template<typename T>
+  inline
+  ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_product_op<Scalar, typename ::Eigen::internal::promote_scalar_arg<Scalar, T, ::Eigen::internal::has_ReturnType<::Eigen::ScalarBinaryOpTraits<Scalar, T, ::Eigen::internal::scalar_product_op<Scalar, T>>>::value>::type>, const Derived, const typename ::Eigen::internal::plain_constant_type<Derived, typename ::Eigen::internal::promote_scalar_arg<Scalar, T, ::Eigen::internal::has_ReturnType<::Eigen::ScalarBinaryOpTraits<Scalar, T, ::Eigen::internal::scalar_product_op<Scalar, T>>>::value>::type>::type>
+  operator*(const T& scalar) const {
+    typedef typename ::Eigen::internal::promote_scalar_arg<Scalar, T, ::Eigen::internal::has_ReturnType<::Eigen::ScalarBinaryOpTraits<Scalar, T, ::Eigen::internal::scalar_product_op<Scalar, T>>>::value>::type PromotedT;
+    return ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_product_op<Scalar, PromotedT>, const Derived, const typename ::Eigen::internal::plain_constant_type<Derived, PromotedT>::type>
+        (derived(),
+         typename ::Eigen::internal::plain_constant_type<Derived, PromotedT>::type(derived().rows(),
+             derived().cols(), ::Eigen::internal::scalar_constant_op<PromotedT>(scalar)));
+  }
+
+  template<typename T>
+  inline friend
+  ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_product_op<typename ::Eigen::internal::promote_scalar_arg<Scalar, T, ::Eigen::internal::has_ReturnType<::Eigen::ScalarBinaryOpTraits<T, Scalar, ::Eigen::internal::scalar_product_op<T, Scalar>>>::value>::type , Scalar>, const typename ::Eigen::internal::plain_constant_type<Derived, typename ::Eigen::internal::promote_scalar_arg<Scalar, T, ::Eigen::internal::has_ReturnType<::Eigen::ScalarBinaryOpTraits<T, Scalar, ::Eigen::internal::scalar_product_op<T, Scalar>>>::value>::type >::type, const Derived>
+  operator*(const T& scalar, const SpatialForceBase<Derived>& matrix) {
+    typedef typename ::Eigen::internal::promote_scalar_arg<Scalar, T, ::Eigen::internal::has_ReturnType<::Eigen::ScalarBinaryOpTraits<T, Scalar, ::Eigen::internal::scalar_product_op<T, Scalar>>>::value>::type PromotedT;
+    return ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_product_op<PromotedT, Scalar>, const typename ::Eigen::internal::plain_constant_type<Derived, PromotedT>::type, const Derived>
+        (typename ::Eigen::internal::plain_constant_type<Derived, PromotedT>::type(matrix.derived().rows(),
+             matrix.derived().cols(), ::Eigen::internal::scalar_constant_op<PromotedT>(scalar)),
+         matrix.derived());
+  }
+
+  // EIGEN_MAKE_SCALAR_BINARY_OP_ONTHERIGHT(operator/,quotient)
+  template<typename T>
+  inline
+  ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_quotient_op<Scalar, typename ::Eigen::internal::promote_scalar_arg<Scalar, T, ::Eigen::internal::has_ReturnType<::Eigen::ScalarBinaryOpTraits<Scalar, T, ::Eigen::internal::scalar_quotient_op<Scalar, T>>>::value>::type>, const Derived, const typename ::Eigen::internal::plain_constant_type<Derived, typename ::Eigen::internal::promote_scalar_arg<Scalar, T, ::Eigen::internal::has_ReturnType<::Eigen::ScalarBinaryOpTraits<Scalar, T, ::Eigen::internal::scalar_quotient_op<Scalar, T>>>::value>::type>::type>
+  operator/(const T& scalar) const {
+    typedef typename ::Eigen::internal::promote_scalar_arg<Scalar, T, ::Eigen::internal::has_ReturnType<::Eigen::ScalarBinaryOpTraits<Scalar, T, ::Eigen::internal::scalar_quotient_op<Scalar, T>>>::value>::type PromotedT;
+    return ::Eigen::CwiseBinaryOp<::Eigen::internal::scalar_quotient_op<Scalar, PromotedT>, const Derived, const typename ::Eigen::internal::plain_constant_type<Derived, PromotedT>::type>
+        (derived(),
+         typename ::Eigen::internal::plain_constant_type<Derived, PromotedT>::type(derived().rows(),
+             derived().cols(), ::Eigen::internal::scalar_constant_op<PromotedT>(scalar)));
+  }
+
+  template<typename CustomBinaryOp, typename OtherDerived>
+  inline const ::Eigen::CwiseBinaryOp<CustomBinaryOp, const Derived, const OtherDerived>
+  binaryExpr(const SpatialForceBase<OtherDerived> &other,
+             const CustomBinaryOp& func = CustomBinaryOp()) const {
+    return ::Eigen::CwiseBinaryOp<CustomBinaryOp, const Derived,
+                                  const OtherDerived>(derived(), other.derived(), func);
+  }
 
   Derived& operator=(const SpatialForceBase& other);
 
   template <typename OtherDerived>
-  Derived& operator=(const DenseBase<OtherDerived>& other);
+  Derived& operator=(const ::Eigen::DenseBase<OtherDerived>& other);
 
   template <typename OtherDerived>
-  Derived& operator=(const EigenBase<OtherDerived>& other);
+  Derived& operator=(const ::Eigen::EigenBase<OtherDerived>& other);
 
   template<typename OtherDerived>
-  Derived& operator=(const ReturnByValue<OtherDerived>& other);
+  Derived& operator=(const ::Eigen::ReturnByValue<OtherDerived>& other);
 
   template<typename OtherDerived>
   Derived& operator+=(const SpatialForceBase<OtherDerived>& other);
@@ -107,39 +202,38 @@ class SpatialForceBase : public DenseBase<Derived> {
   Derived& operator-=(const SpatialMotionBase<OtherDerived>& other);
 
   template<typename OtherDerived>
-  const Product<Derived,OtherDerived> operator*(const SpatialForceBase<OtherDerived>& other) const;
+  const ::Eigen::Product<Derived, OtherDerived>
+  operator*(const SpatialForceBase<OtherDerived>& other) const;
 
   template<typename OtherDerived>
-  SpatialForce<typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,
-                                             typename internal::traits<OtherDerived>::Scalar>::ReturnType,
-               OtherDerived::ColsAtCompileTime>
-  operator*(const MatrixBase<OtherDerived>& other) const;
+  SpatialForce<typename SpatialOpTraits<OtherDerived>::Scalar, OtherDerived::ColsAtCompileTime>
+  operator*(const ::Eigen::MatrixBase<OtherDerived>& other) const;
 
   template<typename OtherDerived>
   Derived& operator*=(const SpatialForceBase<OtherDerived>& other);
 
   template<typename CustomNullaryOp>
-  static const CwiseNullaryOp<CustomNullaryOp, PlainObject>
-  NullaryExpr(Index rows, Index cols, const CustomNullaryOp& func);
+  static const ::Eigen::CwiseNullaryOp<CustomNullaryOp, PlainObject>
+  NullaryExpr(::Eigen::Index rows, ::Eigen::Index cols, const CustomNullaryOp& func);
 
   template<typename CustomNullaryOp>
-  static const CwiseNullaryOp<CustomNullaryOp, PlainObject>
-  NullaryExpr(Index cols, const CustomNullaryOp& func);
+  static const ::Eigen::CwiseNullaryOp<CustomNullaryOp, PlainObject>
+  NullaryExpr(::Eigen::Index cols, const CustomNullaryOp& func);
 
   template<typename CustomNullaryOp>
-  static const CwiseNullaryOp<CustomNullaryOp, PlainObject>
+  static const ::Eigen::CwiseNullaryOp<CustomNullaryOp, PlainObject>
   NullaryExpr(const CustomNullaryOp& func);
 
-  static const ConstantReturnType Constant(Index cols, const Scalar& value);
+  static const ConstantReturnType Constant(::Eigen::Index cols, const Scalar& value);
   static const ConstantReturnType Constant(const Scalar& value);
-  static const ConstantReturnType Zero(Index cols);
+  static const ConstantReturnType Zero(::Eigen::Index cols);
   static const ConstantReturnType Zero();
-  static const ConstantReturnType Ones(Index cols);
+  static const ConstantReturnType Ones(::Eigen::Index cols);
   static const ConstantReturnType Ones();
 
   static const IdentityReturnType Identity();
-  static const IdentityReturnType Identity(Index cols);
-  static const BasisReturnType Unit(Index i);
+  static const IdentityReturnType Identity(::Eigen::Index cols);
+  static const BasisReturnType Unit(::Eigen::Index i);
   static const BasisReturnType UnitLinX();
   static const BasisReturnType UnitLinY();
   static const BasisReturnType UnitLinZ();
@@ -148,22 +242,16 @@ class SpatialForceBase : public DenseBase<Derived> {
   static const BasisReturnType UnitAngZ();
 
   Derived& setIdentity();
-  Derived& setIdentity(Index cols);
-  Derived& setUnit(Index i);
+  Derived& setIdentity(::Eigen::Index cols);
+  Derived& setUnit(::Eigen::Index i);
 
   template<typename OtherDerived>
-  typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,typename internal::traits<OtherDerived>::Scalar>::ReturnType
+  typename SpatialOpTraits<OtherDerived>::Scalar
   dot(const SpatialMotionBase<OtherDerived>& other) const;
 
   template<typename OtherDerived>
-  typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,typename internal::traits<OtherDerived>::Scalar>::ReturnType
+  typename SpatialOpTraits<OtherDerived>::Scalar
   dot(const SpatialForceBase<OtherDerived>& other) const;
-
-  template<typename OtherDerived>
-  Matrix<typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,typename internal::traits<OtherDerived>::Scalar>::ReturnType,
-         internal::traits<Derived>::ColsAtCompileTime,
-         internal::traits<OtherDerived>::ColsAtCompileTime>
-  transposeProduct(const SpatialMotionBase<OtherDerived>& other) const;
 
   template<typename OtherDerived>
   bool operator==(const SpatialForceBase<OtherDerived>& other) const;
@@ -171,14 +259,14 @@ class SpatialForceBase : public DenseBase<Derived> {
   template<typename OtherDerived>
   bool operator!=(const SpatialForceBase<OtherDerived>& other) const;
 
-  MatrixWrapper<Derived> matrix();
-  const MatrixWrapper<const Derived> matrix() const;
+  ::Eigen::MatrixWrapper<Derived> matrix();
+  const ::Eigen::MatrixWrapper<const Derived> matrix() const;
 
-  ArrayWrapper<Derived> array();
-  const ArrayWrapper<const Derived> array() const;
+  ::Eigen::ArrayWrapper<Derived> array();
+  const ::Eigen::ArrayWrapper<const Derived> array() const;
 
-  const Matrix<typename internal::traits<Derived>::Scalar,
-               internal::traits<Derived>::ColsAtCompileTime, 6> transpose() const;
+  ::Eigen::Transpose<::Eigen::MatrixWrapper<Derived>> transpose();
+  const ::Eigen::Transpose<::Eigen::MatrixWrapper<const Derived>> transpose() const;
 
   CartesianBlockType linear();
   ConstCartesianBlockType linear() const;
@@ -197,19 +285,20 @@ class SpatialForceBase : public DenseBase<Derived> {
 };
 
 // Transform operations
-template<typename Derived>
+template<typename Scalar, int Dim, typename Derived>
 inline typename Derived::PlainObject
-operator*(const Translation<typename Derived::Scalar, 3>& T, const SpatialForceBase<Derived>& f) {
-  typename Derived::PlainObject result = f;
+operator*(const ::Eigen::Translation<Scalar, Dim>& T, const SpatialForceBase<Derived>& f) {
+  static_assert(Dim == 3, "YOU_CAN_ONLY_APPLY_3D_TRANSFORMS_TO_SPATIAL_FORCES");
+  typename Derived::PlainObject result = f;  // Evaluate expr
   result.template bottomRows<3>() -= f.matrix().template topRows<3>().colwise().cross(T.translation());
   return result;
 }
 
 template<typename Scalar, int Dim, int Mode, int Options, typename Derived>
 inline typename Derived::PlainObject
-operator*(const Transform<Scalar, Dim, Mode, Options>& T, const SpatialForceBase<Derived>& f) {
-  EIGEN_STATIC_ASSERT(Dim==3,YOU_CAN_ONLY_APPLY_3D_TRANSFORMS_TO_SPATIAL_FORCES);
-  EIGEN_STATIC_ASSERT(Mode==int(Isometry),YOU_CAN_ONLY_APPLY_ISOMETRY_TRANSFORMS_TO_SPATIAL_FORCES);
+operator*(const ::Eigen::Transform<Scalar, Dim, Mode, Options>& T, const SpatialForceBase<Derived>& f) {
+  static_assert(Dim == 3, "YOU_CAN_ONLY_APPLY_3D_TRANSFORMS_TO_SPATIAL_FORCES");
+  static_assert(Mode == int(::Eigen::Isometry), "YOU_CAN_ONLY_APPLY_ISOMETRY_TRANSFORMS_TO_SPATIAL_FORCES");
 
   typename Derived::PlainObject result = f;  // Evaluate expr
   result.template topRows<3>() = T.linear() * result.matrix().template topRows<3>();
@@ -221,27 +310,27 @@ operator*(const Transform<Scalar, Dim, Mode, Options>& T, const SpatialForceBase
 // from Assign.h
 template<typename Derived>
 inline Derived& SpatialForceBase<Derived>::operator=(const SpatialForceBase& other) {
-  internal::call_assignment(derived(), other.derived());
+  ::Eigen::internal::call_assignment(derived(), other.derived());
   return derived();
 }
 
 template<typename Derived>
 template <typename OtherDerived>
-inline Derived& SpatialForceBase<Derived>::operator=(const DenseBase<OtherDerived>& other) {
-  internal::call_assignment(derived(), other.derived());
+inline Derived& SpatialForceBase<Derived>::operator=(const ::Eigen::DenseBase<OtherDerived>& other) {
+  ::Eigen::internal::call_assignment(derived(), other.derived());
   return derived();
 }
 
 template<typename Derived>
 template <typename OtherDerived>
-inline Derived& SpatialForceBase<Derived>::operator=(const EigenBase<OtherDerived>& other) {
-  internal::call_assignment(derived(), other.derived());
+inline Derived& SpatialForceBase<Derived>::operator=(const ::Eigen::EigenBase<OtherDerived>& other) {
+  ::Eigen::internal::call_assignment(derived(), other.derived());
   return derived();
 }
 
 template<typename Derived>
 template<typename OtherDerived>
-inline Derived& SpatialForceBase<Derived>::operator=(const ReturnByValue<OtherDerived>& other) {
+inline Derived& SpatialForceBase<Derived>::operator=(const ::Eigen::ReturnByValue<OtherDerived>& other) {
   other.derived().evalTo(derived());
   return derived();
 }
@@ -250,96 +339,103 @@ inline Derived& SpatialForceBase<Derived>::operator=(const ReturnByValue<OtherDe
 template<typename Derived>
 template<typename OtherDerived>
 inline Derived& SpatialForceBase<Derived>::operator+=(const SpatialForceBase<OtherDerived>& other) {
-  call_assignment(derived(), other.derived(), internal::add_assign_op<Scalar,typename OtherDerived::Scalar>());
+  ::Eigen::internal::call_assignment(derived(), other.derived(),
+                                     ::Eigen::internal::add_assign_op<Scalar,typename OtherDerived::Scalar>());
   return derived();
 }
 
 template<typename Derived>
 template<typename OtherDerived>
 inline Derived& SpatialForceBase<Derived>::operator+=(const SpatialMotionBase<OtherDerived>&) {
-  EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_ADD_SPATIAL_MOTION_AND_SPATIAL_FORCE_VECTORS);
-  return *this;
+  static_assert(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar)) == -1,
+                "YOU_CANNOT_ADD_SPATIAL_MOTION_AND_SPATIAL_FORCE_VECTORS");
 };
 
 template<typename Derived>
 template<typename OtherDerived>
 inline Derived& SpatialForceBase<Derived>::operator-=(const SpatialForceBase<OtherDerived>& other) {
-  call_assignment(derived(), other.derived(), internal::sub_assign_op<Scalar,typename OtherDerived::Scalar>());
+  ::Eigen::internal::call_assignment(derived(), other.derived(),
+                                     ::Eigen::internal::sub_assign_op<Scalar,typename OtherDerived::Scalar>());
   return derived();
 }
 
 template<typename Derived>
 template<typename OtherDerived>
 inline Derived& SpatialForceBase<Derived>::operator-=(const SpatialMotionBase<OtherDerived>&) {
-  EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_ADD_SPATIAL_MOTION_AND_SPATIAL_FORCE_VECTORS);
-  return *this;
+  static_assert(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar)) == -1,
+                "YOU_CANNOT_ADD_SPATIAL_MOTION_AND_SPATIAL_FORCE_VECTORS");
 }
 
 template<typename Derived>
 template<typename OtherDerived>
-inline const Product<Derived,OtherDerived>
+inline const ::Eigen::Product<Derived,OtherDerived>
 SpatialForceBase<Derived>::operator*(const SpatialForceBase<OtherDerived>&) const {
-  EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_MULTIPLY_TWO_SPATIAL_FORCE_VECTORS);
-};
+  static_assert(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar)) == -1,
+                "YOU_CANNOT_MULTIPLY_TWO_SPATIAL_FORCE_VECTORS");
+}
 
 template<typename Derived>
 template<typename OtherDerived>
-inline SpatialForce<typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,
-                                                  typename internal::traits<OtherDerived>::Scalar>::ReturnType,
+inline SpatialForce<typename SpatialForceBase<Derived>::template SpatialOpTraits<OtherDerived>::Scalar,
                     OtherDerived::ColsAtCompileTime>
-SpatialForceBase<Derived>::operator*(const MatrixBase<OtherDerived>& other) const {
-  EIGEN_STATIC_ASSERT(Derived::ColsAtCompileTime == Dynamic ||
-                      OtherDerived::RowsAtCompileTime == Dynamic ||
-                      int(Derived::ColsAtCompileTime) == int(OtherDerived::RowsAtCompileTime),
-                      INVALID_MATRIX_PRODUCT);
+SpatialForceBase<Derived>::operator*(const ::Eigen::MatrixBase<OtherDerived>& other) const {
+  static_assert(ColsAtCompileTime == ::Eigen::Dynamic ||
+                OtherDerived::RowsAtCompileTime == ::Eigen::Dynamic ||
+                int(ColsAtCompileTime) == int(OtherDerived::RowsAtCompileTime),
+                "INVALID_MATRIX_PRODUCT");
   // TODO: Make not lazy
-  return Product<Derived, OtherDerived, LazyProduct>(derived(), other.derived());
-};
+  return ::Eigen::Product<Derived, OtherDerived, ::Eigen::LazyProduct>(derived(), other.derived());
+}
 
 template<typename Derived>
 template<typename OtherDerived>
 inline Derived& SpatialForceBase<Derived>::operator*=(const SpatialForceBase<OtherDerived>&) {
-  EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_MULTIPLY_TWO_SPATIAL_FORCE_VECTORS);
-};
+  static_assert(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar)) == -1,
+                "YOU_CANNOT_MULTIPLY_TWO_SPATIAL_MOTION_VECTORS");
+}
 
 // from CwiseNullaryOp.h
 template<typename Derived>
 template<typename CustomNullaryOp>
-inline const CwiseNullaryOp<CustomNullaryOp, typename SpatialForceBase<Derived>::PlainObject>
-SpatialForceBase<Derived>::NullaryExpr(Index, Index cols, const CustomNullaryOp& func) {
-  return CwiseNullaryOp<CustomNullaryOp, PlainObject>(6, cols, func);
+inline const ::Eigen::CwiseNullaryOp<CustomNullaryOp,
+                                     typename SpatialForceBase<Derived>::PlainObject>
+SpatialForceBase<Derived>::NullaryExpr(::Eigen::Index rows, ::Eigen::Index cols,
+                                       const CustomNullaryOp& func) {
+  return ::Eigen::CwiseNullaryOp<CustomNullaryOp, PlainObject>(6, cols, func);
 }
 
 template<typename Derived>
 template<typename CustomNullaryOp>
-inline const CwiseNullaryOp<CustomNullaryOp, typename SpatialForceBase<Derived>::PlainObject>
-SpatialForceBase<Derived>::NullaryExpr(Index cols, const CustomNullaryOp& func) {
-  return CwiseNullaryOp<CustomNullaryOp, PlainObject>(6, cols, func);
+inline const ::Eigen::CwiseNullaryOp<CustomNullaryOp,
+                                     typename SpatialForceBase<Derived>::PlainObject>
+SpatialForceBase<Derived>::NullaryExpr(::Eigen::Index cols, const CustomNullaryOp& func) {
+  return ::Eigen::CwiseNullaryOp<CustomNullaryOp, PlainObject>(6, cols, func);
 }
 
 template<typename Derived>
 template<typename CustomNullaryOp>
-inline const CwiseNullaryOp<CustomNullaryOp, typename SpatialForceBase<Derived>::PlainObject>
+inline const ::Eigen::CwiseNullaryOp<CustomNullaryOp,
+                                     typename SpatialForceBase<Derived>::PlainObject>
 SpatialForceBase<Derived>::NullaryExpr(const CustomNullaryOp& func) {
-  return CwiseNullaryOp<CustomNullaryOp, PlainObject>(6, ColsAtCompileTime, func);
+  return ::Eigen::CwiseNullaryOp<CustomNullaryOp, PlainObject>(6, ColsAtCompileTime, func);
 }
 
 template<typename Derived>
 inline const typename SpatialForceBase<Derived>::ConstantReturnType
-SpatialForceBase<Derived>::Constant(Index cols, const Scalar& value) {
-  return NullaryExpr(cols, internal::scalar_constant_op<Scalar>(value));
+SpatialForceBase<Derived>::Constant(::Eigen::Index cols, const Scalar& value) {
+  return NullaryExpr(cols, ::Eigen::internal::scalar_constant_op<Scalar>(value));
 };
 
 template<typename Derived>
 inline const typename SpatialForceBase<Derived>::ConstantReturnType
 SpatialForceBase<Derived>::Constant(const Scalar& value) {
-  EIGEN_STATIC_ASSERT_FIXED_SIZE(Derived)
-  return NullaryExpr(ColsAtCompileTime, internal::scalar_constant_op<Scalar>(value));
+  static_assert(ColsAtCompileTime != ::Eigen::Dynamic, "MATRIX_MUST_BE_OF_FIXED_SIZE");
+  return NullaryExpr(ColsAtCompileTime, ::Eigen::internal::scalar_constant_op<Scalar>(value));
 };
 
 template<typename Derived>
 inline const typename SpatialForceBase<Derived>::ConstantReturnType
-SpatialForceBase<Derived>::Zero(Index cols) {
+SpatialForceBase<Derived>::Zero(::Eigen::Index cols) {
   return Constant(cols, Scalar(0));
 };
 
@@ -351,7 +447,7 @@ SpatialForceBase<Derived>::Zero() {
 
 template<typename Derived>
 inline const typename SpatialForceBase<Derived>::ConstantReturnType
-SpatialForceBase<Derived>::Ones(Index cols) {
+SpatialForceBase<Derived>::Ones(::Eigen::Index cols) {
   return Constant(cols, Scalar(1));
 };
 
@@ -364,66 +460,73 @@ SpatialForceBase<Derived>::Ones() {
 template<typename Derived>
 inline const typename SpatialForceBase<Derived>::IdentityReturnType
 SpatialForceBase<Derived>::Identity() {
-  EIGEN_STATIC_ASSERT_FIXED_SIZE(Derived)
-  return SpatialForceBase<Derived>::NullaryExpr(ColsAtCompileTime, internal::scalar_identity_op<Scalar>());
+  static_assert(ColsAtCompileTime != ::Eigen::Dynamic, "MATRIX_MUST_BE_OF_FIXED_SIZE");
+  return NullaryExpr(ColsAtCompileTime, ::Eigen::internal::scalar_identity_op<Scalar>());
 }
 
 template<typename Derived>
 inline const typename SpatialForceBase<Derived>::IdentityReturnType
-SpatialForceBase<Derived>::Identity(Index cols) {
-  return SpatialForceBase<Derived>::NullaryExpr(cols, internal::scalar_identity_op<Scalar>());
+SpatialForceBase<Derived>::Identity(::Eigen::Index cols) {
+  return NullaryExpr(cols, ::Eigen::internal::scalar_identity_op<Scalar>());
 }
 
 template<typename Derived>
-inline const typename SpatialForceBase<Derived>::BasisReturnType SpatialForceBase<Derived>::Unit(Index i) {
-  EIGEN_STATIC_ASSERT_VECTOR_ONLY(Derived)
+inline const typename SpatialForceBase<Derived>::BasisReturnType
+SpatialForceBase<Derived>::Unit(::Eigen::Index i) {
+  static_assert(ColsAtCompileTime == 1, "MATRIX_MUST_BE_A_VECTOR");
   return BasisReturnType(SquareMatrixType::Identity(), i);
 }
 
 template<typename Derived>
-inline const typename SpatialForceBase<Derived>::BasisReturnType SpatialForceBase<Derived>::UnitLinX() {
+inline const typename SpatialForceBase<Derived>::BasisReturnType
+SpatialForceBase<Derived>::UnitLinX() {
   return Derived::Unit(0);
 }
 
 template<typename Derived>
-inline const typename SpatialForceBase<Derived>::BasisReturnType SpatialForceBase<Derived>::UnitLinY() {
+inline const typename SpatialForceBase<Derived>::BasisReturnType
+SpatialForceBase<Derived>::UnitLinY() {
   return Derived::Unit(1);
 }
 
 template<typename Derived>
-inline const typename SpatialForceBase<Derived>::BasisReturnType SpatialForceBase<Derived>::UnitLinZ() {
+inline const typename SpatialForceBase<Derived>::BasisReturnType
+SpatialForceBase<Derived>::UnitLinZ() {
   return Derived::Unit(2);
 }
 
 template<typename Derived>
-inline const typename SpatialForceBase<Derived>::BasisReturnType SpatialForceBase<Derived>::UnitAngX() {
+inline const typename SpatialForceBase<Derived>::BasisReturnType
+SpatialForceBase<Derived>::UnitAngX() {
   return Derived::Unit(3);
 }
 
 template<typename Derived>
-inline const typename SpatialForceBase<Derived>::BasisReturnType SpatialForceBase<Derived>::UnitAngY() {
+inline const typename SpatialForceBase<Derived>::BasisReturnType
+SpatialForceBase<Derived>::UnitAngY() {
   return Derived::Unit(4);
 }
 
 template<typename Derived>
-inline const typename SpatialForceBase<Derived>::BasisReturnType SpatialForceBase<Derived>::UnitAngZ() {
+inline const typename SpatialForceBase<Derived>::BasisReturnType
+SpatialForceBase<Derived>::UnitAngZ() {
   return Derived::Unit(5);
 }
 
 template<typename Derived>
 inline Derived& SpatialForceBase<Derived>::setIdentity() {
-  return internal::setIdentity_impl<Derived>::run(derived());
+  return ::Eigen::internal::setIdentity_impl<Derived>::run(derived());
 }
 
 template<typename Derived>
-inline Derived& SpatialForceBase<Derived>::setIdentity(Index cols) {
-  derived().resize(NoChange, cols);
+inline Derived& SpatialForceBase<Derived>::setIdentity(::Eigen::Index cols) {
+  derived().resize(::Eigen::NoChange, cols);
   return setIdentity();
 }
 
 template<typename Derived>
-inline Derived& SpatialForceBase<Derived>::setUnit(Index i) {
-  EIGEN_STATIC_ASSERT_VECTOR_ONLY(Derived);
+inline Derived& SpatialForceBase<Derived>::setUnit(::Eigen::Index i) {
+  static_assert(ColsAtCompileTime == 1, "MATRIX_MUST_BE_A_VECTOR");
   eigen_assert(i < size());
   derived().setZero();
   derived().coeffRef(i) = Scalar(1);
@@ -433,34 +536,22 @@ inline Derived& SpatialForceBase<Derived>::setUnit(Index i) {
 // from Dot.h
 template<typename Derived>
 template<typename OtherDerived>
-inline typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,
-                                     typename internal::traits<OtherDerived>::Scalar>::ReturnType
+inline typename SpatialForceBase<Derived>::template SpatialOpTraits<OtherDerived>::Scalar
 SpatialForceBase<Derived>::dot(const SpatialForceBase<OtherDerived>&) const {
-  EIGEN_STATIC_ASSERT(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar))==-1,YOU_CANNOT_DOT_TWO_SPATIAL_FORCE_VECTORS);
+  static_assert(std::ptrdiff_t(sizeof(typename OtherDerived::Scalar)) == -1,
+                "YOU_CANNOT_DOT_TWO_SPATIAL_FORCE_VECTORS");
   return 0;
 }
 
 template<typename Derived>
 template<typename OtherDerived>
-inline typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,
-                                     typename internal::traits<OtherDerived>::Scalar>::ReturnType
+inline typename SpatialForceBase<Derived>::template SpatialOpTraits<OtherDerived>::Scalar
 SpatialForceBase<Derived>::dot(const SpatialMotionBase<OtherDerived>& other) const {
-  EIGEN_STATIC_ASSERT_VECTOR_ONLY(Derived)
-  EIGEN_STATIC_ASSERT_VECTOR_ONLY(OtherDerived)
-  typedef internal::scalar_conj_product_op<typename internal::traits<Derived>::Scalar,
-                                           typename internal::traits<OtherDerived>::Scalar> conj_prod;
-  return CwiseBinaryOp<conj_prod, const Derived, const OtherDerived>(
+  static_assert(ColsAtCompileTime == 1, "MATRIX_MUST_BE_A_VECTOR");
+  static_assert(OtherDerived::ColsAtCompileTime == 1, "MATRIX_MUST_BE_A_VECTOR");
+  typedef ::Eigen::internal::scalar_conj_product_op<Scalar, typename OtherDerived::Scalar> conj_prod;
+  return ::Eigen::CwiseBinaryOp<conj_prod, const Derived, const OtherDerived>(
       derived(), other.derived(), conj_prod()).sum();
-}
-
-template<typename Derived>
-template<typename OtherDerived>
-inline Matrix<typename ScalarBinaryOpTraits<typename internal::traits<Derived>::Scalar,
-                                            typename internal::traits<OtherDerived>::Scalar>::ReturnType,
-              internal::traits<Derived>::ColsAtCompileTime,
-              internal::traits<OtherDerived>::ColsAtCompileTime>
-SpatialForceBase<Derived>::transposeProduct(const SpatialMotionBase<OtherDerived>& other) const {
-  return derived().transpose() * other.derived().matrix();
 }
 
 template<typename Derived>
@@ -476,30 +567,35 @@ inline bool SpatialForceBase<Derived>::operator!=(const SpatialForceBase<OtherDe
 }
 
 template<typename Derived>
-inline MatrixWrapper<Derived> SpatialForceBase<Derived>::matrix() {
-  return MatrixWrapper<Derived>(derived());
+inline ::Eigen::MatrixWrapper<Derived> SpatialForceBase<Derived>::matrix() {
+  return ::Eigen::MatrixWrapper<Derived>(derived());
 }
 
 template<typename Derived>
-inline const MatrixWrapper<const Derived> SpatialForceBase<Derived>::matrix() const {
-  return MatrixWrapper<const Derived>(derived());
+inline const ::Eigen::MatrixWrapper<const Derived> SpatialForceBase<Derived>::matrix() const {
+  return ::Eigen::MatrixWrapper<const Derived>(derived());
 }
 
 template<typename Derived>
-inline ArrayWrapper<Derived> SpatialForceBase<Derived>::array() {
-  return ArrayWrapper<Derived>(derived());
+inline ::Eigen::ArrayWrapper<Derived> SpatialForceBase<Derived>::array() {
+  return ::Eigen::ArrayWrapper<Derived>(derived());
 }
 
 template<typename Derived>
-inline const ArrayWrapper<const Derived> SpatialForceBase<Derived>::array() const {
-  return ArrayWrapper<const Derived>(derived());
+inline const ::Eigen::ArrayWrapper<const Derived> SpatialForceBase<Derived>::array() const {
+  return ::Eigen::ArrayWrapper<const Derived>(derived());
 }
 
 template<typename Derived>
-inline const Matrix<typename internal::traits<Derived>::Scalar,
-                    internal::traits<Derived>::ColsAtCompileTime, 6>
+inline ::Eigen::Transpose<::Eigen::MatrixWrapper<Derived>>
+SpatialForceBase<Derived>::transpose() {
+  return ::Eigen::MatrixWrapper<Derived>(derived()).transpose();
+}
+
+template<typename Derived>
+inline const ::Eigen::Transpose<::Eigen::MatrixWrapper<const Derived>>
 SpatialForceBase<Derived>::transpose() const {
-  return MatrixWrapper<const Derived>(derived()).transpose();
+  return ::Eigen::MatrixWrapper<const Derived>(derived()).transpose();
 }
 
 template<typename Derived>
@@ -526,6 +622,6 @@ SpatialForceBase<Derived>::angular() const {
   return this->matrix().template bottomRows<3>();
 }
 
-}  // namespace Eigen
+}  // namespace spatial_dyn
 
-#endif  // EIGEN_SPATIAL_FORCE_BASE_H_
+#endif  // SPATIAL_DYN_EIGEN_SPATIAL_FORCE_BASE_H_

@@ -7,20 +7,41 @@
  * Authors: Toki Migimatsu
  */
 
-#ifndef EIGEN_SPATIAL_FORCE_H_
-#define EIGEN_SPATIAL_FORCE_H_
+#ifndef SPATIAL_DYN_EIGEN_SPATIAL_FORCE_H_
+#define SPATIAL_DYN_EIGEN_SPATIAL_FORCE_H_
 
 #include "spatial_force_base.h"
 
-namespace Eigen {
+namespace spatial_dyn {
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
-class SpatialForce : public PlainObjectBase<SpatialForce<_Scalar, _Cols, _Options, _MaxCols>> {
+class SpatialForce : public ::Eigen::PlainObjectBase<SpatialForce<_Scalar, _Cols, _Options, _MaxCols>> {
 
  public:
-  typedef PlainObjectBase<SpatialForce> Base;
+  typedef ::Eigen::PlainObjectBase<SpatialForce> Base;
   enum { Options = _Options };
-  EIGEN_DENSE_PUBLIC_INTERFACE(SpatialForce)
+
+  // EIGEN_GENERIC_PUBLIC_INTERFACE(SpatialForce)
+  typedef typename ::Eigen::internal::traits<SpatialForce>::Scalar Scalar;
+  typedef typename ::Eigen::NumTraits<Scalar>::Real RealScalar;
+  typedef typename Base::CoeffReturnType CoeffReturnType;
+  typedef typename ::Eigen::internal::ref_selector<SpatialForce>::type Nested;
+  typedef typename ::Eigen::internal::traits<SpatialForce>::StorageKind StorageKind;
+  typedef typename ::Eigen::internal::traits<SpatialForce>::StorageIndex StorageIndex;
+  enum CompileTimeTraits {
+    RowsAtCompileTime = ::Eigen::internal::traits<SpatialForce>::RowsAtCompileTime,
+    ColsAtCompileTime = ::Eigen::internal::traits<SpatialForce>::ColsAtCompileTime,
+    Flags = ::Eigen::internal::traits<SpatialForce>::Flags,
+    SizeAtCompileTime = Base::SizeAtCompileTime,
+    MaxSizeAtCompileTime = Base::MaxSizeAtCompileTime,
+    IsVectorAtCompileTime = Base::IsVectorAtCompileTime
+  };
+  using Base::derived;
+  using Base::const_cast_derived;
+
+  // EIGEN_DENSE_PUBLIC_INTERFACE(SpatialForce)
+  typedef typename Base::PacketScalar PacketScalar;
+
   typedef typename Base::PlainObject PlainObject;
 
   using Base::base;
@@ -33,37 +54,38 @@ class SpatialForce : public PlainObjectBase<SpatialForce<_Scalar, _Cols, _Option
   SpatialForce(const SpatialForce& other);
 
   SpatialForce(SpatialForce&& other)
-  EIGEN_NOEXCEPT_IF(std::is_nothrow_move_constructible<Scalar>::value);
+  EIGEN_NOEXCEPT_IF(std::is_nothrow_move_constructible<_Scalar>::value);
 
   template<typename OtherDerived>
-  SpatialForce(const EigenBase<OtherDerived>& other);
+  SpatialForce(const ::Eigen::EigenBase<OtherDerived>& other);
 
-  SpatialForce(const Scalar& lin_x, const Scalar& lin_y, const Scalar& lin_z,
-                const Scalar& ang_x, const Scalar& ang_y, const Scalar& ang_z);
+  SpatialForce(const _Scalar& lin_x, const _Scalar& lin_y, const _Scalar& lin_z,
+                const _Scalar& ang_x, const _Scalar& ang_y, const _Scalar& ang_z);
 
   template<typename DerivedLin, typename DerivedAng>
-  SpatialForce(const EigenBase<DerivedLin>& lin, const EigenBase<DerivedAng>& ang);
+  SpatialForce(const ::Eigen::EigenBase<DerivedLin>& lin,
+               const ::Eigen::EigenBase<DerivedAng>& ang);
 
   SpatialForce& operator=(const SpatialForce& other);
 
   SpatialForce& operator=(SpatialForce&& other)
-  EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<Scalar>::value);
+  EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<_Scalar>::value);
 
   template<typename OtherDerived>
-  SpatialForce& operator=(const DenseBase<OtherDerived>& other);
+  SpatialForce& operator=(const ::Eigen::DenseBase<OtherDerived>& other);
 
   template<typename OtherDerived>
-  SpatialForce& operator=(const EigenBase<OtherDerived>& other);
+  SpatialForce& operator=(const ::Eigen::EigenBase<OtherDerived>& other);
 
   template<typename OtherDerived>
-  SpatialForce& operator=(const ReturnByValue<OtherDerived>& func);
+  SpatialForce& operator=(const ::Eigen::ReturnByValue<OtherDerived>& func);
 
-  SpatialForce& operator=(const Scalar& value);
+  SpatialForce& operator=(const _Scalar& value);
 
-  SpatialForce& operator*=(const Isometry3d& T);
+  SpatialForce& operator*=(const ::Eigen::Isometry3d& T);
 
-  Index innerStride() const;
-  Index outerStride() const;
+  ::Eigen::Index innerStride() const;
+  ::Eigen::Index outerStride() const;
 
  protected:
   using Base::m_storage;
@@ -89,21 +111,22 @@ inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::SpatialForce(const Spat
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::SpatialForce(SpatialForce&& other)
-EIGEN_NOEXCEPT_IF(std::is_nothrow_move_constructible<Scalar>::value)
+EIGEN_NOEXCEPT_IF(std::is_nothrow_move_constructible<_Scalar>::value)
     : SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::Base(std::move(other)) {
   Base::_check_template_params();
-  if (ColsAtCompileTime != Dynamic) Base::_set_noalias(other);
+  if (ColsAtCompileTime != ::Eigen::Dynamic) Base::_set_noalias(other);
 }
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 template<typename OtherDerived>
-inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::SpatialForce(const EigenBase<OtherDerived>& other)
+inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::SpatialForce(
+    const ::Eigen::EigenBase<OtherDerived>& other)
     : Base(other.derived()) {}
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::SpatialForce(
-    const Scalar& lin_x, const Scalar& lin_y, const Scalar& lin_z,
-    const Scalar& ang_x, const Scalar& ang_y, const Scalar& ang_z) {
+    const _Scalar& lin_x, const _Scalar& lin_y, const _Scalar& lin_z,
+    const _Scalar& ang_x, const _Scalar& ang_y, const _Scalar& ang_z) {
   m_storage.data()[0] = lin_x;
   m_storage.data()[1] = lin_y;
   m_storage.data()[2] = lin_z;
@@ -115,7 +138,7 @@ inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::SpatialForce(
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 template<typename DerivedLin, typename DerivedAng>
 inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::SpatialForce(
-    const EigenBase<DerivedLin>& lin, const EigenBase<DerivedAng>& ang) {
+    const ::Eigen::EigenBase<DerivedLin>& lin, const ::Eigen::EigenBase<DerivedAng>& ang) {
   this->linear() = lin;
   this->angular() = ang;
 }
@@ -129,7 +152,7 @@ SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::operator=(const SpatialForce& 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>&
 SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::operator=(SpatialForce&& other)
-EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<Scalar>::value) {
+EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<_Scalar>::value) {
   other.swap(*this);
   return *this;
 }
@@ -137,48 +160,51 @@ EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<Scalar>::value) {
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 template<typename OtherDerived>
 inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>&
-SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::operator=(const DenseBase<OtherDerived>& other) {
+SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::operator=(
+    const ::Eigen::DenseBase<OtherDerived>& other) {
   return Base::_set(other);
 }
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 template<typename OtherDerived>
 inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>&
-SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::operator=(const EigenBase<OtherDerived>& other) {
+SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::operator=(
+    const ::Eigen::EigenBase<OtherDerived>& other) {
   return Base::operator=(other);
 }
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 template<typename OtherDerived>
 inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>&
-SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::operator=(const ReturnByValue<OtherDerived>& func) {
+SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::operator=(
+    const ::Eigen::ReturnByValue<OtherDerived>& func) {
   return Base::operator=(func);
 }
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>&
-SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::operator=(const Scalar& value) {
+SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::operator=(const _Scalar& value) {
   Base::setConstant(value);
   return *this;
 }
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>&
-SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::operator*=(const Isometry3d& T) {
+SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::operator*=(const ::Eigen::Isometry3d& T) {
   *this = T * (*this);
   return *this;
 }
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
-inline Index SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::innerStride() const {
+inline ::Eigen::Index SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::innerStride() const {
   return 1;
 }
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
-inline Index SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::outerStride() const {
+inline ::Eigen::Index SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::outerStride() const {
   return 6;
 }
 
-}  // namespace Eigen
+}  // spatial_dyn
 
-#endif  // EIGEN_SPATIAL_FORCE_H_
+#endif  // SPATIAL_DYN_EIGEN_SPATIAL_FORCE_H_

@@ -7,57 +7,36 @@
  * Authors: Toki Migimatsu
  */
 
-#ifndef EIGEN_SPATIAL_DYN_H_
-#define EIGEN_SPATIAL_DYN_H_
+#ifndef SPATIAL_DYN_EIGEN_SPATIAL_DYN_H_
+#define SPATIAL_DYN_EIGEN_SPATIAL_DYN_H_
 
-namespace Eigen {
-
-template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
-class SpatialMotion;
-
-template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
-class SpatialForce;
-
-template<typename Derived>
-class SpatialMotionBase;
-
-template<typename Derived>
-class SpatialForceBase;
-
-template<typename Scalar>
-class SpatialInertia;
-
-template<typename Scalar>
-class SpatialInertiaMatrix;
-
-}  // namespace Eigen
-
-#define EIGEN_MATRIX_PLUGIN "spatial_dyn/eigen/matrix_plugin.h"
 #include <ctrl_utils/eigen.h>
+
 #include "spatial_motion.h"
 #include "spatial_force.h"
 #include "spatial_inertia.h"
 
-#include <unsupported/Eigen/CXX11/Tensor>
+namespace spatial_dyn {
 
-namespace Eigen {
+typedef SpatialMotion<float,1>  SpatialMotionf;
+typedef SpatialMotion<double,1> SpatialMotiond;
+typedef SpatialMotion<float,6>  SpatialMotion6f;
+typedef SpatialMotion<double,6> SpatialMotion6d;
+typedef SpatialMotion<float,::Eigen::Dynamic>  SpatialMotionXf;
+typedef SpatialMotion<double,::Eigen::Dynamic> SpatialMotionXd;
 
-typedef Matrix<double,6,1> Vector6d;
-typedef Matrix<double,6,6> Matrix6d;
-typedef Matrix<double,6,Dynamic> Matrix6Xd;
+typedef SpatialForce<float,1>  SpatialForcef;
+typedef SpatialForce<double,1> SpatialForced;
+typedef SpatialForce<float,6>  SpatialForce6f;
+typedef SpatialForce<double,6> SpatialForce6d;
+typedef SpatialForce<float,::Eigen::Dynamic>  SpatialForceXf;
+typedef SpatialForce<double,::Eigen::Dynamic> SpatialForceXd;
 
-typedef Matrix<float,6,1> Vector6f;
-typedef Matrix<float,6,6> Matrix6f;
-typedef Matrix<float,6,Dynamic> Matrix6Xf;
+typedef SpatialInertia<float> SpatialInertiaf;
+typedef SpatialInertia<double> SpatialInertiad;
+typedef SpatialInertiaMatrix<float> SpatialInertiaMatrixf;
+typedef SpatialInertiaMatrix<double> SpatialInertiaMatrixd;
 
-typedef Tensor<double,1> Tensor1d;
-typedef Tensor<double,2> Tensor2d;
-typedef Tensor<double,3> Tensor3d;
+}  // namespace spatial_dyn
 
-typedef Tensor<float,1> Tensor1f;
-typedef Tensor<float,2> Tensor2f;
-typedef Tensor<float,3> Tensor3f;
-
-}  // namespace Eigen
-
-#endif  // EIGEN_SPATIAL_DYN_H_
+#endif  // SPATIAL_DYN_EIGEN_SPATIAL_DYN_H_
