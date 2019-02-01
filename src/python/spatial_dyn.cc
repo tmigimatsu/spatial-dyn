@@ -13,7 +13,7 @@
 #include <sstream>    // std::stringstream
 
 #include <pybind11/pybind11.h>
-#include "spatial_dyn/utils/spatial_math.h"
+#include "spatial_dyn/eigen/spatial_math.h"
 #include <pybind11/eigen.h>
 #include <pybind11/functional.h>
 #include <pybind11/stl.h>

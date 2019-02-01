@@ -10,9 +10,6 @@
 #ifndef SPATIAL_DYN_STRUCTS_ARTICULATED_BODY_H_
 #define SPATIAL_DYN_STRUCTS_ARTICULATED_BODY_H_
 
-#include "spatial_dyn/utils/spatial_math.h"
-#include "spatial_dyn/structs/rigid_body.h"
-
 #include <functional>  // std::function
 #include <map>         // std::map
 #include <memory>      // std::unique_ptr
@@ -20,6 +17,9 @@
 #include <string>      // std::string
 #include <utility>     // std::pair
 #include <vector>      // std::vector
+
+#include "spatial_dyn/eigen/spatial_math.h"
+#include "spatial_dyn/structs/rigid_body.h"
 
 namespace spatial_dyn {
 

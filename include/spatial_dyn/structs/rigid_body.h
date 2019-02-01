@@ -10,13 +10,13 @@
 #ifndef SPATIAL_DYN_STRUCTS_RIGID_BODY_H_
 #define SPATIAL_DYN_STRUCTS_RIGID_BODY_H_
 
-#include "spatial_dyn/structs/graphics.h"
-#include "spatial_dyn/structs/joint.h"
-#include "spatial_dyn/utils/spatial_math.h"
-
 #include <ostream>  // std::ostream
 #include <string>   // std::string
 #include <vector>   // std::vector
+
+#include "spatial_dyn/eigen/spatial_math.h"
+#include "spatial_dyn/structs/graphics.h"
+#include "spatial_dyn/structs/joint.h"
 
 namespace spatial_dyn {
 

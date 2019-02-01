@@ -14,7 +14,7 @@
 #include <ostream>  // std::ostream
 #include <string>   // std::string
 
-#include "spatial_dyn/utils/spatial_math.h"
+#include "spatial_dyn/eigen/spatial_math.h"
 
 namespace spatial_dyn {
 

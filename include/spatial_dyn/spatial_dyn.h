@@ -18,7 +18,7 @@
  * @see Python: \ref py
  */
 
-#include "spatial_dyn/utils/spatial_math.h"
+#include "spatial_dyn/eigen/spatial_math.h"
 
 /**
  * @defgroup cpp_structs Structs

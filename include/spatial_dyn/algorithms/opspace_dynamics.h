@@ -12,9 +12,9 @@
 
 #include <map>  // std::map
 
+#include "spatial_dyn/eigen/spatial_math.h"
 #include "spatial_dyn/structs/articulated_body.h"
 #include "spatial_dyn/structs/options.h"
-#include "spatial_dyn/utils/spatial_math.h"
 
 namespace spatial_dyn {
 namespace opspace {

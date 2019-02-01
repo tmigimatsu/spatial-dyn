@@ -10,9 +10,9 @@
 #ifndef SPATIAL_DYN_PARSERS_JSON_H_
 #define SPATIAL_DYN_PARSERS_JSON_H_
 
-#include "spatial_dyn/structs/articulated_body.h"
+#include <nlohmann/json.hpp>
 
-#include "nlohmann/json.hpp"
+#include "spatial_dyn/structs/articulated_body.h"
 
 namespace spatial_dyn {
 namespace json {

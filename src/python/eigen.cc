@@ -11,7 +11,7 @@
 #include <pybind11/eigen.h>
 #include <pybind11/operators.h>
 
-#include "spatial_dyn/utils/spatial_math.h"
+#include "spatial_dyn/eigen/spatial_math.h"
 
 namespace Eigen {
 

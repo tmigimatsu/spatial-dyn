@@ -10,8 +10,8 @@
 #ifndef SPATIAL_DYN_ALGORITHMS_FORWARD_KINEMATICS_H_
 #define SPATIAL_DYN_ALGORITHMS_FORWARD_KINEMATICS_H_
 
+#include "spatial_dyn/eigen/spatial_math.h"
 #include "spatial_dyn/structs/articulated_body.h"
-#include "spatial_dyn/utils/spatial_math.h"
 
 namespace spatial_dyn {
 

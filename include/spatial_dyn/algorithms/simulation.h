@@ -10,10 +10,10 @@
 #ifndef SPATIAL_DYN_ALGORITHMS_SIMULATION_H_
 #define SPATIAL_DYN_ALGORITHMS_SIMULATION_H_
 
-#include "spatial_dyn/structs/articulated_body.h"
-
 #include <map>  // std::map
 
+#include "spatial_dyn/eigen/spatial_math.h"
+#include "spatial_dyn/structs/articulated_body.h"
 #include "spatial_dyn/structs/options.h"
 
 namespace spatial_dyn {
