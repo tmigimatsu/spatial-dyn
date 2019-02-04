@@ -11,6 +11,7 @@
 
 #include <algorithm>  // std::min
 #include <cmath>      // std::abs
+
 #include <ctrl_utils/math.h>
 
 #include "structs/articulated_body_cache.h"

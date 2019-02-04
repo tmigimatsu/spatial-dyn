@@ -313,16 +313,37 @@ PYBIND11_MODULE(spatialdyn, m) {
   m_op.def("is_singular", &opspace::IsSingular, "ab"_a, "J"_a, "svd_epsilon"_a = 0.);
   m_op.def("inverse_dynamics",
            [](const ArticulatedBody& ab, const Eigen::MatrixXd& J,
-              const Eigen::VectorXd& ddx, py::EigenDRef<Eigen::MatrixXd> N,
+              const Eigen::VectorXd& ddx, py::array_t<double> N,
               const std::map<size_t, SpatialForced>& f_external,
               bool gravity, bool centrifugal_coriolis, bool friction,
               double svd_epsilon, double stiction_epsilon) {
-             Eigen::MatrixXd N_temp = N;
-             Eigen::VectorXd tau = opspace::InverseDynamics(ab, J, ddx, &N_temp, f_external,
+
+             Eigen::VectorXd tau;
+             py::buffer_info info = N.request();
+             if (info.ndim == 0) {
+               tau = opspace::InverseDynamics(ab, J, ddx, nullptr, f_external,
+                   { gravity, centrifugal_coriolis, friction, svd_epsilon, stiction_epsilon });
+               return tau;
+             }
+
+             typedef Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic> Strides;
+             if (info.format != py::format_descriptor<double>::format()) {
+               throw std::runtime_error("spatialdyn.opspace.inverse_dynamics(): Expected a double array for N.");
+             }
+             if (info.ndim != 2) {
+               throw std::runtime_error("spatialdyn.opspace.inverse_dynamics(): Expected a 2D array for N." + std::to_string(info.ndim));
+             }
+             auto strides = Strides(info.strides[1] / (py::ssize_t) sizeof(double),
+                                    info.strides[0] / (py::ssize_t) sizeof(double));
+             auto N_map = Eigen::Map<Eigen::MatrixXd, 0, Strides>(static_cast<double*>(info.ptr),
+                                                                  info.shape[0], info.shape[1],
+                                                                  strides);
+             Eigen::MatrixXd N_temp = N_map;
+             tau = opspace::InverseDynamics(ab, J, ddx, &N_temp, f_external,
                  { gravity, centrifugal_coriolis, friction, svd_epsilon, stiction_epsilon });
-             N = N_temp;
+             N_map = N_temp;
              return tau;
-           }, "ab"_a, "J"_a, "ddx"_a, "N"_a,
+           }, "ab"_a, "J"_a, "ddx"_a, "N"_a = py::none(),
            "f_external"_a = std::map<size_t, SpatialForced>(),
            "gravity"_a = false, "centrifugal_coriolis"_a = false, "friction"_a = false,
            "svd_epsilon"_a = 0., "stiction_epsilon"_a = 0.01);
