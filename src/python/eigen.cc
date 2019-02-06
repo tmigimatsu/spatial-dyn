@@ -62,6 +62,7 @@ PYBIND11_MODULE(eigen, m) {
   py::class_<Quaterniond>(m, "Quaterniond")
       .def(py::init<const Quaterniond&>())
       .def(py::init<const double&, const double&, const double&, const double&>())
+      .def(py::init<const AngleAxisd&>())
       .def(py::init<const Matrix3d&>())
       .def_property("w", (const double& (Quaterniond::*)(void) const) &Quaterniond::w,
                     [](Quaterniond& quat, double w) { quat.w() = w; })
@@ -75,7 +76,32 @@ PYBIND11_MODULE(eigen, m) {
                     [](Quaterniond& quat, const Eigen::Vector4d& coeffs) {
                       quat.coeffs() = coeffs;
                     })
+      .def("normalized", &Quaterniond::normalized)
       .def("inverse", &Quaterniond::inverse)
+      .def("set", [](Quaterniond& quat, const Quaterniond& other) { quat = other; })
+      .def("__mul__", [](const Quaterniond& quat, const Quaterniond& other) { return quat * other; })
+      .def("__repr__",
+           [](const Quaterniond& quat) {
+             return "<eigen.Quaterniond (x=" + std::to_string(quat.x()) +
+                    ", y=" + std::to_string(quat.y()) +
+                    ", z=" + std::to_string(quat.z()) +
+                    ", w=" + std::to_string(quat.w()) + ")>";
+           });
+
+  // AngleAxisd
+  py::class_<AngleAxisd>(m, "AngleAxisd")
+      .def(py::init<const AngleAxisd&>())
+      .def(py::init<const double&, const Eigen::Vector3d&>())
+      .def(py::init<const Quaterniond&>())
+      .def(py::init<const Matrix3d&>())
+      .def_property("angle", (double (AngleAxisd::*)(void) const) &AngleAxisd::angle,
+                    [](AngleAxisd& aa, double angle) { aa.angle() = angle; })
+      .def_property("axis", (double (AngleAxisd::*)(void) const) &AngleAxisd::angle,
+                    [](AngleAxisd& aa, const Eigen::Vector3d& axis) { aa.axis() = axis; })
+      .def("inverse", &AngleAxisd::inverse)
+      .def("to_rotation_matrix", &AngleAxisd::toRotationMatrix)
+      .def("__mul__", (Quaterniond (AngleAxisd::*)(const Quaterniond&) const) &AngleAxisd::operator*)
+      .def("__mul__", (Quaterniond (AngleAxisd::*)(const AngleAxisd&) const) &AngleAxisd::operator*)
       .def("__repr__",
            [](const Quaterniond& quat) {
              return "<eigen.Quaterniond (x=" + std::to_string(quat.x()) +
