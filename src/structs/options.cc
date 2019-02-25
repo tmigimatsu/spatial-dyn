@@ -3,7 +3,7 @@
  *
  * Copyright 2019. All Rights Reserved.
  *
- * Created: January 05, 2019
+ * Created: January 5, 2019
  * Authors: Toki Migimatsu
  */
 

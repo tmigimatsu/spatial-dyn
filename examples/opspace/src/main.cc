@@ -271,4 +271,4 @@ void AdjustPosition(const std::string& key, Eigen::Vector3d* pos) {
   (*pos)(idx) += sign * kGainKeyPress;
 }
 
-}
+}  // namespace

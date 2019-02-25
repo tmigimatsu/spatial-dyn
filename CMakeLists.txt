@@ -3,7 +3,7 @@
 #
 # Copyright 2018. All Rights Reserved.
 #
-# Created: May 7, 2018
+# Created: June 7, 2018
 # Authors: Toki Migimatsu
 ############################################################
 
@@ -102,7 +102,7 @@ target_sources(${SPATIAL_DYN_LIB} PRIVATE
     ${SPATIAL_DYN_SRC_DIR}/parsers/urdf.cc
 )
 
-# Use GNUInstalDirs to install ibraries into correct locations on all platforms
+# Use GNUInstallDirs to install libraries into correct locations on all platforms
 include(GNUInstallDirs)
 
 set(SPATIAL_DYN_TARGETS ${SPATIAL_DYN_LIB}Targets)
