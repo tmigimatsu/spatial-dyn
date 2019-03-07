@@ -41,6 +41,11 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::MatrixXd
 
   // Compute opspace dynamics
   Eigen::VectorXd F_x = Inertia(ab, J_x, options.svd_epsilon) * ddx;
+  if (options.f_acc_max > 0.) {
+    if (F_x.norm() > options.f_acc_max) {
+      F_x = options.f_acc_max * F_x.normalized();
+    }
+  }
 
   if (!f_external.empty()) {
     F_x += ExternalForces(ab, J_x, f_external, options.svd_epsilon);

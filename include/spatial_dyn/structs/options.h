@@ -180,6 +180,12 @@ struct InverseDynamicsOptions {
    */
   double stiction_epsilon = 0.01;
 
+  /**
+   * Maximum force due to acceleration (F = Lambda * ddx). Forces above the
+   * limit will scaled. If f_acc_max is 0, no clipping will occur.
+   */
+  double f_acc_max = 0.;
+
 };
 
 }  // namespace opspace
