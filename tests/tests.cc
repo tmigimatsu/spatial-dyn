@@ -11,6 +11,7 @@
 #include "spatial_dyn/algorithms/inverse_dynamics.h"
 #include "spatial_dyn/algorithms/forward_dynamics.h"
 #include "spatial_dyn/algorithms/opspace_dynamics.h"
+#include "spatial_dyn/algorithms/opspace_kinematics.h"
 
 #include <rbdl/rbdl.h>
 
@@ -18,6 +19,52 @@
 #include <catch2/catch.hpp>
 
 #include <iostream>
+
+TEST_CASE("orientation", "[Orientation]") {
+  Eigen::Quaterniond quat;
+  Eigen::Quaterniond quat_A(Eigen::AngleAxisd(M_PI/3, Eigen::Vector3d::UnitY()));
+  Eigen::Quaterniond quat_B(Eigen::AngleAxisd(M_PI/3, Eigen::Vector3d::UnitX()));
+  Eigen::Matrix3d J1 = spatial_dyn::opspace::LogExpCoordsJacobianInvLeft(
+                           quat.toRotationMatrix(), quat_A.toRotationMatrix());
+  Eigen::Matrix3d J2 = spatial_dyn::opspace::LogExpCoordsJacobian(
+                           quat_A.inverse().toRotationMatrix(), quat.toRotationMatrix());
+
+  Eigen::Matrix3d J1b = spatial_dyn::opspace::LogExpCoordsJacobianInvLeft(
+                            quat_B.toRotationMatrix(), quat_A.toRotationMatrix());
+  Eigen::Matrix3d J2b = spatial_dyn::opspace::LogExpCoordsJacobian(
+                            quat_A.inverse().toRotationMatrix(), quat_B.toRotationMatrix());
+
+  Eigen::Vector3d p(1,2,3);
+  Eigen::Matrix3d JRp1 = spatial_dyn::opspace::ExpCoordsJacobian(quat.toRotationMatrix(), p);
+  Eigen::Matrix<double,9,3> JR = spatial_dyn::opspace::ExpCoordsJacobian(quat.toRotationMatrix());
+  Eigen::Matrix3d JRp2;
+  for (size_t i = 0; i < 3; i++) {
+    JRp2.col(i) = Eigen::Map<Eigen::Matrix3d>(JR.data() + 9 * i) * p;
+  }
+  Eigen::Matrix3d JRp1b = spatial_dyn::opspace::ExpCoordsJacobian(quat_B.toRotationMatrix(), p);
+  Eigen::Matrix<double,9,3> JRb = spatial_dyn::opspace::ExpCoordsJacobian(quat_B.toRotationMatrix());
+  Eigen::Matrix3d JRp2b;
+  for (size_t i = 0; i < 3; i++) {
+    JRp2b.col(i) = Eigen::Map<Eigen::Matrix3d>(JRb.data() + 9 * i) * p;
+  }
+
+  Eigen::Vector3d g1 = spatial_dyn::opspace::NormLogExpCoordsGradient(quat_A.toRotationMatrix(), quat_A.toRotationMatrix());
+  Eigen::AngleAxisd aa(quat_A * quat_A);
+  Eigen::Matrix3d JJ = spatial_dyn::opspace::LogExpCoordsJacobian(quat_A.toRotationMatrix(), quat_A.toRotationMatrix());
+  Eigen::Vector3d a = aa.angle() * aa.axis();
+  std::cout << "J: " << std::endl << JJ << std::endl;
+  std::cout << "a: " << a.transpose() << std::endl;
+  std::cout << "J^T a: " << (JJ.transpose() * a).transpose() << std::endl;
+  Eigen::Vector3d g2 = spatial_dyn::opspace::LogExpCoordsJacobian(quat_A.toRotationMatrix(), quat_A.toRotationMatrix()).transpose() * (aa.angle() * aa.axis());
+
+  std::cout << "g1: " << g1.transpose() << std::endl;
+  std::cout << "g2: " << g2.transpose() << std::endl;
+
+  REQUIRE((J1 + J2).norm() < 1e-10);
+  REQUIRE((J1b + J2b).norm() < 1e-10);
+  REQUIRE((JRp1 - JRp2).norm() < 1e-10);
+  REQUIRE((JRp1b - JRp2b).norm() < 1e-10);
+}
 
 TEST_CASE("spatial vector transforms", "[SpatialVector]") {
   Eigen::Quaterniond quat = Eigen::AngleAxisd(M_PI/3, Eigen::Vector3d::UnitX()) *
