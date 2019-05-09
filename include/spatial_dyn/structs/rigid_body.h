@@ -41,7 +41,8 @@ class RigidBody {
   /**
    * Default constructor.
    */
-  RigidBody() {}
+  RigidBody() = default;
+  virtual ~RigidBody() = default;
 
   /**
    * Constructor that sets the name of the rigid body.

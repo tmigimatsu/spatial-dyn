@@ -49,5 +49,6 @@
 // Parsers
 #include "spatial_dyn/parsers/json.h"
 #include "spatial_dyn/parsers/urdf.h"
+#include "spatial_dyn/parsers/yaml.h"
 
 #endif  // SPATIAL_DYN_SPATIAL_DYN_H_

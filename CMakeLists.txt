@@ -100,6 +100,7 @@ target_sources(${SPATIAL_DYN_LIB} PRIVATE
     ${SPATIAL_DYN_SRC_DIR}/structs/rigid_body.cc
     ${SPATIAL_DYN_SRC_DIR}/parsers/json.cc
     ${SPATIAL_DYN_SRC_DIR}/parsers/urdf.cc
+    ${SPATIAL_DYN_SRC_DIR}/parsers/yaml.cc
 )
 
 # Use GNUInstallDirs to install libraries into correct locations on all platforms
@@ -149,7 +150,7 @@ install(FILES
 # Build tests
 include(CTest)
 if(BUILD_TESTING)
-    add_subdirectory(tests)
+    add_subdirectory(test)
 endif()
 
 # Build python wrapper

@@ -17,6 +17,7 @@ namespace spatial_dyn {
 
 static const std::map<std::string, Graphics::Geometry::Type> kStringToType = {
   {"box",       Graphics::Geometry::Type::kBox},
+  {"capsule",   Graphics::Geometry::Type::kCapsule},
   {"cylinder",  Graphics::Geometry::Type::kCylinder},
   {"sphere",    Graphics::Geometry::Type::kSphere},
   {"mesh",      Graphics::Geometry::Type::kMesh},
@@ -25,6 +26,7 @@ static const std::map<std::string, Graphics::Geometry::Type> kStringToType = {
 
 static const std::map<Graphics::Geometry::Type, std::string> kTypeToString = {
   {Graphics::Geometry::Type::kBox,       "box"},
+  {Graphics::Geometry::Type::kCapsule,   "capsule"},
   {Graphics::Geometry::Type::kCylinder,  "cylinder"},
   {Graphics::Geometry::Type::kSphere,    "sphere"},
   {Graphics::Geometry::Type::kMesh,      "mesh"},

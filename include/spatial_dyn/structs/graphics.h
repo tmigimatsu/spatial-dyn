@@ -47,6 +47,7 @@ struct Graphics {
     enum class Type {
       kUndefined,  ///< Undefined.
       kBox,        ///< Box.
+      kCapsule,    ///< Capsule.
       kCylinder,   ///< Cylinder.
       kSphere,     ///< Sphere.
       kMesh        ///< Mesh.
@@ -58,22 +59,22 @@ struct Graphics {
     Type type = Type::kUndefined;
 
     /**
-     * Type::BOX size or Type::MESH scale.
+     * Type::kBox size or Type::kMesh scale.
      */
     Eigen::Vector3d scale = Eigen::Vector3d::Ones();
 
     /**
-     * Type::CYLINDER or Type::SPHERE radius.
+     * Type::kCapsule or Type::kCylinder or Type::kSphere radius.
      */
     double radius = 0;
 
     /**
-     * Type::CYLINDER length.
+     * Type::kCapsule or Type::kCylinder length.
      */
     double length = 0;
 
     /**
-     * Type::MESH filename.
+     * Type::kMesh filename.
      */
     std::string mesh;
   };

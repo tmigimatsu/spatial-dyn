@@ -37,7 +37,7 @@ nlohmann::json Serialize(const RigidBody& rb) {
   json["name"] = rb.name;
   json["id"] = rb.id();
   json["id_parent"] = rb.id_parent();
-  json["pos"] = Serialize(rb.T_to_parent().translation());
+  json["pos"] = Serialize(rb.T_to_parent().translation());  // TODO: Make consistent with YAML
   json["quat"] = Serialize(Eigen::Quaterniond(rb.T_to_parent().linear()));
   json["inertia"] = Serialize(rb.inertia().I_com_flat());
   json["joint"] = Serialize(rb.joint());
@@ -78,6 +78,7 @@ nlohmann::json Serialize(const Graphics::Geometry& geometry) {
     case Graphics::Geometry::Type::kBox:
       json["scale"] = Serialize(geometry.scale);
       break;
+    case Graphics::Geometry::Type::kCapsule:
     case Graphics::Geometry::Type::kCylinder:
       json["radius"] = geometry.radius;
       json["length"] = geometry.length;
