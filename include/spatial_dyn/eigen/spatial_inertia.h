@@ -210,8 +210,8 @@ SpatialInertia<Scalar>&
 SpatialInertia<Scalar>::operator+=(const SpatialInertia<Scalar>& other) {
   Eigen::Vector3d com_new = (mass * com + other.mass * other.com) / (mass + other.mass);
   I_com += other.I_com -
-           mass * ctrl_utils::Eigen::DoubleCrossMatrix(com_new - com) -
-           other.mass * ctrl_utils::Eigen::DoubleCrossMatrix(com_new - other.com);
+           mass * ctrl_utils::DoubleCrossMatrix(com_new - com) -
+           other.mass * ctrl_utils::DoubleCrossMatrix(com_new - other.com);
   mass += other.mass;
   com = std::move(com_new);
   return *this;
@@ -223,8 +223,8 @@ SpatialInertia<Scalar>::operator+(const SpatialInertia<Scalar>& other) const {
   SpatialInertia<Scalar> I_total;
   I_total.com = (mass * com + other.mass * other.com) / (mass + other.mass);
   I_total.I_com = I_com + other.I_com -
-                  mass * ctrl_utils::Eigen::DoubleCrossMatrix(I_total.com - com) -
-                  other.mass * ctrl_utils::Eigen::DoubleCrossMatrix(I_total.com - other.com);
+                  mass * ctrl_utils::DoubleCrossMatrix(I_total.com - com) -
+                  other.mass * ctrl_utils::DoubleCrossMatrix(I_total.com - other.com);
   I_total.mass = mass + other.mass;
   return I_total;
 }

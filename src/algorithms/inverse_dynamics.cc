@@ -44,7 +44,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
   SpatialInertiad I_total;
   for (size_t i = 0; i < ab.dof(); i++) {
     const SpatialMotiond& s = ab.rigid_bodies(i).joint().subspace();
-    bool has_load = ab.inertia_load().find(i) != ab.inertia_load().end();
+    const bool has_load = ab.inertia_load().find(i) != ab.inertia_load().end();
     if (has_load) I_total = ab.rigid_bodies(i).inertia() + ab.inertia_load().at(i);
     const SpatialInertiad& I = has_load ? I_total : ab.rigid_bodies(i).inertia();
     const int parent = ab.rigid_bodies(i).id_parent();
@@ -197,7 +197,7 @@ Eigen::VectorXd Friction(const ArticulatedBody& ab, Eigen::Ref<const Eigen::Vect
     const Joint& joint = ab.rigid_bodies(i).joint();
 
     // Kinetic friction
-    double f_coulomb = joint.f_coulomb() * ctrl_utils::math::Signum(ab.dq(i), stiction_epsilon);
+    double f_coulomb = joint.f_coulomb() * ctrl_utils::Signum(ab.dq(i), stiction_epsilon);
 
     // Static friction
     if (f_coulomb == 0.) {
@@ -205,7 +205,7 @@ Eigen::VectorXd Friction(const ArticulatedBody& ab, Eigen::Ref<const Eigen::Vect
       if (!compensate) {
         mu = std::min(mu, std::abs(tau(i)));
       }
-      f_coulomb = mu * ctrl_utils::math::Signum(tau(i));
+      f_coulomb = mu * ctrl_utils::Signum(tau(i));
     }
 
     // Add viscous and Coulomb friction

@@ -22,7 +22,7 @@ const Eigen::Matrix6d& InertiaAba(const ArticulatedBody& ab, int idx_link, const
 
   if (!ops.is_lambda_computed || ops.idx_link != idx_link ||
       ops.offset != offset || ops.svd_epsilon != svd_epsilon) {
-    ops.Lambda = ctrl_utils::Eigen::PseudoInverse(InertiaInverseAba(ab, idx_link, offset), svd_epsilon);
+    ops.Lambda = ctrl_utils::PseudoInverse(InertiaInverseAba(ab, idx_link, offset), svd_epsilon);
     ops.svd_epsilon = svd_epsilon;
     ops.is_lambda_computed = true;
   }

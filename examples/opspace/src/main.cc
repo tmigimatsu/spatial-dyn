@@ -15,6 +15,7 @@
 #include <string>     // std::string
 
 #include <spatial_dyn/spatial_dyn.h>
+#include <ctrl_utils/control.h>
 #include <ctrl_utils/filesystem.h>
 #include <ctrl_utils/json.h>
 #include <ctrl_utils/redis_client.h>
@@ -84,7 +85,7 @@ Eigen::Vector3d PdControl(const Eigen::Quaterniond& quat,
                           const Eigen::Quaterniond& quat_des,
                           Eigen::Ref<const Eigen::Vector3d> w,
                           const Eigen::Vector2d& kp_kv) {
-  return -kp_kv(0) * spatial_dyn::opspace::OrientationError(quat, quat_des) - kp_kv(1) * w;
+  return -kp_kv(0) * ctrl_utils::OrientationError(quat, quat_des) - kp_kv(1) * w;
 }
 
 void InitializeWebApp(ctrl_utils::RedisClient& redis_client, const spatial_dyn::ArticulatedBody& ab);
@@ -144,7 +145,7 @@ int main(int argc, char* argv[]) {
       Eigen::Vector3d ddx = PdControl(x, x_des, dx, fut_kp_kv_pos.get());
 
       // Compute orientation PD control
-      Eigen::Quaterniond quat = spatial_dyn::opspace::NearQuaternion(spatial_dyn::Orientation(ab), quat_des);
+      Eigen::Quaterniond quat = ctrl_utils::NearQuaternion(spatial_dyn::Orientation(ab), quat_des);
       Eigen::Vector3d w       = J.bottomRows<3>() * ab.dq();
       Eigen::Vector3d dw      = PdControl(quat, quat_des, w, fut_kp_kv_ori.get());
 
@@ -175,7 +176,8 @@ int main(int argc, char* argv[]) {
       AdjustPosition(interaction["key_down"].get<std::string>(), &x_des);
 
       // Integrate
-      spatial_dyn::Integrate(ab, tau_cmd, timer.dt(), f_ext);
+      // spatial_dyn::Integrate(ab, tau_cmd, timer.dt(), f_ext);
+      spatial_dyn::discrete::Integrate(ab, tau_cmd, timer.dt(), f_ext);
 
       // Set Redis values
       redis_client.set(KEY_CONTROL_TAU, tau_cmd);

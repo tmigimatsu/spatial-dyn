@@ -306,10 +306,10 @@ PYBIND11_MODULE(spatialdyn, m) {
 
   // opspace dynamics
   py::module m_op = m.def_submodule("opspace");
-  m_op.def("orientation_error", &opspace::OrientationError, "quat"_a, "quat_des"_a);
-  m_op.def("near_quaternion",
-           (Eigen::Quaterniond (*)(const Eigen::Quaterniond&, const Eigen::Quaterniond&))
-           &opspace::NearQuaternion, "quat"_a, "quat_reference"_a);
+  // m_op.def("orientation_error", &opspace::OrientationError, "quat"_a, "quat_des"_a);
+  // m_op.def("near_quaternion",
+  //          (Eigen::Quaterniond (*)(const Eigen::Quaterniond&, const Eigen::Quaterniond&))
+  //          &opspace::NearQuaternion, "quat"_a, "quat_reference"_a);
   m_op.def("is_singular", &opspace::IsSingular, "ab"_a, "J"_a, "svd_epsilon"_a = 0.);
   m_op.def("inverse_dynamics",
            [](const ArticulatedBody& ab, const Eigen::MatrixXd& J,

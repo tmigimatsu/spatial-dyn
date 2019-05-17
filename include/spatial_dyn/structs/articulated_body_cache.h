@@ -89,7 +89,7 @@ struct ArticulatedBody::Cache {
   };
   AbaData aba_data_;
 
-  struct opspaceData {
+  struct OpspaceData {
     Eigen::MatrixXd J;
     double svd_epsilon;
 
@@ -104,9 +104,9 @@ struct ArticulatedBody::Cache {
     bool is_jbar_computed = false;
     Eigen::MatrixXd J_bar;
   };
-  opspaceData opspace_data_;
+  OpspaceData opspace_data_;
 
-  struct opspaceAbaData {
+  struct OpspaceAbaData {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     int idx_link;
     Eigen::Vector3d offset;
@@ -121,7 +121,7 @@ struct ArticulatedBody::Cache {
     std::vector<SpatialForce6d> p;
     std::vector<Eigen::Matrix<double,1,6>> u;
   };
-  opspaceAbaData opspace_aba_data_;
+  OpspaceAbaData opspace_aba_data_;
 
 };
 /// @endcond

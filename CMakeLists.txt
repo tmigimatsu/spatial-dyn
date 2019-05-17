@@ -91,7 +91,6 @@ target_sources(${SPATIAL_DYN_LIB} PRIVATE
     ${SPATIAL_DYN_SRC_DIR}/algorithms/inverse_dynamics.cc
     ${SPATIAL_DYN_SRC_DIR}/algorithms/opspace_dynamics.cc
     ${SPATIAL_DYN_SRC_DIR}/algorithms/opspace_dynamics_aba.cc
-    ${SPATIAL_DYN_SRC_DIR}/algorithms/opspace_kinematics.cc
     ${SPATIAL_DYN_SRC_DIR}/algorithms/simulation.cc
     ${SPATIAL_DYN_SRC_DIR}/structs/articulated_body.cc
     ${SPATIAL_DYN_SRC_DIR}/structs/graphics.cc

@@ -38,7 +38,6 @@
  *
  * @see Python: \ref py_algorithms
  */
-#include "spatial_dyn/algorithms/control.h"
 #include "spatial_dyn/algorithms/forward_dynamics.h"
 #include "spatial_dyn/algorithms/forward_kinematics.h"
 #include "spatial_dyn/algorithms/inverse_dynamics.h"

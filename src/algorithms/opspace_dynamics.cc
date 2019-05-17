@@ -84,7 +84,7 @@ const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab, const Eigen::MatrixXd&
 
   if (!ops.is_lambda_computed || ops.J.size() != J.size() || ops.J != J ||
       ops.svd_epsilon != svd_epsilon) {
-    ops.Lambda = ctrl_utils::Eigen::PseudoInverse(InertiaInverse(ab, J), svd_epsilon, &ops.is_singular);
+    ops.Lambda = ctrl_utils::PseudoInverse(InertiaInverse(ab, J), svd_epsilon, &ops.is_singular);
     ops.svd_epsilon = svd_epsilon;
     ops.is_lambda_computed = true;
   }
