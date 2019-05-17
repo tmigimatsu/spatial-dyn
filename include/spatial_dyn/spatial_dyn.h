@@ -43,7 +43,6 @@
 #include "spatial_dyn/algorithms/forward_kinematics.h"
 #include "spatial_dyn/algorithms/inverse_dynamics.h"
 #include "spatial_dyn/algorithms/opspace_dynamics.h"
-#include "spatial_dyn/algorithms/opspace_kinematics.h"
 #include "spatial_dyn/algorithms/simulation.h"
 
 // Parsers
