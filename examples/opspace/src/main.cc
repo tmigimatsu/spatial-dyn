@@ -71,23 +71,6 @@ const double kTimerFreq          = 1000.;  // Max ~2200
 const double kGainKeyPress       = 0.1 / kTimerFreq;
 const double kGainClickDrag      = 100.;
 
-// General PD control law
-template<typename Derived1, typename Derived2, typename Derived3>
-typename Derived1::PlainObject PdControl(const Eigen::MatrixBase<Derived1>& x,
-                                         const Eigen::MatrixBase<Derived2>& x_des,
-                                         const Eigen::MatrixBase<Derived3>& dx,
-                                         const Eigen::Vector2d& kp_kv) {
-  return -kp_kv(0) * (x - x_des) - kp_kv(1) * dx;
-}
-
-// Special PD control law for orientation
-Eigen::Vector3d PdControl(const Eigen::Quaterniond& quat,
-                          const Eigen::Quaterniond& quat_des,
-                          Eigen::Ref<const Eigen::Vector3d> w,
-                          const Eigen::Vector2d& kp_kv) {
-  return -kp_kv(0) * ctrl_utils::OrientationError(quat, quat_des) - kp_kv(1) * w;
-}
-
 void InitializeWebApp(ctrl_utils::RedisClient& redis_client, const spatial_dyn::ArticulatedBody& ab);
 
 std::map<size_t, spatial_dyn::SpatialForced> ComputeExternalForces(const spatial_dyn::ArticulatedBody& ab,
@@ -142,12 +125,12 @@ int main(int argc, char* argv[]) {
       // Compute position PD control
       Eigen::Vector3d x   = spatial_dyn::Position(ab, -1, kEeOffset);
       Eigen::Vector3d dx  = J.topRows<3>() * ab.dq();
-      Eigen::Vector3d ddx = PdControl(x, x_des, dx, fut_kp_kv_pos.get());
+      Eigen::Vector3d ddx = ctrl_utils::PdControl(x, x_des, dx, fut_kp_kv_pos.get());
 
       // Compute orientation PD control
       Eigen::Quaterniond quat = ctrl_utils::NearQuaternion(spatial_dyn::Orientation(ab), quat_des);
       Eigen::Vector3d w       = J.bottomRows<3>() * ab.dq();
-      Eigen::Vector3d dw      = PdControl(quat, quat_des, w, fut_kp_kv_ori.get());
+      Eigen::Vector3d dw      = ctrl_utils::PdControl(quat, quat_des, w, fut_kp_kv_ori.get());
 
       // Compute opspace torques
       Eigen::MatrixXd N;
@@ -164,7 +147,7 @@ int main(int argc, char* argv[]) {
 
       // Add joint task in nullspace
       static const Eigen::MatrixXd I = Eigen::MatrixXd::Identity(ab.dof(), ab.dof());
-      Eigen::VectorXd ddq = PdControl(ab.q(), q_des, ab.dq(), fut_kp_kv_joint.get());
+      Eigen::VectorXd ddq = ctrl_utils::PdControl(ab.q(), q_des, ab.dq(), fut_kp_kv_joint.get());
       tau_cmd += spatial_dyn::opspace::InverseDynamics(ab, I, ddq, &N);
 
       // Add gravity compensation
