@@ -23,4 +23,14 @@ ForwardDynamicsOptions::ForwardDynamicsOptions(const IntegrationOptions& other)
     : gravity(other.gravity), centrifugal_coriolis(other.centrifugal_coriolis),
       friction(other.friction), stiction_epsilon(other.stiction_epsilon) {}
 
+ForwardDynamicsOptions::ForwardDynamicsOptions(const discrete::IntegrationOptions& other)
+    : gravity(other.gravity) {}
+
+namespace discrete {
+
+InverseDynamicsOptions::InverseDynamicsOptions(const IntegrationOptions& other)
+    : gravity(other.gravity) {}
+
+}  // namespace discrete
+
 }  // namespace spatial_dyn

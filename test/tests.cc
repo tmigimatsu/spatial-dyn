@@ -7,11 +7,14 @@
  * Authors: Toki Migimatsu
  */
 
+#include "spatial_dyn/algorithms/discrete_dynamics.h"
 #include "spatial_dyn/algorithms/forward_kinematics.h"
 #include "spatial_dyn/algorithms/inverse_dynamics.h"
 #include "spatial_dyn/algorithms/forward_dynamics.h"
 #include "spatial_dyn/algorithms/opspace_dynamics.h"
 #include "spatial_dyn/algorithms/opspace_kinematics.h"
+#include "spatial_dyn/algorithms/simulation.h"
+#include "ctrl_utils/euclidian.h"
 
 #include <rbdl/rbdl.h>
 
@@ -19,52 +22,6 @@
 #include <catch2/catch.hpp>
 
 #include <iostream>
-
-TEST_CASE("orientation", "[Orientation]") {
-  Eigen::Quaterniond quat;
-  Eigen::Quaterniond quat_A(Eigen::AngleAxisd(M_PI/3, Eigen::Vector3d::UnitY()));
-  Eigen::Quaterniond quat_B(Eigen::AngleAxisd(M_PI/3, Eigen::Vector3d::UnitX()));
-  Eigen::Matrix3d J1 = spatial_dyn::opspace::LogExpCoordsJacobianInvLeft(
-                           quat.toRotationMatrix(), quat_A.toRotationMatrix());
-  Eigen::Matrix3d J2 = spatial_dyn::opspace::LogExpCoordsJacobian(
-                           quat_A.inverse().toRotationMatrix(), quat.toRotationMatrix());
-
-  Eigen::Matrix3d J1b = spatial_dyn::opspace::LogExpCoordsJacobianInvLeft(
-                            quat_B.toRotationMatrix(), quat_A.toRotationMatrix());
-  Eigen::Matrix3d J2b = spatial_dyn::opspace::LogExpCoordsJacobian(
-                            quat_A.inverse().toRotationMatrix(), quat_B.toRotationMatrix());
-
-  Eigen::Vector3d p(1,2,3);
-  Eigen::Matrix3d JRp1 = spatial_dyn::opspace::ExpCoordsJacobian(quat.toRotationMatrix(), p);
-  Eigen::Matrix<double,9,3> JR = spatial_dyn::opspace::ExpCoordsJacobian(quat.toRotationMatrix());
-  Eigen::Matrix3d JRp2;
-  for (size_t i = 0; i < 3; i++) {
-    JRp2.col(i) = Eigen::Map<Eigen::Matrix3d>(JR.data() + 9 * i) * p;
-  }
-  Eigen::Matrix3d JRp1b = spatial_dyn::opspace::ExpCoordsJacobian(quat_B.toRotationMatrix(), p);
-  Eigen::Matrix<double,9,3> JRb = spatial_dyn::opspace::ExpCoordsJacobian(quat_B.toRotationMatrix());
-  Eigen::Matrix3d JRp2b;
-  for (size_t i = 0; i < 3; i++) {
-    JRp2b.col(i) = Eigen::Map<Eigen::Matrix3d>(JRb.data() + 9 * i) * p;
-  }
-
-  Eigen::Vector3d g1 = spatial_dyn::opspace::NormLogExpCoordsGradient(quat_A.toRotationMatrix(), quat_A.toRotationMatrix());
-  Eigen::AngleAxisd aa(quat_A * quat_A);
-  Eigen::Matrix3d JJ = spatial_dyn::opspace::LogExpCoordsJacobian(quat_A.toRotationMatrix(), quat_A.toRotationMatrix());
-  Eigen::Vector3d a = aa.angle() * aa.axis();
-  std::cout << "J: " << std::endl << JJ << std::endl;
-  std::cout << "a: " << a.transpose() << std::endl;
-  std::cout << "J^T a: " << (JJ.transpose() * a).transpose() << std::endl;
-  Eigen::Vector3d g2 = spatial_dyn::opspace::LogExpCoordsJacobian(quat_A.toRotationMatrix(), quat_A.toRotationMatrix()).transpose() * (aa.angle() * aa.axis());
-
-  std::cout << "g1: " << g1.transpose() << std::endl;
-  std::cout << "g2: " << g2.transpose() << std::endl;
-
-  REQUIRE((J1 + J2).norm() < 1e-10);
-  REQUIRE((J1b + J2b).norm() < 1e-10);
-  REQUIRE((JRp1 - JRp2).norm() < 1e-10);
-  REQUIRE((JRp1b - JRp2b).norm() < 1e-10);
-}
 
 TEST_CASE("spatial vector transforms", "[SpatialVector]") {
   Eigen::Quaterniond quat = Eigen::AngleAxisd(M_PI/3, Eigen::Vector3d::UnitX()) *
@@ -401,5 +358,54 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
       REQUIRE((p - p_aba).norm() < 1e-10);
     }
 
+  }
+
+  SECTION("discrete dynamics") {
+    const Eigen::VectorXd q_0 = ab.q();
+    const Eigen::VectorXd dq_0 = ab.dq();
+
+    const Eigen::VectorXd tau = spatial_dyn::InverseDynamics(ab, Eigen::VectorXd::Zero(ab.dof()), {}, { true, true });
+    const Eigen::VectorXd ddq = Eigen::VectorXd::Zero(ab.dof());
+    const double dt = 0.01;
+    const Eigen::VectorXd q_next = ab.q() + dt * ab.dq();
+    // std::cout << ab.dq().transpose() << std::endl;
+    const Eigen::VectorXd tau_d = spatial_dyn::discrete::InverseDynamics(ab, q_next, dt);
+    std::cout << tau_d.transpose() << std::endl;
+    std::cout << tau.transpose() << std::endl;
+
+    std::cout << ab.q().transpose() << std::endl;
+    auto t_start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < 10000; i++) {
+      const Eigen::VectorXd tau = Eigen::VectorXd::Zero(ab.dof());
+      spatial_dyn::discrete::Integrate(ab, tau, 0.001);
+    }
+    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - t_start).count() << std::endl;
+    std::cout << ab.q().transpose() << std::endl;
+    std::cout << std::endl << std::endl;
+
+    ab.set_q(q_0);
+    ab.set_dq(dq_0);
+    std::cout << ab.q().transpose() << std::endl;
+    t_start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < 10000; i++) {
+      const Eigen::VectorXd tau = Eigen::VectorXd::Zero(ab.dof());
+      spatial_dyn::Integrate(ab, tau, 0.001);
+    }
+    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - t_start).count() << std::endl;
+    std::cout << ab.q().transpose() << std::endl;
+
+    const Eigen::Isometry3d T = Eigen::Translation3d(1., 2., 0.) * Eigen::AngleAxisd(1., Eigen::Vector3d(1/sqrt(2), 1/sqrt(2), 0.));
+    // const spatial_dyn::SpatialMotiond v1 = spatial_dyn::opspace::Log(T);
+    // const spatial_dyn::SpatialMotiond v2 = spatial_dyn::opspace::Log2(T);
+    // const spatial_dyn::SpatialMotiond w(1., 1., 1., 1., 1., 1.);
+    // std::cout << "v1: " << v1.transpose() << std::endl;
+    // std::cout << "v2: " << v2.transpose() << std::endl;
+    // std::cout << "dlogvw1: " << (spatial_dyn::opspace::LogMapDerivative(T).transpose() * w.matrix()).transpose() << std::endl;
+    // std::cout << "dlogvw2: " << spatial_dyn::opspace::dexp_inv_transpose(v2.matrix(), w).transpose() << std::endl;
+    // std::cout << "dlogv1: " << std::endl << spatial_dyn::opspace::LogMapDerivative(T).transpose() << std::endl;
+    // std::cout << "dlogv2: " << std::endl << spatial_dyn::opspace::dexp_inv_transpose(v2.matrix()) << std::endl;
+    const Eigen::Matrix6d dExp = ctrl_utils::ExpMapDerivative(T);
+    const Eigen::Matrix6d dLog = ctrl_utils::LogMapDerivative(T);
+    REQUIRE((dExp * dLog - Eigen::Matrix6d::Identity()).norm() < 1e-10);
   }
 }

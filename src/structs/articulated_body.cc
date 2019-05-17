@@ -66,6 +66,7 @@ void ClearDynamicsCache(const std::unique_ptr<ArticulatedBody::Cache>& cache_) {
   cache_->opspace_data_.is_jbar_computed = false;
   cache_->opspace_aba_data_.is_lambda_computed = false;
   cache_->opspace_aba_data_.is_lambda_inv_computed = false;
+  cache_->drnea_data_.is_prev_computed = false;
 }
 
 double ArticulatedBody::q(int i) const {
@@ -86,6 +87,7 @@ void ArticulatedBody::set_q(Eigen::Ref<const Eigen::VectorXd> q) {
   cache_->T_data_.is_T_to_world_computed = false;
   cache_->vel_data_.is_computed = false;
   cache_->jac_data_.is_computed = false;
+  cache_->drnea_data_.is_q_prev_valid = false;
   ClearDynamicsCache(cache_);
 }
 
@@ -106,6 +108,7 @@ void ArticulatedBody::set_dq(Eigen::Ref<const Eigen::VectorXd> dq) {
   cache_->vel_data_.is_computed = false;
   cache_->cc_data_.is_computed = false;
   cache_->aba_data_.is_computed = false;
+  cache_->drnea_data_.is_q_prev_valid = false;
 }
 
 void ArticulatedBody::set_g(const Eigen::Vector3d& g) {
@@ -296,6 +299,17 @@ void ArticulatedBody::ExpandDof(int id, int id_parent) {
   cache_->opspace_aba_data_.is_lambda_inv_computed = false;
   cache_->opspace_aba_data_.p.push_back(SpatialForce6d());
   cache_->opspace_aba_data_.u.push_back(Eigen::Matrix<double,1,6>());
+
+  cache_->drnea_data_.q_prev.resize(dof_);
+  cache_->drnea_data_.is_q_prev_valid = false;
+
+  cache_->drnea_data_.T_to_prev.push_back(Eigen::Isometry3d::Identity());
+  cache_->drnea_data_.p_prev.push_back(SpatialForced());
+  cache_->drnea_data_.is_prev_computed = false;
+
+  cache_->drnea_data_.T_from_next.push_back(Eigen::Isometry3d::Identity());
+  cache_->drnea_data_.p.push_back(SpatialForced());
+  cache_->drnea_data_.dp.push_back(SpatialForced());
 }
 
 std::ostream& operator<<(std::ostream& os, const ArticulatedBody& ab) {

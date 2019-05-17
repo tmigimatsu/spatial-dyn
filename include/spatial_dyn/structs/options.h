@@ -10,11 +10,26 @@
 #ifndef SPATIAL_DYN_STRUCTS_OPTIONS_H_
 #define SPATIAL_DYN_STRUCTS_OPTIONS_H_
 
+#include <cstddef>  // size_t
+
 namespace spatial_dyn {
 
 struct InverseDynamicsOptions;
 struct ForwardDynamicsOptions;
 struct IntegrationOptions;
+
+namespace opspace {
+
+struct InverseDynamicsOptions;
+
+}  // namespace opspace
+
+namespace discrete {
+
+struct InverseDynamicsOptions;
+struct IntegrationOptions;
+
+}  // namespace discrete
 
 /**
  * @ingroup cpp_inverse_dynamics
@@ -65,6 +80,8 @@ struct ForwardDynamicsOptions /*: InverseDynamicsOptions*/ {
         friction(friction), stiction_epsilon(stiction_epsilon) {}
 
   ForwardDynamicsOptions(const IntegrationOptions& other);
+
+  ForwardDynamicsOptions(const discrete::IntegrationOptions& other);
 
   /**
    * Include gravity torques.
@@ -189,6 +206,46 @@ struct InverseDynamicsOptions {
 };
 
 }  // namespace opspace
+
+namespace discrete {
+
+struct InverseDynamicsOptions {
+
+  InverseDynamicsOptions(bool gravity = true)
+      : gravity(gravity) {}
+
+  InverseDynamicsOptions(const discrete::IntegrationOptions& other);
+
+  /**
+   * Include gravity torques.
+   */
+  bool gravity = true;
+
+};
+
+struct IntegrationOptions {
+
+  IntegrationOptions(bool gravity = true)
+      : gravity(gravity) {}
+
+  /**
+   * Include gravity torques.
+   */
+  bool gravity = true;
+
+  /**
+   * Convergence threshold for finding the roots in the variational integrator.
+   */
+  double variational_epsilon = 1e-8;
+
+  /**
+   * Maximum number of iterations for root finding in the variational integrator.
+   */
+  size_t max_iterations = 100;
+
+};
+
+}  // namespace discrete
 
 }  // namespace spatial_dyn
 

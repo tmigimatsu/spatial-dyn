@@ -123,6 +123,21 @@ struct ArticulatedBody::Cache {
   };
   OpspaceAbaData opspace_aba_data_;
 
+  struct DrneaData {
+    Eigen::VectorXd q_prev;
+    double dt = 0.;
+    bool is_q_prev_valid = false;
+
+    std::vector<Eigen::Isometry3d> T_to_prev;
+    std::vector<SpatialForced> p_prev;
+    bool is_prev_computed = false;  // Reusable with same q_prev, position
+
+    std::vector<Eigen::Isometry3d> T_from_next;
+    std::vector<SpatialForced> p;
+    std::vector<SpatialForced> dp;
+  };
+  DrneaData drnea_data_;
+
 };
 /// @endcond
 
