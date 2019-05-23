@@ -204,14 +204,14 @@ class ArticulatedBody {
    * articulated body's base frame to one represented in the world frame. Set to
    * identity by default.
    *
-   * Example:
-   * ```{.cc}
+   * __Example__
+   * ~~~~~~~~~~ {.cc}
    * // Arbitrary position vector represented in the articulated body's base frame
    * Eigen::Vector3d pos_in_ab(0.1, 0.1, 0.1);
    *
    * // Same position vector now represented in the world frame
    * Eigen::Vector3d pos_in_world = ab.T_base_to_world() * pos_in_ab;
-   * ```
+   * ~~~~~~~~~~
    *
    * @return Transform from the base frame to the world frame.
    * @see Python: spatialdyn.ArticulatedBody.T_base_to_world
@@ -249,13 +249,13 @@ class ArticulatedBody {
    * `i < 0`, count from the back).
    *
    * __Example__
-   * ```{.cc}
+   * ~~~~~~~~~~ {.cc}
    * // Arbitrary position vector represented in the end-effector's frame
    * Eigen::Vector3d pos_in_ee(0.1, 0.1, 0.1);
    *
    * // Same positiion vector represented in the frame of the end-effector's parent
    * Eigen::Vector3d pos_in_ee_parent = ab.T_to_parent(-1);
-   * ```
+   * ~~~~~~~~~~
    *
    * @param i Index of the desired frame. Uses Pythonic indexing (if `i < 0`,
    *          count from the back).
@@ -311,13 +311,13 @@ class ArticulatedBody {
    * the back).
    *
    * __Example__
-   * ```{.cc}
+   * ~~~~~~~~~~ {.cc}
    * // Arbitrary position vector represented in the end-effector's frame
    * Eigen::Vector3d pos_in_ee(0.1, 0.1, 0.1);
    *
    * // Same position vector represented in the world frame
    * Eigen::Vector3d pos_in_ee_parent = ab.T_to_parent(-1);
-   * ```
+   * ~~~~~~~~~~
    *
    * @param i Index of the desired frame. Uses Pythonic indexing (if `i < 0`,
    *          count from the back).

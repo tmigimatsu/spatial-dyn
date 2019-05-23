@@ -10,7 +10,7 @@ addons:
       - doxygen
 
 script:
-  - bash doc/travis.sh
+  - bash travis.sh
 
 deploy:
   provider: pages
