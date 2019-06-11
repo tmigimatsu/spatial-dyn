@@ -16,6 +16,7 @@ project(spatial_dyn VERSION 1.0.0 LANGUAGES CXX)
 # Define options
 option(BUILD_CPP "Build C++ library" ON)
 option(BUILD_PYTHON "Build Python library" ON)
+option(BUILD_MATLAB "Build Matlab library" ON)
 
 # Set CMake flags
 set(CMAKE_CXX_STANDARD 11)
@@ -155,9 +156,14 @@ if(BUILD_TESTING)
     add_subdirectory(test)
 endif()
 
-# Build python wrapper
+# Build Python wrapper
 if(BUILD_PYTHON)
     add_subdirectory(${SPATIAL_DYN_SRC_DIR}/python)
+endif()
+
+# Build Matlab wrapper
+if(BUILD_MATLAB)
+    add_subdirectory(${SPATIAL_DYN_SRC_DIR}/matlab)
 endif()
 
 export(TARGETS ${SPATIAL_DYN_LIB}
