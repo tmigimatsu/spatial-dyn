@@ -49,6 +49,8 @@ class SpatialMotion : public Eigen::PlainObjectBase<SpatialMotion<_Scalar, _Cols
 
   SpatialMotion();
 
+  SpatialMotion(double cols);
+
   SpatialMotion(double rows, double cols);
 
   SpatialMotion(const SpatialMotion& other);
@@ -100,8 +102,15 @@ inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::SpatialMotion()
 }
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::SpatialMotion(double cols)
+    : SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::Base() {
+  Base::resize(6, cols);
+}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 inline SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::SpatialMotion(double rows, double cols)
     : SpatialMotion<_Scalar, _Cols, _Options, _MaxCols>::Base() {
+  assert(rows == 6);
   Base::resize(rows, cols);
 }
 

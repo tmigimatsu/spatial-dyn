@@ -87,9 +87,11 @@ target_include_directories(${SPATIAL_DYN_LIB}
 # Attach sources
 target_sources(${SPATIAL_DYN_LIB} PRIVATE
     ${SPATIAL_DYN_SRC_DIR}/algorithms/discrete_dynamics.cc
+    ${SPATIAL_DYN_SRC_DIR}/algorithms/dynamics_derivatives.cc
     ${SPATIAL_DYN_SRC_DIR}/algorithms/forward_dynamics.cc
     ${SPATIAL_DYN_SRC_DIR}/algorithms/forward_kinematics.cc
     ${SPATIAL_DYN_SRC_DIR}/algorithms/inverse_dynamics.cc
+    ${SPATIAL_DYN_SRC_DIR}/algorithms/inverse_kinematics.cc
     ${SPATIAL_DYN_SRC_DIR}/algorithms/opspace_dynamics.cc
     ${SPATIAL_DYN_SRC_DIR}/algorithms/opspace_dynamics_aba.cc
     ${SPATIAL_DYN_SRC_DIR}/algorithms/simulation.cc

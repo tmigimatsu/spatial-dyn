@@ -8,11 +8,11 @@
  */
 
 #include "spatial_dyn/algorithms/discrete_dynamics.h"
+#include "spatial_dyn/algorithms/dynamics_derivatives.h"
 #include "spatial_dyn/algorithms/forward_kinematics.h"
 #include "spatial_dyn/algorithms/inverse_dynamics.h"
 #include "spatial_dyn/algorithms/forward_dynamics.h"
 #include "spatial_dyn/algorithms/opspace_dynamics.h"
-#include "spatial_dyn/algorithms/opspace_kinematics.h"
 #include "spatial_dyn/algorithms/simulation.h"
 #include "ctrl_utils/euclidian.h"
 
@@ -358,6 +358,110 @@ TEST_CASE("articulated body", "[ArticulatedBody]") {
       REQUIRE((p - p_aba).norm() < 1e-10);
     }
 
+  }
+
+  SECTION("dynamics position derivative") {
+    spatial_dyn::InverseDynamicsOptions options;
+    const Eigen::VectorXd ddq = Eigen::VectorXd::Ones(ab.dof());
+    const double h = 0.00001;
+    Eigen::VectorXd q_h = ab.q();
+
+    options.gravity = true;
+    options.centrifugal_coriolis = false;
+    {
+      const Eigen::MatrixXd dtau = spatial_dyn::InverseDynamicsPositionDerivative(ab, ddq, {}, options);
+      for (size_t i = 0; i < ab.dof(); i++) {
+        q_h(i) += h;
+        ab.set_q(q_h);
+        const Eigen::VectorXd tau_hp = spatial_dyn::InverseDynamics(ab, ddq, {}, options);
+        q_h(i) -= 2. * h;
+        ab.set_q(q_h);
+        const Eigen::VectorXd tau_hn = spatial_dyn::InverseDynamics(ab, ddq, {}, options);
+        q_h(i) += h;
+        const Eigen::VectorXd dtau_h = (tau_hp - tau_hn) / (2. * h);
+
+        REQUIRE((dtau_h - dtau.col(i)).norm() < h);
+      }
+    }
+
+    options.gravity = false;
+    options.centrifugal_coriolis = true;
+    {
+      const Eigen::MatrixXd dtau = spatial_dyn::InverseDynamicsPositionDerivative(ab, ddq, {}, options);
+      for (size_t i = 0; i < ab.dof(); i++) {
+        q_h(i) += h;
+        ab.set_q(q_h);
+        const Eigen::VectorXd tau_hp = spatial_dyn::InverseDynamics(ab, ddq, {}, options);
+        q_h(i) -= 2. * h;
+        ab.set_q(q_h);
+        const Eigen::VectorXd tau_hn = spatial_dyn::InverseDynamics(ab, ddq, {}, options);
+        q_h(i) += h;
+        const Eigen::VectorXd dtau_h = (tau_hp - tau_hn) / (2. * h);
+
+        REQUIRE((dtau_h - dtau.col(i)).norm() < h);
+      }
+    }
+
+    options.gravity = true;
+    options.centrifugal_coriolis = true;
+    {
+      const Eigen::MatrixXd dtau = spatial_dyn::InverseDynamicsPositionDerivative(ab, ddq, {}, options);
+      for (size_t i = 0; i < ab.dof(); i++) {
+        q_h(i) += h;
+        ab.set_q(q_h);
+        const Eigen::VectorXd tau_hp = spatial_dyn::InverseDynamics(ab, ddq, {}, options);
+        q_h(i) -= 2. * h;
+        ab.set_q(q_h);
+        const Eigen::VectorXd tau_hn = spatial_dyn::InverseDynamics(ab, ddq, {}, options);
+        q_h(i) += h;
+        const Eigen::VectorXd dtau_h = (tau_hp - tau_hn) / (2. * h);
+
+        REQUIRE((dtau_h - dtau.col(i)).norm() < h);
+      }
+    }
+  }
+
+  SECTION("dynamics velocity derivative") {
+    spatial_dyn::InverseDynamicsOptions options;
+    const Eigen::VectorXd ddq = Eigen::VectorXd::Ones(ab.dof());
+    const double h = 0.00001;
+    Eigen::VectorXd dq_h = ab.dq();
+
+    options.gravity = true;
+    options.centrifugal_coriolis = true;
+    {
+      const Eigen::MatrixXd dtau = spatial_dyn::InverseDynamicsVelocityDerivative(ab, ddq, {}, options);
+      for (size_t i = 0; i < ab.dof(); i++) {
+        dq_h(i) += h;
+        ab.set_dq(dq_h);
+        const Eigen::VectorXd tau_hp = spatial_dyn::InverseDynamics(ab, ddq, {}, options);
+        dq_h(i) -= 2. * h;
+        ab.set_dq(dq_h);
+        const Eigen::VectorXd tau_hn = spatial_dyn::InverseDynamics(ab, ddq, {}, options);
+        dq_h(i) += h;
+        const Eigen::VectorXd dtau_h = (tau_hp - tau_hn) / (2. * h);
+
+        REQUIRE((dtau_h - dtau.col(i)).norm() < h);
+      }
+    }
+
+    options.gravity = true;
+    options.centrifugal_coriolis = false;
+    {
+      const Eigen::MatrixXd dtau = spatial_dyn::InverseDynamicsVelocityDerivative(ab, ddq, {}, options);
+      for (size_t i = 0; i < ab.dof(); i++) {
+        dq_h(i) += h;
+        ab.set_dq(dq_h);
+        const Eigen::VectorXd tau_hp = spatial_dyn::InverseDynamics(ab, ddq, {}, options);
+        dq_h(i) -= 2. * h;
+        ab.set_dq(dq_h);
+        const Eigen::VectorXd tau_hn = spatial_dyn::InverseDynamics(ab, ddq, {}, options);
+        dq_h(i) += h;
+        const Eigen::VectorXd dtau_h = (tau_hp - tau_hn) / (2. * h);
+
+        REQUIRE((dtau_h - dtau.col(i)).norm() < h);
+      }
+    }
   }
 
   SECTION("discrete dynamics") {

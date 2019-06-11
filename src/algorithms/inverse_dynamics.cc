@@ -16,8 +16,6 @@
 
 #include "structs/articulated_body_cache.h"
 
-#define CACHE_INVERSE_DYNAMICS
-
 namespace spatial_dyn {
 
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& ddq,
@@ -48,10 +46,9 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
     if (has_load) I_total = ab.rigid_bodies(i).inertia() + ab.inertia_load().at(i);
     const SpatialInertiad& I = has_load ? I_total : ab.rigid_bodies(i).inertia();
     const int parent = ab.rigid_bodies(i).id_parent();
-    const double dq_i = options.centrifugal_coriolis ? ab.dq(i) : 0.;
 
-    if (!vel.is_computed || !options.centrifugal_coriolis) {
-      vel.v[i] = dq_i * s;
+    if (!vel.is_computed && options.centrifugal_coriolis) {
+      vel.v[i] = ab.dq(i) * s;
       if (parent >= 0) {
         vel.v[i] += ab.T_from_parent(i) * vel.v[parent];
       }
@@ -62,11 +59,20 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
       if (options.gravity) {
         rnea.a[i] -= ab.T_from_world(i) * ab.g();
       }
+      if (options.centrifugal_coriolis) {
+        rnea.a[i] += vel.v[i].cross(ab.dq(i) * s);
+      }
+    } else if (!options.centrifugal_coriolis) {
+      rnea.a[i] += ab.T_from_parent(i) * rnea.a[parent];
     } else {
-      rnea.a[i] += ab.T_from_parent(i) * rnea.a[parent] + vel.v[i].cross(dq_i * s);
+      rnea.a[i] += ab.T_from_parent(i) * rnea.a[parent] + vel.v[i].cross(ab.dq(i) * s);
     }
 
-    rnea.f[i] = I * rnea.a[i] + vel.v[i].cross(I * vel.v[i]);
+    if (!options.centrifugal_coriolis) {
+      rnea.f[i] = I * rnea.a[i];
+    } else {
+      rnea.f[i] = I * rnea.a[i] + vel.v[i].cross(I * vel.v[i]);
+    }
 
     if (f_external.find(i) != f_external.end()) {
       rnea.f[i] -= ab.T_from_world(i) * f_external.at(i);

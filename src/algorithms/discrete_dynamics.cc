@@ -20,7 +20,7 @@
 namespace spatial_dyn {
 namespace discrete {
 
-Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd& q_next,
+Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, Eigen::Ref<const Eigen::VectorXd> q_next,
                                 const double dt,
                                 const std::map<size_t, SpatialForced>& f_external,
                                 const InverseDynamicsOptions& options) {
@@ -100,7 +100,27 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, const Eigen::VectorXd
   return tau_dt;
 }
 
-void Integrate(ArticulatedBody& ab, const Eigen::VectorXd& tau, double dt,
+void HandleContact() {
+  // Solve n+1 equations for q_c, alpha:
+  //     D2_Ld(q_prev, q, dt) + D1_Ld(q, q_c, alpha dt) - (1 + alpha)/2 dt tau_ext = 0
+  //     Phi(q_c) = 0
+  // Interpretation:
+  //     d/dt dL/dq' - dL/dq - tau_ext = 0 (Euler-Lagrange)
+
+  // Solve n+1 equations for q_next, lambda subject to q_next feasible:
+  //     D2_Ld(q, q_c, alpha dt) + D1_Ld(q_c, q_next, (1 - alpha) dt) + lambda dPhi(q_c)/dq + 1/2 dt tau_friction = 0
+  //     D3_Ld(q, q_c, alpha dt) - D3_Ld(q_c, q_next, (1 - alpha) dt) - dE_contact = 0
+  // Interpretation:
+  //     (dL/dq'|t_c+ - dL/dq'|t_c-) dq + dp_friction dq = 0, dq tangent to Phi = 0 (Conservation of momentum)
+  //     E|t_c+ - E|t_c- - dE_contact = 0 (Conservation of energy)
+
+  // Solve n equations for q_next_next:
+  //     D2_Ld(q_c, q_next, (1 - alpha) dt) + D1_Ld(q_next, q_next_next, dt) - (2 - alpha)/2 dt tau_ext = 0
+  // Interpretation:
+  //     d/dt dL/dq' - dL/dq - tau_ext = 0 (Euler-Lagrange)
+}
+
+void Integrate(ArticulatedBody& ab, Eigen::Ref<const Eigen::VectorXd> tau, double dt,
                const std::map<size_t, SpatialForced>& f_external,
                const IntegrationOptions& options) {
 

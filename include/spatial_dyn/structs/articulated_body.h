@@ -56,6 +56,11 @@ class ArticulatedBody {
   ArticulatedBody(const ArticulatedBody& ab);
 
   /**
+   * Move constructor.
+   */
+  ArticulatedBody(ArticulatedBody&& ab);
+
+  /**
    * Destructor.
    */
   virtual ~ArticulatedBody();

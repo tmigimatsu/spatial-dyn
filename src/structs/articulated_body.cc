@@ -28,9 +28,24 @@ ArticulatedBody::ArticulatedBody(const ArticulatedBody& ab)
       q_(ab.q_),
       dq_(ab.dq_),
       g_(ab.g_),
+      inertia_load_(ab.inertia_load_),
       T_base_to_world_(ab.T_base_to_world_),
       ancestors_(ab.ancestors_),
       subtrees_(ab.subtrees_) {}
+
+ArticulatedBody::ArticulatedBody(ArticulatedBody&& ab)
+    : name(std::move(ab.name)),
+      graphics(std::move(ab.graphics)),
+      cache_(std::move(ab.cache_)),
+      dof_(ab.dof_),
+      rigid_bodies_(std::move(ab.rigid_bodies_)),
+      q_(std::move(ab.q_)),
+      dq_(std::move(ab.dq_)),
+      g_(std::move(ab.g_)),
+      inertia_load_(std::move(ab.inertia_load_)),
+      T_base_to_world_(std::move(ab.T_base_to_world_)),
+      ancestors_(std::move(ab.ancestors_)),
+      subtrees_(std::move(ab.subtrees_)) {}
 
 ArticulatedBody::~ArticulatedBody() {}
 
@@ -43,6 +58,7 @@ ArticulatedBody& ArticulatedBody::operator=(const ArticulatedBody& ab) {
   q_ = ab.q_;
   dq_ = ab.dq_;
   g_ = ab.g_;
+  inertia_load_ = ab.inertia_load_;
   T_base_to_world_ = ab.T_base_to_world_;
   ancestors_ = ab.ancestors_;
   subtrees_ = ab.subtrees_;

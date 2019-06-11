@@ -1,23 +1,19 @@
 /**
- * discrete_dynamics.h
+ * inverse_kinematics.h
  *
  * Copyright 2019. All Rights Reserved.
  *
- * Created: March 5, 2019
+ * Created: June 2, 2019
  * Authors: Toki Migimatsu
  */
 
-#ifndef SPATIAL_DYN_ALGORITHMS_DISCRETE_DYNAMICS_H_
-#define SPATIAL_DYN_ALGORITHMS_DISCRETE_DYNAMICS_H_
-
-#include <map>  // std::map
+#ifndef SPATIAL_DYN_ALGORITHMS_INVERSE_KINEMATICS_H_
+#define SPATIAL_DYN_ALGORITHMS_INVERSE_KINEMATICS_H_
 
 #include "spatial_dyn/eigen/spatial_math.h"
 #include "spatial_dyn/structs/articulated_body.h"
-#include "spatial_dyn/structs/options.h"
 
 namespace spatial_dyn {
-namespace discrete {
 
 /**
  * Compute the inverse dynamics torques given the desired acceleration `ddq`.
@@ -34,16 +30,11 @@ namespace discrete {
  * @return Inverse dynamics torques.
  * @see Python: spatialdyn.inverse_dynamics()
  */
-Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, Eigen::Ref<const Eigen::VectorXd> q_next,
-                                const double dt,
-                                const std::map<size_t, SpatialForced>& f_external = {},
-                                const InverseDynamicsOptions& options = {});
+Eigen::VectorXd InverseKinematics(const ArticulatedBody& ab,
+                                  Eigen::Ref<const Eigen::Vector3d> x,
+                                  const Eigen::Quaterniond& quat, int link = -1,
+                                  const Eigen::Vector3d& offset = Eigen::Vector3d::Zero());
 
-void Integrate(ArticulatedBody& ab, Eigen::Ref<const Eigen::VectorXd> tau, double dt,
-               const std::map<size_t, SpatialForced>& f_external = {},
-               const IntegrationOptions& options = {});
-
-}  // namespace discrete
 }  // namespace spatial_dyn
 
-#endif  // SPATIAL_DYN_ALGORITHMS_DISCRETE_DYNAMICS_H_
+#endif  // SPATIAL_DYN_ALGORITHMS_INVERSE_KINEMATICS_H_

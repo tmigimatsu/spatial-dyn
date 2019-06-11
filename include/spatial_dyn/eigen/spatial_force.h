@@ -49,6 +49,8 @@ class SpatialForce : public Eigen::PlainObjectBase<SpatialForce<_Scalar, _Cols, 
 
   SpatialForce();
 
+  SpatialForce(double cols);
+
   SpatialForce(double rows, double cols);
 
   SpatialForce(const SpatialForce& other);
@@ -100,8 +102,15 @@ inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::SpatialForce()
 }
 
 template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
+inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::SpatialForce(double cols)
+    : SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::Base() {
+  Base::resize(6, cols);
+}
+
+template<typename _Scalar, int _Cols, int _Options, int _MaxCols>
 inline SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::SpatialForce(double rows, double cols)
     : SpatialForce<_Scalar, _Cols, _Options, _MaxCols>::Base() {
+  assert(rows == 6);
   Base::resize(rows, cols);
 }
 
