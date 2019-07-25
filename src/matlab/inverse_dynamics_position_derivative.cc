@@ -73,10 +73,11 @@ class MexFunction : public matlab::mex::Function {
 
     // Prepare output Tau
     size_t n = 1;
-    matlab::data::ArrayDimensions dim_output(dim_Q.size());
+    matlab::data::ArrayDimensions dim_output(dim_Q.size() + 1);
     dim_output[0] = ab->dof();
+    dim_output[1] = ab->dof();
     for (size_t i = 1; i < dim_Q.size(); i++) {
-      dim_output[i] = dim_Q[i];
+      dim_output[i+1] = dim_Q[i];
       n *= dim_Q[i];
     }
     matlab::data::TypedArray<double> arr_dTau = factory_.createArray<double>(dim_output);
@@ -86,12 +87,13 @@ class MexFunction : public matlab::mex::Function {
     const Eigen::Map<const Eigen::MatrixXd> Q(&*arr_Q.begin(), ab->dof(), n);
     const Eigen::Map<const Eigen::MatrixXd> dQ(&*arr_dQ.begin(), ab->dof(), n);
     const Eigen::Map<const Eigen::MatrixXd> ddQ(&*arr_ddQ.begin(), ab->dof(), n);
+    const spatial_dyn::InverseDynamicsOptions options(true, true);
     for (size_t i = 0; i < Q.cols(); i++) {
-      double* data_dTau_i = &data_dTau[ab->dof() * i];
-      Eigen::Map<Eigen::VectorXd> dTau(data_dTau_i, ab->dof());
+      double* data_dTau_i = &data_dTau[ab->dof() * ab->dof() * i];
+      Eigen::Map<Eigen::MatrixXd> dTau(data_dTau_i, ab->dof(), ab->dof());
       ab->set_q(Q.col(i));
       ab->set_dq(dQ.col(i));
-      dTau = spatial_dyn::InverseDynamicsPositionDerivative(*ab, ddQ.col(i));
+      dTau = spatial_dyn::InverseDynamicsPositionDerivative(*ab, ddQ.col(i), {}, options);
     }
     outputs[0] = std::move(arr_dTau);
   }

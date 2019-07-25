@@ -86,12 +86,13 @@ class MexFunction : public matlab::mex::Function {
     const Eigen::Map<const Eigen::MatrixXd> Q(&*arr_Q.begin(), ab->dof(), n);
     const Eigen::Map<const Eigen::MatrixXd> dQ(&*arr_dQ.begin(), ab->dof(), n);
     const Eigen::Map<const Eigen::MatrixXd> ddQ(&*arr_ddQ.begin(), ab->dof(), n);
+    const spatial_dyn::InverseDynamicsOptions options(true, true);
     for (size_t i = 0; i < Q.cols(); i++) {
       double* data_Tau_i = &data_Tau[ab->dof() * i];
       Eigen::Map<Eigen::VectorXd> Tau(data_Tau_i, ab->dof());
       ab->set_q(Q.col(i));
       ab->set_dq(dQ.col(i));
-      Tau = spatial_dyn::InverseDynamics(*ab, ddQ.col(i));
+      Tau = spatial_dyn::InverseDynamics(*ab, ddQ.col(i), {}, options);
     }
     outputs[0] = std::move(arr_Tau);
   }
