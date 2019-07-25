@@ -9,21 +9,22 @@
 
 cmake_minimum_required(VERSION 3.6)
 
-project(cpp_redis-download NONE)
+set(EXT_LIB_NAME rbdl)
+project(${EXT_LIB_NAME}-download NONE)
 
 include(ExternalProject)
-ExternalProject_Add(rbdl
+ExternalProject_Add(${EXT_LIB_NAME}
     # Directories
-    PREFIX ${CMAKE_BINARY_DIR}/rbdl
-    DOWNLOAD_DIR ${SPATIAL_DYN_EXT_DIR}/rbdl
-    SOURCE_DIR ${SPATIAL_DYN_EXT_DIR}/rbdl
-    BINARY_DIR ${CMAKE_BINARY_DIR}/rbdl/build
+    PREFIX @CMAKE_BINARY_DIR@/${EXT_LIB_NAME}
+    DOWNLOAD_DIR @LIB_EXTERNAL_DIR@/${EXT_LIB_NAME}
+    SOURCE_DIR @LIB_EXTERNAL_DIR@/${EXT_LIB_NAME}
+    BINARY_DIR @CMAKE_BINARY_DIR@/${EXT_LIB_NAME}/build
     # Download
-    URL https://bitbucket.org/rbdl/rbdl/get/v2.6.0.zip
+    URL https://bitbucket.org/rbdl/rbdl/get/v@EXT_PACKAGE_VERSION@.zip
     # Configure
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/rbdl
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=@CMAKE_BINARY_DIR@/rbdl
     # Make
-    BUILD_COMMAND ${SPATIAL_DYN_CMAKE_DIR}/ncpu.sh | xargs -I {} make -j{}
+    BUILD_COMMAND @LIB_EXTERNAL_DIR@/ncpu.sh | xargs -I {} make -j{}
     # Install
     # INSTALL_COMMAND ""
 )

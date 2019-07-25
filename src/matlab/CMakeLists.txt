@@ -13,7 +13,7 @@ function(add_matlab_function FILE_NAME)
     set(FUNCTION_NAME spatial_dyn_${FILE_NAME})
     matlab_add_mex(NAME ${FUNCTION_NAME}
         SRC
-            ${SPATIAL_DYN_SRC_DIR}/matlab/${ARGV1}${FILE_NAME}.cc
+            ${LIB_SOURCE_DIR}/matlab/${ARGV1}${FILE_NAME}.cc
             ${SPATIAL_DYN_SRC}
         LINK_TO
             spatial_dyn::spatial_dyn
@@ -24,7 +24,7 @@ function(add_matlab_function FILE_NAME)
     target_include_directories(${FUNCTION_NAME}
         PUBLIC
             $<INSTALL_INTERFACE:include>
-            $<BUILD_INTERFACE:${SPATIAL_DYN_INCLUDE_DIR}>
+            $<BUILD_INTERFACE:${LIB_INCLUDE_DIR}>
     )
 
     set_target_properties(${FUNCTION_NAME} PROPERTIES

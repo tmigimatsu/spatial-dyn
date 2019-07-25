@@ -29,10 +29,10 @@ endif()
 # Define directories
 set(SPATIAL_DYN_LIB spatial_dyn)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-set(SPATIAL_DYN_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
-set(SPATIAL_DYN_EXT_DIR ${PROJECT_SOURCE_DIR}/external)
-set(SPATIAL_DYN_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
-set(SPATIAL_DYN_SRC_DIR ${PROJECT_SOURCE_DIR}/src)
+set(LIB_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
+set(LIB_EXTERNAL_DIR ${PROJECT_SOURCE_DIR}/external)
+set(LIB_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
+set(LIB_SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
 
 # Create spatial_dyn library
 add_library(${SPATIAL_DYN_LIB} SHARED)
@@ -48,25 +48,30 @@ target_compile_options(${SPATIAL_DYN_LIB} PRIVATE
 
 # Find dependencies
 function(download_package PACKAGE_NAME)
-    configure_file(${SPATIAL_DYN_CMAKE_DIR}/${PACKAGE_NAME}-CMakeLists.txt.in
-        ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}/CMakeLists.txt)
+    set(EXT_PACKAGE_VERSION ${ARGV1})
+    if(EXISTS ${LIB_CMAKE_DIR}/Find${PACKAGE_NAME}.cmake.in)
+        configure_file(${LIB_CMAKE_DIR}/Find${PACKAGE_NAME}.cmake.in
+            ${CMAKE_BINARY_DIR}/Find${PACKAGE_NAME}.cmake @ONLY)
+    endif()
+    configure_file(${LIB_CMAKE_DIR}/${PACKAGE_NAME}-CMakeLists.txt.in
+        ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}/CMakeLists.txt @ONLY)
     execute_process(COMMAND ${CMAKE_COMMAND} -G ${CMAKE_GENERATOR} .
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${PACKAGE_NAME})
     execute_process(COMMAND ${CMAKE_COMMAND} --build .
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${PACKAGE_NAME})
 endfunction()
 
-find_package(tinyxml2 6.2 QUIET)
+find_package(tinyxml2 6.2.0 QUIET)
 if(NOT tinyxml2_FOUND)
-    download_package(tinyxml2)
+    download_package(tinyxml2 6.2.0)
     set(tinyxml2_DIR "${CMAKE_BINARY_DIR}/tinyxml2/build")
     find_package(tinyxml2 QUIET NO_DEFAULT_PATH)
 endif()
 
-find_package(ctrl_utils 1.0.0 QUIET)
+find_package(ctrl_utils 1.1.0 QUIET)
 if(NOT ctrl_utils_FOUND)
-    download_package(ctrl_utils)
-    find_package(ctrl_utils 1.0.0 REQUIRED)
+    download_package(ctrl_utils 1.1.0)
+    find_package(ctrl_utils 1.1.0 REQUIRED)
 endif()
 
 target_link_libraries(${SPATIAL_DYN_LIB}
@@ -80,30 +85,30 @@ target_link_libraries(${SPATIAL_DYN_LIB}
 target_include_directories(${SPATIAL_DYN_LIB}
     PUBLIC
         $<INSTALL_INTERFACE:include>
-        $<BUILD_INTERFACE:${SPATIAL_DYN_INCLUDE_DIR}>
+        $<BUILD_INTERFACE:${LIB_INCLUDE_DIR}>
     PRIVATE
-        ${SPATIAL_DYN_INCLUDE_DIR}/spatial_dyn
-        ${SPATIAL_DYN_SRC_DIR})
+        ${LIB_INCLUDE_DIR}/spatial_dyn
+        ${LIB_SOURCE_DIR})
 
 # Attach sources
 target_sources(${SPATIAL_DYN_LIB} PRIVATE
-    ${SPATIAL_DYN_SRC_DIR}/algorithms/discrete_dynamics.cc
-    ${SPATIAL_DYN_SRC_DIR}/algorithms/dynamics_derivatives.cc
-    ${SPATIAL_DYN_SRC_DIR}/algorithms/forward_dynamics.cc
-    ${SPATIAL_DYN_SRC_DIR}/algorithms/forward_kinematics.cc
-    ${SPATIAL_DYN_SRC_DIR}/algorithms/inverse_dynamics.cc
-    ${SPATIAL_DYN_SRC_DIR}/algorithms/inverse_kinematics.cc
-    ${SPATIAL_DYN_SRC_DIR}/algorithms/opspace_dynamics.cc
-    ${SPATIAL_DYN_SRC_DIR}/algorithms/opspace_dynamics_aba.cc
-    ${SPATIAL_DYN_SRC_DIR}/algorithms/simulation.cc
-    ${SPATIAL_DYN_SRC_DIR}/structs/articulated_body.cc
-    ${SPATIAL_DYN_SRC_DIR}/structs/graphics.cc
-    ${SPATIAL_DYN_SRC_DIR}/structs/joint.cc
-    ${SPATIAL_DYN_SRC_DIR}/structs/options.cc
-    ${SPATIAL_DYN_SRC_DIR}/structs/rigid_body.cc
-    ${SPATIAL_DYN_SRC_DIR}/parsers/json.cc
-    ${SPATIAL_DYN_SRC_DIR}/parsers/urdf.cc
-    ${SPATIAL_DYN_SRC_DIR}/parsers/yaml.cc
+    ${LIB_SOURCE_DIR}/algorithms/discrete_dynamics.cc
+    ${LIB_SOURCE_DIR}/algorithms/dynamics_derivatives.cc
+    ${LIB_SOURCE_DIR}/algorithms/forward_dynamics.cc
+    ${LIB_SOURCE_DIR}/algorithms/forward_kinematics.cc
+    ${LIB_SOURCE_DIR}/algorithms/inverse_dynamics.cc
+    ${LIB_SOURCE_DIR}/algorithms/inverse_kinematics.cc
+    ${LIB_SOURCE_DIR}/algorithms/opspace_dynamics.cc
+    ${LIB_SOURCE_DIR}/algorithms/opspace_dynamics_aba.cc
+    ${LIB_SOURCE_DIR}/algorithms/simulation.cc
+    ${LIB_SOURCE_DIR}/structs/articulated_body.cc
+    ${LIB_SOURCE_DIR}/structs/graphics.cc
+    ${LIB_SOURCE_DIR}/structs/joint.cc
+    ${LIB_SOURCE_DIR}/structs/options.cc
+    ${LIB_SOURCE_DIR}/structs/rigid_body.cc
+    ${LIB_SOURCE_DIR}/parsers/json.cc
+    ${LIB_SOURCE_DIR}/parsers/urdf.cc
+    ${LIB_SOURCE_DIR}/parsers/yaml.cc
 )
 
 # Use GNUInstallDirs to install libraries into correct locations on all platforms
@@ -122,7 +127,7 @@ install(TARGETS ${SPATIAL_DYN_LIB}
 )
 
 # Install the headers
-install(DIRECTORY ${SPATIAL_DYN_INCLUDE_DIR} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY ${LIB_INCLUDE_DIR} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # Export targets to Targets.cmake
 install(EXPORT ${SPATIAL_DYN_TARGETS}
@@ -139,7 +144,7 @@ write_basic_package_version_file(${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}Versio
 )
 
 # Create Config.cmake
-configure_package_config_file(${SPATIAL_DYN_CMAKE_DIR}/${SPATIAL_DYN_CONFIG}.cmake.in
+configure_package_config_file(${LIB_CMAKE_DIR}/${SPATIAL_DYN_CONFIG}.cmake.in
     ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}.cmake
     INSTALL_DESTINATION ${SPATIAL_DYN_CONFIG_INSTALL_DIR})
 
@@ -158,12 +163,12 @@ endif()
 
 # Build Python wrapper
 if(BUILD_PYTHON)
-    add_subdirectory(${SPATIAL_DYN_SRC_DIR}/python)
+    add_subdirectory(${LIB_SOURCE_DIR}/python)
 endif()
 
 # Build Matlab wrapper
 if(BUILD_MATLAB)
-    add_subdirectory(${SPATIAL_DYN_SRC_DIR}/matlab)
+    add_subdirectory(${LIB_SOURCE_DIR}/matlab)
 endif()
 
 export(TARGETS ${SPATIAL_DYN_LIB}
