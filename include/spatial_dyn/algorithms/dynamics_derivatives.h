@@ -46,12 +46,12 @@ namespace spatial_dyn {
 Eigen::MatrixXd InverseDynamicsPositionDerivative(const ArticulatedBody& ab,
                                                   Eigen::Ref<const Eigen::VectorXd> ddq,
                                                   const std::map<size_t, SpatialForced>& f_external = {},
-                                                  const InverseDynamicsOptions& options = {});
+                                                  const InverseDynamicsOptions& options = { true, true });
 
 Eigen::MatrixXd InverseDynamicsVelocityDerivative(const ArticulatedBody& ab,
                                                   Eigen::Ref<const Eigen::VectorXd> ddq,
                                                   const std::map<size_t, SpatialForced>& f_external = {},
-                                                  const InverseDynamicsOptions& options = {});
+                                                  const InverseDynamicsOptions& options = { true, true });
 
 }  // namespace spatial_dyn
 

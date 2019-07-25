@@ -19,6 +19,7 @@ Eigen::MatrixXd InverseDynamicsPositionDerivative(const ArticulatedBody& ab,
                                                   const InverseDynamicsOptions& options) {
   auto& rnea = ab.cache_->rnea_data_;
   auto& vel  = ab.cache_->vel_data_;
+  auto& crba = ab.cache_->crba_data_;
 
   Eigen::MatrixXd dtau(ab.dof(), ab.dof());  // Resulting joint torques
 
@@ -26,9 +27,11 @@ Eigen::MatrixXd InverseDynamicsPositionDerivative(const ArticulatedBody& ab,
   std::vector<SpatialMotionXd> da(ab.dof(), SpatialMotionXd::Zero(ab.dof()));
   std::vector<SpatialForceXd> df(ab.dof(), SpatialForceXd::Zero(ab.dof()));
 
-
-  // TODO: Watch out for crba cache
+  // Force inverse dynamics to use RNEA
+  const bool is_crba_computed = crba.is_computed;
+  crba.is_computed = false;
   InverseDynamics(ab, ddq, f_external, options);
+  crba.is_computed = is_crba_computed;
 
   // Forward pass
   SpatialInertiad I_total;
@@ -103,6 +106,7 @@ Eigen::MatrixXd InverseDynamicsVelocityDerivative(const ArticulatedBody& ab,
                                                   const std::map<size_t, SpatialForced>& f_external,
                                                   const InverseDynamicsOptions& options) {
   auto& vel  = ab.cache_->vel_data_;
+  auto& crba = ab.cache_->crba_data_;
 
   Eigen::MatrixXd dtau(ab.dof(), ab.dof());  // Resulting joint torques
   if (!options.centrifugal_coriolis) {
@@ -114,8 +118,11 @@ Eigen::MatrixXd InverseDynamicsVelocityDerivative(const ArticulatedBody& ab,
   std::vector<SpatialMotionXd> da(ab.dof(), SpatialMotionXd::Zero(ab.dof()));
   std::vector<SpatialForceXd> df(ab.dof(), SpatialForceXd::Zero(ab.dof()));
 
-  // TODO: Watch out for crba cache
+  // Force inverse dynamics to use RNEA
+  const bool is_crba_computed = crba.is_computed;
+  crba.is_computed = false;
   InverseDynamics(ab, ddq, f_external, options);
+  crba.is_computed = is_crba_computed;
 
   // Forward pass
   SpatialInertiad I_total;

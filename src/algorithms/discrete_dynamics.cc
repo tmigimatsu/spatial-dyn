@@ -15,12 +15,14 @@
 
 #include "algorithms/forward_dynamics.h"
 #include "algorithms/inverse_dynamics.h"
+#include "algorithms/forward_kinematics.h"
 #include "structs/articulated_body_cache.h"
 
 namespace spatial_dyn {
 namespace discrete {
 
-Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, Eigen::Ref<const Eigen::VectorXd> q_next,
+Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab,
+                                Eigen::Ref<const Eigen::VectorXd> q_next,
                                 const double dt,
                                 const std::map<size_t, SpatialForced>& f_external,
                                 const InverseDynamicsOptions& options) {
@@ -46,7 +48,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, Eigen::Ref<const Eige
                              drnea.T_to_prev[parent] * ab.T_to_parent(i);
       }
 
-      // Compute discrete momentum between t_prev to t_curr
+      // Compute discrete momentum (gradient of kinetic energy) between t_prev and t_curr
       const SpatialMotiond v_prev = ctrl_utils::Log(drnea.T_to_prev[i]) / dt;
       const Eigen::Matrix6d dv_prev = ctrl_utils::LogMapDerivative(drnea.T_to_prev[i]);
       const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
@@ -66,7 +68,7 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, Eigen::Ref<const Eige
                              ab.T_to_parent(i, q_next(i));
     }
 
-    // Compute discrete momentum between t_curr and t_next
+    // Compute discrete momentum (gradient of kinetic energy) between t_curr and t_next
     const SpatialMotiond v = ctrl_utils::Log(drnea.T_from_next[i]) / dt;
     const Eigen::Matrix6d dv = ctrl_utils::LogMapDerivative(drnea.T_from_next[i]);
     const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
@@ -99,6 +101,59 @@ Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab, Eigen::Ref<const Eige
 
   return tau_dt;
 }
+
+// TODO: Implement LogMapHessian for SE(3) (after testing for SO(3))
+// Eigen::MatrixXd InverseDynamicsDerivative(const ArticulatedBody& ab,
+//                                           Eigen::Ref<const Eigen::VectorXd> q_next,
+//                                           const double dt,
+//                                           const std::map<size_t, SpatialForced>& f_external,
+//                                           const InverseDynamicsOptions& options) {
+//   auto& drnea = ab.cache_->drnea_data_;
+
+//   SpatialForceXd Dp_prev(ab.dof());
+//   SpatialForceXd Dp(ab.dof());
+//   SpatialForceXd Ddp(ab.dof());
+
+//   for (size_t i = 0; i < ab.dof(); i++) {
+//       // Compute delta transformation from next to curr timestep
+//       const int parent = ab.rigid_bodies(i).id_parent();
+//       if (parent < 0) {
+//         drnea.T_to_prev[i] = ab.T_to_parent(i, drnea.q_prev(i)).inverse() * ab.T_to_parent(i);
+//       } else {
+//         drnea.T_to_prev[i] = ab.T_to_parent(i, drnea.q_prev(i)).inverse() *
+//                              drnea.T_to_prev[parent] * ab.T_to_parent(i);
+//       }
+
+//       const SpatialMotiond v_prev = ctrl_utils::Log(drnea.T_to_prev[i]) / dt;
+//       const Eigen::Matrix6d dv_prev = ctrl_utils::LogMapDerivative(drnea.T_to_prev[i]);
+//       const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
+//       // Dp_prev.col(i) = dv_prev.transpose)( * (I )_ )
+//   }
+
+//   for (size_t i = 0; i < ab.dof(); i++) {
+//     // Compute delta transformation from next to curr timestep
+//     const int parent = ab.rigid_bodies(i).id_parent();
+//     if (parent < 0) {
+//       drnea.T_from_next[i] = ab.T_to_parent(i).inverse() * ab.T_to_parent(i, q_next(i));
+//     } else {
+//       drnea.T_from_next[i] = ab.T_to_parent(i).inverse() * drnea.T_from_next[parent] *
+//                              ab.T_to_parent(i, q_next(i));
+//     }
+
+//     // Compute discrete momentum (gradient of kinetic energy) between t_curr and t_next
+//     const SpatialMotiond v = ctrl_utils::Log(drnea.T_from_next[i]) / dt;
+//     const Eigen::Matrix6d dv = ctrl_utils::LogMapDerivative(drnea.T_from_next[i]);
+//     // const Eigen::Matrix6d ddv = ctrl_utils::LogMapHessian(Eigen::AngleAxisd(drnea.T_from_next[i]));
+//     const SpatialInertiad& I = ab.rigid_bodies(i).inertia();
+//     Dp.col(i) = dv.transpose() * (I * SpatialMotionXd(dv)).matrix() + ddv.transpose() * (I * v).matrix();
+
+//     // Compute change in momentum (impulse)
+//     drnea.dp[i] = drnea.p[i] - drnea.T_to_prev[i].inverse() * drnea.p_prev[i];
+//     if (f_external.find(i) != f_external.end()) {
+//       drnea.dp[i] -= ab.T_from_world(i) * f_external.at(i) * dt;
+//     }
+//   }
+// }
 
 void HandleContact() {
   // Solve n+1 equations for q_c, alpha:
