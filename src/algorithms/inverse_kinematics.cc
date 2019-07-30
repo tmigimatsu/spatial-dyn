@@ -46,16 +46,16 @@ Eigen::VectorXd InverseKinematics(const ArticulatedBody& ab_in,
     const Eigen::Matrix6Xd& J = spatial_dyn::Jacobian(ab, link, offset);
 
     // Compute position PD control
-    Eigen::Vector3d x   = spatial_dyn::Position(ab, link, offset);
-    Eigen::Vector3d dx  = J.topRows<3>() * ab.dq();
+    Eigen::Vector3d x = spatial_dyn::Position(ab, link, offset);
+    Eigen::Vector3d dx = J.topRows<3>() * ab.dq();
     Eigen::Vector3d x_err;
     Eigen::Vector3d ddx = ctrl_utils::PdControl(x, x_des, dx, kKpKvPos, 0., &x_err);
 
     // Compute orientation PD control
     Eigen::Quaterniond quat = ctrl_utils::NearQuaternion(spatial_dyn::Orientation(ab), quat_des);
-    Eigen::Vector3d w       = J.bottomRows<3>() * ab.dq();
+    Eigen::Vector3d w = J.bottomRows<3>() * ab.dq();
     Eigen::Vector3d ori_err;
-    Eigen::Vector3d dw      = ctrl_utils::PdControl(quat, quat_des, w, kKpKvOri, &ori_err);
+    Eigen::Vector3d dw = ctrl_utils::PdControl(quat, quat_des, w, kKpKvOri, 0., &ori_err);
 
     if (x_err.norm() < kTolerancePos && ori_err.norm() < kToleranceOri) {
       break;
