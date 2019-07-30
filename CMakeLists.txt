@@ -16,7 +16,7 @@ project(spatial_dyn VERSION 1.1.0 LANGUAGES CXX)
 # Define options
 option(BUILD_CPP "Build C++ library" ON)
 option(BUILD_PYTHON "Build Python library" ON)
-option(BUILD_MATLAB "Build Matlab library" ON)
+option(BUILD_MATLAB "Build Matlab library" OFF)
 
 # Set CMake flags
 set(CMAKE_CXX_STANDARD 11)
