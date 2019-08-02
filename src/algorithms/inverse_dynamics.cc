@@ -255,4 +255,12 @@ const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab) {
   return crba.A;
 }
 
+const SpatialInertiad& CompositeInertia(const ArticulatedBody& ab, int link) {
+  auto& crba = ab.cache_->crba_data_;
+
+  if (link < 0) link += ab.dof();
+  Inertia(ab);
+  return crba.I_c[link];
+}
+
 }  // namespace spatial_dyn

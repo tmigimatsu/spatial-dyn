@@ -120,6 +120,19 @@ Eigen::VectorXd Friction(const ArticulatedBody& ab, Eigen::Ref<const Eigen::Vect
  */
 const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab);
 
+/**
+ * Compute the composite rigid body inertia from the given link to the end-effector.
+ *
+ * Calls the Inertia() to compute the inertia with the Composite Rigid Body
+ * Algorithm (CRBA) in O(n^2) time. Results are cached such that subsequent
+ * calls with the same `q` will return in O(1) time.
+ *
+ * @param ab ArticulatedBody.
+ * @return Spatial Inertia
+ * @see Python: spatialdyn.composite_inertia()
+ */
+const SpatialInertiad& CompositeInertia(const ArticulatedBody& ab, int link = 0);
+
 /*
  * @}
  */  // defgroup cpp_inverse_dynamics
