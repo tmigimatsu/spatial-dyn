@@ -84,7 +84,7 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def("map", &ArticulatedBody::Map)
       .def("__str__",
            [](const ArticulatedBody& ab) {
-             return spatial_dyn::json::Serialize(ab).dump();
+             return nlohmann::json(ab).dump();
            })
       .def("__repr__",
            [](const ArticulatedBody& ab) {
@@ -106,7 +106,7 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def_property("joint", &RigidBody::joint, &RigidBody::set_joint)
       .def("__str__",
            [](const RigidBody& rb) {
-             return spatial_dyn::json::Serialize(rb).dump();
+             return nlohmann::json(rb).dump();
            })
       .def("__repr__",
            [](const RigidBody& rb) {
@@ -138,7 +138,7 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def("T_joint", &Joint::T_joint)
       .def("__str__",
            [](const Joint& joint) {
-             return spatial_dyn::json::Serialize(joint).dump();
+             return nlohmann::json(joint).dump();
            })
       .def("__repr__",
            [](const Joint& joint) {
@@ -156,7 +156,7 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def_readwrite("material", &Graphics::material)
       .def("__str__",
            [](const Graphics& graphics) {
-             return spatial_dyn::json::Serialize(graphics).dump();
+             return nlohmann::json(graphics).dump();
            });
       // .def("__repr__",
       //      [](const Graphics& graphics) {
