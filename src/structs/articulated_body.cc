@@ -225,7 +225,7 @@ Eigen::VectorXd ArticulatedBody::Map(const std::function<double(const RigidBody&
 
 int ArticulatedBody::AddRigidBody(const RigidBody& rb_in, int id_parent) {
   int id = rigid_bodies_.size();
-  if ((id_parent < 0 || id_parent >= id) && id != 0) {
+  if (id_parent >= id || id_parent < -1) {
     throw std::invalid_argument("ArticulatedBody::AddRigidBody(): Parent rigid body with id " + std::to_string(id_parent) + " does not exist.");
   }
   RigidBody rb = rb_in;

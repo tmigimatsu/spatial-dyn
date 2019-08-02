@@ -13,11 +13,13 @@
 #include <limits>     // std::numeric_limits
 #include <list>       // std::list
 #include <map>        // std::map
+#include <set>        // std::set
 #include <string>     // std::string
 #include <utility>    // std::move, std::pair, std::tie
 
 #include <tinyxml2.h>
 #include <ctrl_utils/eigen_string.h>
+#include <ctrl_utils/filesystem.h>
 
 namespace spatial_dyn {
 namespace urdf {
@@ -83,7 +85,7 @@ ParseOriginElement(const tinyxml2::XMLElement* xml_element) {
   return std::make_pair(std::move(pos), std::move(ori));
 }
 
-Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual, const std::string& urdf_path) {
+Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual, const std::string& path_meshes) {
   Graphics graphics;
 
   // Parse name
@@ -118,7 +120,7 @@ Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual, const std::string
     geometry.radius = ParseDoubleAttribute(xml_type, "radius");
   } else if (str_type == "mesh") {
     geometry.type = Graphics::Geometry::Type::kMesh;
-    geometry.mesh = urdf_path + ParseAttribute(xml_type, "filename");
+    geometry.mesh = (std::filesystem::path(path_meshes) / ParseAttribute(xml_type, "filename")).string();
 
     const char* attr_scale = xml_type->Attribute("scale");
     if (attr_scale != nullptr) {
@@ -151,7 +153,7 @@ Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual, const std::string
   return graphics;
 }
 
-RigidBody ParseRigidBody(const tinyxml2::XMLElement* xml_link, const std::string& urdf_path) {
+RigidBody ParseRigidBody(const tinyxml2::XMLElement* xml_link, const std::string& path_meshes) {
   std::string attr_name = ParseAttribute(xml_link, "name");
   RigidBody rb(attr_name);
 
@@ -185,7 +187,7 @@ RigidBody ParseRigidBody(const tinyxml2::XMLElement* xml_link, const std::string
   // Parse graphics
   const tinyxml2::XMLElement* xml_visual = xml_link->FirstChildElement("visual");
   while (xml_visual != nullptr) {
-    rb.graphics.push_back(ParseGraphics(xml_visual, urdf_path));
+    rb.graphics.push_back(ParseGraphics(xml_visual, path_meshes));
     xml_visual = xml_visual->NextSiblingElement("visual");
   }
 
@@ -208,19 +210,17 @@ void AddRigidBody(ArticulatedBody& ab,
     if (*it_rb_list == name_rb) break;
   }
 
-  RigidBody& rb                  = rigid_bodies.at(name_rb).first;
+  RigidBody& rb = rigid_bodies.at(name_rb).first;
   const std::string& name_parent = rigid_bodies.at(name_rb).second;
 
   int id_new;
   if (name_parent.empty()) {
     ab.set_T_base_to_world(rb.T_to_parent());
+    ab.set_inertia_base(rb.inertia());
     ab.graphics = rb.graphics;
     id_new = -1;
   } else {
-    if (rb_ids.find(name_parent) == rb_ids.end()) {
-      AddRigidBody(ab, rigid_bodies, rb_list, rb_ids, name_parent);
-    }
-    int id_parent = rb_ids.at(name_parent);
+    const int id_parent = rb_ids.at(name_parent);
     id_new = ab.AddRigidBody(std::move(rb), id_parent);
   }
 
@@ -228,19 +228,26 @@ void AddRigidBody(ArticulatedBody& ab,
   rb_list.erase(it_rb_list);
 }
 
-std::string ParentPath(const std::string& path) {
-  size_t idx = path.find_last_of("/\\");
-  return path.substr(0, idx+1);
+void AddChildrenDfs(const std::map<std::string, std::pair<RigidBody, std::string>>& rigid_bodies,
+                    const std::list<std::string>& unsorted,
+                    const std::list<std::string>::const_iterator& it,
+                    std::list<std::string>* output) {
+  output->push_back(*it);
+  for (auto it_child = unsorted.begin(); it_child != unsorted.end(); ++it_child) {
+    if (rigid_bodies.at(*it_child).second != *it) continue;
+    AddChildrenDfs(rigid_bodies, unsorted, it_child, output);
+  }
 }
 
-ArticulatedBody LoadModel(const std::string& urdf, bool expand_paths) {
+ArticulatedBody LoadModel(const std::string& path_urdf, const std::string& path_meshes,
+                          bool simplify) {
   // Open xml document
   tinyxml2::XMLDocument doc;
-  doc.LoadFile(urdf.c_str());
+  doc.LoadFile(path_urdf.c_str());
   if (doc.Error()) {
-    throw std::runtime_error("spatial_dyn::urdf::LoadModel(): Unable to parse " + urdf + " - " + std::string(doc.ErrorName()));
+    throw std::runtime_error("spatial_dyn::urdf::LoadModel(): Unable to parse " + path_urdf +
+                             " - " + std::string(doc.ErrorName()));
   }
-  std::string urdf_path = expand_paths ? ParentPath(urdf) : "";
 
   // Parse robot
   const tinyxml2::XMLElement* xml_robot = ParseElement(doc, "robot");
@@ -252,7 +259,7 @@ ArticulatedBody LoadModel(const std::string& urdf, bool expand_paths) {
   std::list<std::string> rb_list;
   const tinyxml2::XMLElement* xml_link = ParseElement(xml_robot, "link");
   while (xml_link != nullptr) {
-    RigidBody rb = ParseRigidBody(xml_link, urdf_path);
+    RigidBody rb = ParseRigidBody(xml_link, path_meshes);
     if (rigid_bodies.find(rb.name) != rigid_bodies.end()) {
       throw std::runtime_error("spatial_dyn::urdf::LoadModel(): Multiple <link> elements with the name " +
                                rb.name + " cannot exist.");
@@ -364,14 +371,73 @@ ArticulatedBody LoadModel(const std::string& urdf, bool expand_paths) {
       rb.set_T_to_parent(ori, pos);
       name_parent = parent_link;
     } else if (attr_type == "fixed") {
-      // TODO
+      rb.set_joint(Joint::Type::kUndefined);
+      rb.set_T_to_parent(ori, pos);
+      name_parent = parent_link;
     } else if (attr_type == "floating") {
+      throw std::runtime_error("urdf::LoadModel(): Floating joint not implemented yet.");
       // TODO
     } else if (attr_type == "planar") {
+      throw std::runtime_error("urdf::LoadModel(): Planar joint not implemented yet.");
       // TODO
     }
 
     xml_joint = xml_joint->NextSiblingElement("joint");
+  }
+
+  // Sort rigid bodies so parents come first
+  std::list<std::string> unsorted_rbs = std::move(rb_list);
+  auto it_root = unsorted_rbs.begin();
+  for ( ; it_root != unsorted_rbs.end(); ++it_root) {
+    const std::string& name_parent = rigid_bodies.at(*it_root).second;
+    if (name_parent.empty()) break;
+  }
+  AddChildrenDfs(rigid_bodies, unsorted_rbs, it_root, &rb_list);
+
+  // Merge fixed joints
+  if (simplify) {
+      for (auto it = rb_list.begin(); it != rb_list.end(); ) {
+      if (it == rb_list.begin()) { ++it; continue; }
+
+      RigidBody& rb = rigid_bodies.at(*it).first;
+      if (rb.joint().type() != Joint::Type::kUndefined) { ++it; continue; }
+
+      const std::string& name_parent = rigid_bodies.at(*it).second;
+      if (name_parent.empty()) {
+        throw std::runtime_error("TODO: Merge with articulated body base.");
+      }
+      RigidBody& rb_parent = rigid_bodies.at(name_parent).first;
+
+      // Merge graphics
+      rb_parent.graphics.reserve(rb_parent.graphics.size() + rb.graphics.size());
+      for (Graphics& g : rb.graphics) {
+        g.T_to_parent = rb.T_to_parent() * g.T_to_parent;
+        rb_parent.graphics.push_back(std::move(g));
+      }
+
+      // Merge inertia
+      const SpatialInertiad inertia = rb_parent.inertia() + rb.T_to_parent() * rb.inertia();
+      rb_parent.set_inertia(inertia);
+
+      // Transfer children
+      for (auto it_child = it; it_child != rb_list.end(); ++it_child) {
+        if (it_child == it) continue;
+        RigidBody& rb_child = rigid_bodies.at(*it_child).first;
+        std::string& child_name_parent = rigid_bodies.at(*it_child).second;
+        if (child_name_parent != rb.name) continue;
+
+        // Merge transform
+        const Eigen::Isometry3d T_to_parent = rb.T_to_parent() * rb_child.T_to_parent();
+        rb_child.set_T_to_parent(T_to_parent);
+
+        // Set parent
+        child_name_parent = name_parent;
+      }
+
+      auto it_old = it;
+      ++it;
+      rb_list.erase(it_old);
+    }
   }
 
   // Add rigid bodies to articulated body
