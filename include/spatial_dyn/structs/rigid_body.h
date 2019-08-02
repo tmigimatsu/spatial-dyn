@@ -57,14 +57,14 @@ class RigidBody {
    *
    * @see Python: spatialdyn.RigidBody.name
    */
-  std::string name;
+  mutable std::string name;
 
   /**
    * %Graphics for the rigid body.
    *
    * @see Python: spatialdyn.RigidBody.graphics
    */
-  std::vector<Graphics> graphics;
+  mutable std::vector<Graphics> graphics;
 
   /**
    * @return ID of the rigid body as assigned by ArticulatedBody::AddRigidBody().

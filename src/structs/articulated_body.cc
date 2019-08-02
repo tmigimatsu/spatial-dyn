@@ -160,6 +160,21 @@ void ArticulatedBody::set_T_base_to_world(const Eigen::Isometry3d& T_to_world) {
   T_base_to_world_ = T_to_world;
 }
 
+void ArticulatedBody::set_inertia_base(double mass,
+                                       const Eigen::Vector3d& com,
+                                       const Eigen::Vector6d& I_com_flat) {
+  if (mass < 0.) {
+    throw std::invalid_argument("ArticulatedBody::set_inertia_base(): Mass must be non-negative (mass=" + std::to_string(mass) + ").");
+  }
+  inertia_base_ = SpatialInertiad(mass, com, I_com_flat);
+}
+void ArticulatedBody::set_inertia_base(const SpatialInertiad& inertia) {
+  if (inertia.mass < 0.) {
+    throw std::invalid_argument("ArticulatedBody::set_inertia_base(): Mass must be non-negative (mass=" + std::to_string(inertia.mass) + ").");
+  }
+  inertia_base_ = SpatialInertiad(inertia.mass, inertia.com, inertia.I_com_flat());
+}
+
 const Eigen::Isometry3d& ArticulatedBody::T_to_parent(int i) const {
   if (i < 0) i += dof();
   auto& T = cache_->T_data_;

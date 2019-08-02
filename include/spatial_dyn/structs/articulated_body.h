@@ -80,14 +80,14 @@ class ArticulatedBody {
    *
    * @see Python: spatialdyn.ArticulatedBody.name
    */
-  std::string name;
+  mutable std::string name;
 
   /**
    * %Graphics for the base.
    *
    * @see Python: spatialdyn.ArticulatedBody.graphics
    */
-  std::vector<Graphics> graphics;
+  mutable std::vector<Graphics> graphics;
 
   /**
    * @return Degrees of freedom of the articulated body.
@@ -241,6 +241,30 @@ class ArticulatedBody {
    * @param T_to_world Transform from the base frame to the world frame.
    */
   void set_T_base_to_world(const Eigen::Isometry3d& T_to_world);
+
+  /**
+   * @return Spatial inertia of the base link. Defaults to a 1kg point mass at
+   *         the origin of the rigid body's frame.
+   * @see Python: spatialdyn.ArticulatedBody.inertia_base
+   */
+  const SpatialInertiad& inertia_base() const { return inertia_base_; }
+
+  /**
+   * Set the spatial inertia of the base link.
+   *
+   * @param mass Mass of the rigid body.
+   * @param com Center of mass of the rigid body.
+   * @param I_com_flat Inertia of the rigid body as a flat vector `{I_xx, I_xy,
+   *        I_xz, I_yy, I_yz, I_zz}``.
+   */
+  void set_inertia_base(double mass, const Eigen::Vector3d& com, const Eigen::Vector6d& I_com_flat);
+
+  /**
+   * Set the spatial inertia of the base link.
+   *
+   * @param inertia Spatial inertia of the rigid body.
+   */
+  void set_inertia_base(const SpatialInertiad& inertia);
 
   /**
    * Get the transform from rigid body `i`'s frame to its parent's frame.
@@ -418,6 +442,7 @@ class ArticulatedBody {
   std::map<size_t, SpatialInertiad> inertia_load_;
 
   Eigen::Isometry3d T_base_to_world_ = Eigen::Isometry3d::Identity();
+  SpatialInertiad inertia_base_ = SpatialInertiad(1, Eigen::Vector3d::Zero(), Eigen::Vector6d::Zero());
 
   std::vector<std::vector<int>> ancestors_;  // Ancestors from base to link i
   std::vector<std::vector<int>> subtrees_;   // Descendants of link i including link i
