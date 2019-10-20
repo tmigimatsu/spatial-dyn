@@ -61,6 +61,8 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def_property_readonly("inertia_load", &ArticulatedBody::inertia_load)
       .def_property("T_base_to_world", &ArticulatedBody::T_base_to_world,
                     (void (ArticulatedBody::*)(const Eigen::Isometry3d&)) &ArticulatedBody::set_T_base_to_world)
+      .def_property("inertia_base", &ArticulatedBody::inertia_base,
+                    (void (ArticulatedBody::*)(const SpatialInertiad&)) &ArticulatedBody::set_inertia_base)
       .def("T_to_parent",
            [](const ArticulatedBody& ab, int i, py::object q) -> Eigen::Isometry3d {
              return q.is_none() ? ab.T_to_parent(i) : ab.T_to_parent(i, q.cast<double>());
@@ -263,7 +265,8 @@ PYBIND11_MODULE(spatialdyn, m) {
    .def("gravity", &Gravity, "ab"_a)
    .def("external_torques", &ExternalTorques, "ab"_a, "f_external"_a = std::map<size_t, SpatialForced>())
    .def("friction", &Friction, "ab"_a, "tau"_a, "compensate"_a = true, "stiction_epsilon"_a = 0.01)
-   .def("inertia", &Inertia, "ab"_a);
+   .def("inertia", &Inertia, "ab"_a)
+   .def("composite_inertia", &CompositeInertia, "ab"_a, "link"_a = 0);
 
   // Simulation
   m.def("integrate",
@@ -353,6 +356,7 @@ PYBIND11_MODULE(spatialdyn, m) {
   m_op.def("centrifugal_coriolis", &opspace::CentrifugalCoriolis, "ab"_a, "J"_a,
            "idx_link"_a = -1, "offset"_a = Eigen::Vector3d::Zero(), "svd_epsilon"_a = 0.);
   m_op.def("gravity", &opspace::Gravity, "ab"_a, "J"_a, "svd_epsilon"_a = 0);
+  m_op.def("external_forces", &opspace::ExternalForces, "ab"_a, "J"_a, "f_external"_a = std::map<size_t, SpatialForced>(), "svd_epsilon"_a = 0);
   m_op.def("friction", &opspace::Friction, "ab"_a, "J"_a, "tau"_a, "svd_epsilon"_a = 0.,
            "stiction_epsilon"_a = 0.01);
 
