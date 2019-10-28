@@ -19,7 +19,7 @@ option(BUILD_PYTHON "Build Python library" ON)
 option(BUILD_MATLAB "Build Matlab library" OFF)
 
 # Set CMake flags
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_VERBOSE_MAKEFILE ON) # TODO: Remove
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
@@ -106,7 +106,7 @@ target_sources(${SPATIAL_DYN_LIB} PRIVATE
     ${LIB_SOURCE_DIR}/structs/joint.cc
     ${LIB_SOURCE_DIR}/structs/options.cc
     ${LIB_SOURCE_DIR}/structs/rigid_body.cc
-    ${LIB_SOURCE_DIR}/parsers/json.cc
+    # ${LIB_SOURCE_DIR}/parsers/json.cc
     ${LIB_SOURCE_DIR}/parsers/urdf.cc
     ${LIB_SOURCE_DIR}/parsers/yaml.cc
 )
@@ -156,10 +156,10 @@ install(FILES
 )
 
 # Build tests
-include(CTest)
-if(BUILD_TESTING)
-    add_subdirectory(test)
-endif()
+# include(CTest)
+# if(BUILD_TESTING)
+#     add_subdirectory(test)
+# endif()
 
 # Build Python wrapper
 if(BUILD_PYTHON)
