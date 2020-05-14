@@ -156,6 +156,7 @@ install(FILES
 )
 
 # Build tests
+option(BUILD_TESTING "" OFF)
 include(CTest)
 if(BUILD_TESTING)
     add_subdirectory(test)
