@@ -11,7 +11,7 @@
 cmake_minimum_required(VERSION 3.6)
 
 # Define project
-project(spatial_dyn VERSION 1.1.0 LANGUAGES CXX)
+project(spatial_dyn VERSION 1.2.0 LANGUAGES CXX)
 
 # Define options
 option(BUILD_CPP "Build C++ library" ON)
@@ -68,10 +68,10 @@ if(NOT tinyxml2_FOUND)
     find_package(tinyxml2 QUIET NO_DEFAULT_PATH)
 endif()
 
-find_package(ctrl_utils 1.1.0 QUIET)
+find_package(ctrl_utils 1.2.0 QUIET)
 if(NOT ctrl_utils_FOUND)
-    download_package(ctrl_utils 1.1.0)
-    find_package(ctrl_utils 1.1.0 REQUIRED)
+    download_package(ctrl_utils 1.2.0)
+    find_package(ctrl_utils 1.2.0 REQUIRED)
 endif()
 
 target_link_libraries(${SPATIAL_DYN_LIB}
