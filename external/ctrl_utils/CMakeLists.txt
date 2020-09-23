@@ -8,4 +8,4 @@
 ############################################################
 
 init_git_submodule(ctrl-utils.git)
-add_subdirectory(ctrl-utils.git)
+add_subdirectory(ctrl-utils.git ${CMAKE_BINARY_DIR}/ctrl_utils)
