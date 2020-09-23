@@ -15,7 +15,7 @@ if(NOT TARGET tinyxml2::tinyxml2)
         set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 
         init_git_submodule(tinyxml2.git)
-        add_subdirectory(tinyxml2.git ${CMAKE_BINARY_DIR}/tinyxml2)
+        add_subdirectory(tinyxml2.git)
 
         set(BUILD_TESTING ${PREV_BUILD_TESTING} CACHE BOOL "" FORCE)
     endif()
