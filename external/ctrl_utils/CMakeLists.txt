@@ -7,5 +7,7 @@
 # Authors: Toki Migimatsu
 ############################################################
 
-init_git_submodule(ctrl-utils.git)
-add_subdirectory(ctrl-utils.git ${CMAKE_BINARY_DIR}/ctrl_utils)
+if(NOT TARGET ctrl_utils::ctrl_utils)
+    init_git_submodule(ctrl-utils.git)
+    add_subdirectory(ctrl-utils.git ${CMAKE_BINARY_DIR}/ctrl_utils)
+endif()
