@@ -7,30 +7,26 @@
 # Authors: Toki Migimatsu
 ############################################################
 
+# Download rbdl
+execute_process(COMMAND git clone https://github.com/rbdl/rbdl.git ${LIB_EXTERNAL_DIR}/rbdl.git -b v2.6.0 --single-branch)
+
+# Link Eigen to rbdl
+get_property(EIGEN3_INCLUDE_DIR TARGET Eigen3::Eigen PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+add_subdirectory(${LIB_EXTERNAL_DIR}/rbdl.git ${CMAKE_BINARY_DIR}/rbdl)
+
+# Create tests executable
 add_executable(${CMAKE_PROJECT_NAME}_tests ${CMAKE_CURRENT_SOURCE_DIR}/tests.cc)
 
-find_package(PkgConfig)
-pkg_check_modules(rbdl QUIET IMPORTED_TARGET RBDL>=2.5)
-if(NOT RBDL_FOUND)
-    download_package(rbdl 2.6.0)
-    pkg_check_modules(rbdl REQUIRED IMPORTED_TARGET
-        ${CMAKE_BINARY_DIR}/rbdl/build/rbdl.pc>=2.5)
-endif()
-
-find_package(Catch2 2.4.0 QUIET)
-if(NOT Catch2_FOUND)
-    download_package(Catch2 2.4.0)
-    add_library(Catch2 INTERFACE)
-    target_include_directories(Catch2 INTERFACE
-        $<BUILD_INTERFACE:${LIB_EXTERNAL_DIR}/Catch2.git/single_include>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-    )
-    add_library(Catch2::Catch2 ALIAS Catch2)
-endif()
+add_subdirectory(${ctrl_utils_EXTERNAL_DIR}/Catch2 ${CMAKE_CURRENT_BINARY_DIR}/Catch2)
 
 target_link_libraries(${CMAKE_PROJECT_NAME}_tests PRIVATE
     spatial_dyn::spatial_dyn
-    PkgConfig::rbdl
+    rbdl
     Catch2::Catch2
 )
+
+target_include_directories(${CMAKE_PROJECT_NAME}_tests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/rbdl.git/include
+    ${CMAKE_BINARY_DIR}/rbdl/include)
+
 add_test(${CMAKE_PROJECT_NAME}_tests ${CMAKE_PROJECT_NAME}_tests)

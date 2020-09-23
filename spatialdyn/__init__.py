@@ -1,2 +1,2 @@
 from .spatialdyn import *
-from .eigen import *
+from .spatialeigen import *

@@ -14,13 +14,13 @@ cmake_minimum_required(VERSION 3.6)
 project(spatial_dyn VERSION 1.2.0 LANGUAGES CXX)
 
 # Define options
-option(BUILD_CPP "Build C++ library" ON)
-option(BUILD_PYTHON "Build Python library" ON)
-option(BUILD_MATLAB "Build Matlab library" OFF)
+option(SPATIAL_DYN_BUILD_CPP "Build C++ library" ON)
+option(SPATIAL_DYN_BUILD_PYTHON "Build Python library" ON)
+option(SPATIAL_DYN_BUILD_MATLAB "Build Matlab library" OFF)
+option(SPATIAL_DYN_BUILD_TESTING "Build tests" OFF)
 
 # Set CMake flags
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_VERBOSE_MAKEFILE ON) # TODO: Remove
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
@@ -46,39 +46,21 @@ target_compile_options(${SPATIAL_DYN_LIB} PRIVATE
     $<$<CONFIG:RELEASE>:-O3>
 )
 
-# Find dependencies
-function(download_package PACKAGE_NAME)
-    set(EXT_PACKAGE_VERSION ${ARGV1})
-    if(EXISTS ${LIB_CMAKE_DIR}/Find${PACKAGE_NAME}.cmake.in)
-        configure_file(${LIB_CMAKE_DIR}/Find${PACKAGE_NAME}.cmake.in
-            ${CMAKE_BINARY_DIR}/Find${PACKAGE_NAME}.cmake @ONLY)
-    endif()
-    configure_file(${LIB_CMAKE_DIR}/${PACKAGE_NAME}-CMakeLists.txt.in
-        ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}/CMakeLists.txt @ONLY)
-    execute_process(COMMAND ${CMAKE_COMMAND} -G ${CMAKE_GENERATOR} .
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${PACKAGE_NAME})
-    execute_process(COMMAND ${CMAKE_COMMAND} --build .
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${PACKAGE_NAME})
-endfunction()
-
-find_package(tinyxml2 6.2.0 QUIET)
-if(NOT tinyxml2_FOUND)
-    download_package(tinyxml2 6.2.0)
-    set(tinyxml2_DIR "${CMAKE_BINARY_DIR}/tinyxml2/build")
-    find_package(tinyxml2 QUIET NO_DEFAULT_PATH)
-endif()
-
-find_package(ctrl_utils 1.2.0 QUIET)
-if(NOT ctrl_utils_FOUND)
-    download_package(ctrl_utils 1.2.0)
-    find_package(ctrl_utils 1.2.0 REQUIRED)
-endif()
+include(${LIB_CMAKE_DIR}/include_package.cmake)
+add_subdirectory(${LIB_EXTERNAL_DIR}/ctrl_utils)
+add_subdirectory(${ctrl_utils_EXTERNAL_DIR}/Eigen3)
+add_subdirectory(${ctrl_utils_EXTERNAL_DIR}/nlohmann_json)
+add_subdirectory(${ctrl_utils_EXTERNAL_DIR}/yaml-cpp)
+add_subdirectory(${LIB_EXTERNAL_DIR}/tinyxml2)
 
 target_link_libraries(${SPATIAL_DYN_LIB}
     PUBLIC
         ctrl_utils::ctrl_utils
+        Eigen3::Eigen
+        nlohmann_json::nlohmann_json
+        yaml-cpp::yaml-cpp
     PRIVATE
-        tinyxml2_static
+        tinyxml2::tinyxml2
 )
 
 # Set include directories
@@ -156,19 +138,18 @@ install(FILES
 )
 
 # Build tests
-option(BUILD_TESTING "" OFF)
 include(CTest)
-if(BUILD_TESTING)
+if(SPATIAL_DYN_BUILD_TESTING)
     add_subdirectory(test)
 endif()
 
 # Build Python wrapper
-if(BUILD_PYTHON)
+if(SPATIAL_DYN_BUILD_PYTHON)
     add_subdirectory(${LIB_SOURCE_DIR}/python)
 endif()
 
 # Build Matlab wrapper
-if(BUILD_MATLAB)
+if(SPATIAL_DYN_BUILD_MATLAB)
     add_subdirectory(${LIB_SOURCE_DIR}/matlab)
 endif()
 
@@ -177,7 +158,7 @@ export(TARGETS ${SPATIAL_DYN_LIB}
     FILE ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_TARGETS}.cmake)
 
 # Register package in user registry
-if(BUILD_CPP)
+if(SPATIAL_DYN_BUILD_CPP)
     export(PACKAGE ${SPATIAL_DYN_LIB})
 endif()
 
