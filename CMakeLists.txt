@@ -11,7 +11,7 @@
 cmake_minimum_required(VERSION 3.6)
 
 # Define project
-project(spatial_dyn VERSION 1.2.0 LANGUAGES CXX)
+project(spatial_dyn VERSION 1.3.0 LANGUAGES CXX)
 
 # Define options
 option(SPATIAL_DYN_BUILD_CPP "Build C++ library" ON)
