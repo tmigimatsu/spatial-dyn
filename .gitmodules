@@ -1,0 +1,6 @@
+[submodule "external/ctrl_utils/ctrl-utils.git"]
+	path = external/ctrl_utils/ctrl-utils.git
+	url = https://github.com/tmigimatsu/ctrl-utils.git
+[submodule "external/tinyxml2/tinyxml2.git"]
+	path = external/tinyxml2/tinyxml2.git
+	url = https://github.com/leethomason/tinyxml2.git
