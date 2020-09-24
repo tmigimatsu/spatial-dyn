@@ -48,9 +48,10 @@ target_compile_options(${SPATIAL_DYN_LIB} PRIVATE
 
 include(${LIB_CMAKE_DIR}/include_package.cmake)
 add_subdirectory(${LIB_EXTERNAL_DIR}/ctrl_utils)
-add_subdirectory(${ctrl_utils_EXTERNAL_DIR}/Eigen3)
-add_subdirectory(${ctrl_utils_EXTERNAL_DIR}/nlohmann_json)
-add_subdirectory(${ctrl_utils_EXTERNAL_DIR}/yaml-cpp)
+set(EXTERNAL_BINARY_DIR ${PROJECT_BINARY_DIR}/external)
+add_subdirectory(${ctrl_utils_EXTERNAL_DIR}/Eigen3 ${EXTERNAL_BINARY_DIR}/Eigen3)
+add_subdirectory(${ctrl_utils_EXTERNAL_DIR}/nlohmann_json ${EXTERNAL_BINARY_DIR}/nlohmann_json)
+add_subdirectory(${ctrl_utils_EXTERNAL_DIR}/yaml-cpp ${EXTERNAL_BINARY_DIR}/yaml-cpp)
 add_subdirectory(${LIB_EXTERNAL_DIR}/tinyxml2)
 
 target_link_libraries(${SPATIAL_DYN_LIB}
