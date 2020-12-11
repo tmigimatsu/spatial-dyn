@@ -1,5 +1,5 @@
 ############################################################
-# CMake config for the spatial_dyn library
+# CMake config for the spatial_dyn library.
 #
 # Copyright 2018. All Rights Reserved.
 #
@@ -9,9 +9,9 @@
 
 include(CMakeFindDependencyMacro)
 
-list(APPEND CMAKE_MODULE_PATH @CMAKE_BINARY_DIR@)
-find_dependency(ctrl_utils @ctrl_utils_VERSION@ REQUIRED)
+set(LIB_NAME @LIB_NAME@)
+set(LIB_BINARY_DIR @PROJECT_BINARY_DIR@)
 
-if(NOT TARGET spatial_dyn::spatial_dyn)
-    include("@CMAKE_BINARY_DIR@/spatial_dynTargets.cmake")
+if(NOT TARGET ${LIB_NAME}::${LIB_NAME})
+    include("${LIB_BINARY_DIR}/${LIB_NAME}Targets.cmake")
 endif()

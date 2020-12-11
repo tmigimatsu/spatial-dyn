@@ -18,7 +18,7 @@ namespace Eigen {
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-PYBIND11_MODULE(eigen, m) {
+PYBIND11_MODULE(spatialeigen, m) {
 
   // Isometry3d
   py::class_<Isometry3d>(m, "Isometry3d")

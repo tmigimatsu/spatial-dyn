@@ -1,5 +1,5 @@
 ############################################################
-# CMakeLists for the spatial_dyn library
+# CMakeLists for the spatial_dyn library.
 #
 # Copyright 2018. All Rights Reserved.
 #
@@ -7,158 +7,81 @@
 # Authors: Toki Migimatsu
 ############################################################
 
-# Require 3.6 to support pkg_check_modules IMPORTED_TARGET
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.11)
 
 # Define project
-project(spatial_dyn VERSION 1.3.0 LANGUAGES CXX)
+project(spatial_dyn
+    VERSION 1.4.0
+    DESCRIPTION "Rigid body dynamics"
+    LANGUAGES CXX
+)
+string(TOUPPER ${PROJECT_NAME} LIB_CMAKE_NAME)
 
-# Define options
-option(SPATIAL_DYN_BUILD_CPP "Build C++ library" ON)
-option(SPATIAL_DYN_BUILD_PYTHON "Build Python library" ON)
-option(SPATIAL_DYN_BUILD_MATLAB "Build Matlab library" OFF)
-option(SPATIAL_DYN_BUILD_TESTING "Build tests" OFF)
+# Include custom CMake utilities.
+include(cmake/utils.cmake)
 
-# Set CMake flags
-set(CMAKE_CXX_STANDARD 14)
+# Detect whether this project is built by itself or included as a subdirectory.
+lib_dependent_option(${LIB_CMAKE_NAME}_MAIN_BUILD
+    "Build ${PROJECT_NAME} as a main project."
+    "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME"
+)
+
+# Generate a compilation database for autocompletion.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
+
+# Use testing framework.
+if(${LIB_CMAKE_NAME}_MAIN_BUILD)
+    include(CTest)
 endif()
 
-# Define directories
-set(SPATIAL_DYN_LIB spatial_dyn)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-set(LIB_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
-set(LIB_EXTERNAL_DIR ${PROJECT_SOURCE_DIR}/external)
-set(LIB_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
-set(LIB_SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
+# Define CMake options.
+lib_option(BUILD_DOCS "Build docs." OFF)
+lib_option(BUILD_MATLAB "Build Matlab library." OFF)
+lib_option(BUILD_PYTHON "Build Python library." ON)
+lib_option(BUILD_TESTING "Build tests." OFF)
+lib_option(CLANG_TIDY "Perform clang-tidy checks." OFF)
 
-# Create spatial_dyn library
-add_library(${SPATIAL_DYN_LIB} SHARED)
+# Set default build type to release.
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    message(STATUS "Setting build type to 'Release' as none was specified.")
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
 
-# Create namespaced alias for use inside the build tree
-add_library(${SPATIAL_DYN_LIB}::${SPATIAL_DYN_LIB} ALIAS ${SPATIAL_DYN_LIB})
+# Set output directories.
+if(${LIB_CMAKE_NAME}_MAIN_BUILD)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+endif()
 
-# Set compiler options
-target_compile_options(${SPATIAL_DYN_LIB} PRIVATE
-    $<$<CXX_COMPILER_ID:GNU>:-Wall>
-    $<$<CONFIG:RELEASE>:-O3>
-)
-
-include(${LIB_CMAKE_DIR}/include_package.cmake)
-add_subdirectory(${LIB_EXTERNAL_DIR}/ctrl_utils)
-ctrl_utils_add_subdirectory(Eigen3)
-ctrl_utils_add_subdirectory(nlohmann_json)
-ctrl_utils_add_subdirectory(yaml-cpp)
-add_subdirectory(${LIB_EXTERNAL_DIR}/tinyxml2)
-
-target_link_libraries(${SPATIAL_DYN_LIB}
-    PUBLIC
-        ctrl_utils::ctrl_utils
-        Eigen3::Eigen
-        nlohmann_json::nlohmann_json
-        yaml-cpp::yaml-cpp
-    PRIVATE
-        tinyxml2::tinyxml2
-)
-
-# Set include directories
-target_include_directories(${SPATIAL_DYN_LIB}
-    PUBLIC
-        $<INSTALL_INTERFACE:include>
-        $<BUILD_INTERFACE:${LIB_INCLUDE_DIR}>
-    PRIVATE
-        ${LIB_INCLUDE_DIR}/spatial_dyn
-        ${LIB_SOURCE_DIR})
-
-# Attach sources
-target_sources(${SPATIAL_DYN_LIB} PRIVATE
-    ${LIB_SOURCE_DIR}/algorithms/discrete_dynamics.cc
-    ${LIB_SOURCE_DIR}/algorithms/dynamics_derivatives.cc
-    ${LIB_SOURCE_DIR}/algorithms/forward_dynamics.cc
-    ${LIB_SOURCE_DIR}/algorithms/forward_kinematics.cc
-    ${LIB_SOURCE_DIR}/algorithms/inverse_dynamics.cc
-    ${LIB_SOURCE_DIR}/algorithms/inverse_kinematics.cc
-    ${LIB_SOURCE_DIR}/algorithms/opspace_dynamics.cc
-    ${LIB_SOURCE_DIR}/algorithms/opspace_dynamics_aba.cc
-    ${LIB_SOURCE_DIR}/algorithms/simulation.cc
-    ${LIB_SOURCE_DIR}/structs/articulated_body.cc
-    ${LIB_SOURCE_DIR}/structs/graphics.cc
-    ${LIB_SOURCE_DIR}/structs/joint.cc
-    ${LIB_SOURCE_DIR}/structs/options.cc
-    ${LIB_SOURCE_DIR}/structs/rigid_body.cc
-    ${LIB_SOURCE_DIR}/parsers/json.cc
-    ${LIB_SOURCE_DIR}/parsers/urdf.cc
-    ${LIB_SOURCE_DIR}/parsers/yaml.cc
-)
-
-# Use GNUInstallDirs to install libraries into correct locations on all platforms
+# Standardize install directories.
 include(GNUInstallDirs)
 
-set(SPATIAL_DYN_TARGETS ${SPATIAL_DYN_LIB}Targets)
-set(SPATIAL_DYN_CONFIG ${SPATIAL_DYN_LIB}Config)
-set(SPATIAL_DYN_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${SPATIAL_DYN_LIB})
+# Build the library.
+add_subdirectory(src)
 
-# Install the library
-install(TARGETS ${SPATIAL_DYN_LIB}
-    EXPORT ${SPATIAL_DYN_TARGETS}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+# Build docs.
+if(${LIB_CMAKE_NAME}_BUILD_DOCS)
+    find_package(Doxygen)
+    if(NOT Doxygen_FOUND)
+        message(WARNING "Unable to find Doxygen for ${PROJECT_NAME} docs.")
+    else()
+        add_subdirectory(docs)
+    endif()
+endif()
 
-# Install the headers
-install(DIRECTORY ${LIB_INCLUDE_DIR} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+# Build Matlab wrapper.
+if(${LIB_CMAKE_NAME}_BUILD_MATLAB)
+    add_subdirectory(matlab)
+endif()
 
-# Export targets to Targets.cmake
-install(EXPORT ${SPATIAL_DYN_TARGETS}
-    DESTINATION ${SPATIAL_DYN_CONFIG_INSTALL_DIR}
-    NAMESPACE ${SPATIAL_DYN_LIB}::
-    FILE ${SPATIAL_DYN_TARGETS}.cmake
-)
+# Build Python wrapper.
+if(${LIB_CMAKE_NAME}_BUILD_PYTHON)
+    add_subdirectory(python)
+endif()
 
-# Create ConfigVersion.cmake
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file(${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}Version.cmake
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY AnyNewerVersion
-)
-
-# Create Config.cmake
-configure_package_config_file(${LIB_CMAKE_DIR}/${SPATIAL_DYN_CONFIG}.cmake.in
-    ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}.cmake
-    INSTALL_DESTINATION ${SPATIAL_DYN_CONFIG_INSTALL_DIR})
-
-# Install config script files
-install(FILES
-    ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}.cmake
-    ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_CONFIG}Version.cmake
-    DESTINATION ${SPATIAL_DYN_CONFIG_INSTALL_DIR}
-)
-
-# Build tests
-include(CTest)
-if(SPATIAL_DYN_BUILD_TESTING)
+# Build tests.
+if(${LIB_CMAKE_NAME}_BUILD_TESTING)
     add_subdirectory(test)
 endif()
-
-# Build Python wrapper
-if(SPATIAL_DYN_BUILD_PYTHON)
-    add_subdirectory(${LIB_SOURCE_DIR}/python)
-endif()
-
-# Build Matlab wrapper
-if(SPATIAL_DYN_BUILD_MATLAB)
-    add_subdirectory(${LIB_SOURCE_DIR}/matlab)
-endif()
-
-export(TARGETS ${SPATIAL_DYN_LIB}
-    NAMESPACE ${SPATIAL_DYN_LIB}::
-    FILE ${CMAKE_BINARY_DIR}/${SPATIAL_DYN_TARGETS}.cmake)
-
-# Register package in user registry
-if(SPATIAL_DYN_BUILD_CPP)
-    export(PACKAGE ${SPATIAL_DYN_LIB})
-endif()
-

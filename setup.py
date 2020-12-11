@@ -23,8 +23,8 @@ class CMakeBuild(build_ext):
                                ", ".join(e.name for e in self.extensions))
 
         cmake_version = LooseVersion(re.search(r'version\s*([\d.]+)', out.decode()).group(1))
-        if cmake_version < '3.6.0':
-            raise RuntimeError("CMake >= 3.6.0 is required.")
+        if cmake_version < '3.11.0':
+            raise RuntimeError("CMake >= 3.11.0 is required.")
 
         for ext in self.extensions:
             self.build_extension(ext)
@@ -44,11 +44,14 @@ class CMakeBuild(build_ext):
 
 setup(
     name="spatialdyn",
-    version="1.0.0",
-    description="Python wrapper for the C++ SpatialDyn library",
+    version="1.4.0",
+    description="Python wrapper for the C++ spatial_dyn library",
     url="https://github.com/tmigimatsu/spatial-dyn.git",
     author="Toki Migimatsu",
     license="MIT",
     ext_modules=[CMakeExtension('spatialdyn')],
-    cmdclass=dict(build_ext=CMakeBuild)
+    cmdclass=dict(build_ext=CMakeBuild),
+    packages=["spatialdyn"],
+    package_dir={"": "lib"},
+    install_requires=["numpy"],
 )

@@ -1,6 +1,7 @@
-bin
-build
-doc
+bin/*
+build/*
+doc/*
+lib/*
 compile_commands.json
 *.so
 *.pyc
