@@ -23,3 +23,7 @@ if(NOT TARGET tinyxml2::tinyxml2)
     add_library(tinyxml2::tinyxml2 INTERFACE IMPORTED GLOBAL)
     target_link_libraries(tinyxml2::tinyxml2 INTERFACE tinyxml2)
 endif()
+
+function(lib_install_subdirectory_tinyxml2)
+    install(TARGETS tinyxml2)
+endfunction()

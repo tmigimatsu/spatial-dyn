@@ -1,105 +1,118 @@
-from setuptools import setup
-
-import os
-import re
+import setuptools
 import subprocess
-import sys
 
-from setuptools import Extension
-from setuptools.command.build_ext import build_ext
-from setuptools.command.install_lib import install_lib
-from distutils.version import LooseVersion
+from setuptools.command import build_ext
 
 
-class CMakeExtension(Extension):
-    def __init__(self, name, sourcedir=""):
-        Extension.__init__(self, name, sources=[])
-        self.sourcedir = os.path.abspath(sourcedir)
+class CMakeExtension(setuptools.Extension):
+    def __init__(self, name):
+        setuptools.Extension.__init__(self, name, sources=[])
 
 
-class CMakeBuild(build_ext):
+class CMakeBuild(build_ext.build_ext):
     def run(self):
-        try:
-            out = subprocess.check_output(["cmake", "--version"])
-        except OSError:
-            raise RuntimeError(
-                "CMake must be installed to build the following extensions: "
-                + ", ".join(e.name for e in self.extensions)
+        import distutils
+        import re
+
+        if not self.inplace:
+            try:
+                out = subprocess.check_output(["cmake", "--version"])
+            except OSError:
+                raise RuntimeError(
+                    "CMake must be installed to build the following extensions: "
+                    + ", ".join(e.name for e in self.extensions)
+                )
+
+            cmake_version = distutils.version.LooseVersion(
+                re.search(r"version\s*([\d.]+)", out.decode()).group(1)
             )
+            if cmake_version < "3.13.0":
+                raise RuntimeError(
+                    "CMake >= 3.13.0 is required. Install the latest CMake with 'pip install cmake'."
+                )
 
-        cmake_version = LooseVersion(
-            re.search(r"version\s*([\d.]+)", out.decode()).group(1)
-        )
-        if cmake_version < "3.11.0":
-            raise RuntimeError("CMake >= 3.11.0 is required.")
+        for extension in self.extensions:
+            self.build_extension(extension)
 
-        for ext in self.extensions:
-            self.build_extension(ext)
+    def build_extension(self, extension: setuptools.Extension):
+        import os
+        import pathlib
+        import re
+        import shutil
+        import sys
 
-    def build_extension(self, ext):
-        project_dir = os.path.dirname(os.path.realpath(__file__))
-        build_dir = os.path.join(project_dir, "build")
-        cmake_dir = os.path.join(project_dir, "cmake")
-        try:
-            os.mkdir(build_dir)
-        except:
-            pass
-        ncpus = (
-            subprocess.check_output(["./ncpu.sh"], cwd=cmake_dir)
-            .strip()
-            .decode("utf-8")
-        )
+        extension_dir = pathlib.Path(self.get_ext_fullpath(extension.name)).parent
+        extension_dir.mkdir(parents=True, exist_ok=True)
+
+        if self.inplace:
+            build_dir = extension_dir / "build"
+        else:
+            build_dir = pathlib.Path(self.build_temp)
+        build_dir.mkdir(parents=True, exist_ok=True)
+
+        # Run CMake.
+        build_type = "Debug" if self.debug else "Release"
         python_version = ".".join(map(str, sys.version_info[:3]))
-        subprocess.check_call(
-            [
-                "cmake",
-                "-DBUILD_TESTING=OFF",
-                "-DPYBIND11_PYTHON_VERSION=" + python_version,
-                "..",
-            ],
-            cwd=build_dir,
-        )
-        subprocess.check_call(
-            ["cmake", "--build", ".", "--", "-j" + ncpus], cwd=build_dir
-        )
-
-
-class CMakeInstall(install_lib):
-    def run(self):
-        self.skip_build = True
-
-        project_dir = os.path.dirname(os.path.realpath(__file__))
-        lib_dir = os.path.join(project_dir, "lib", "spatialdyn")
-
-        lib_files = [
-            file for file in os.listdir(lib_dir) if os.path.splitext(file)[-1] == ".so"
+        cmake_command = [
+            "cmake",
+            "-B" + str(build_dir),
+            "-DBUILD_TESTING=OFF",
+            "-DPYBIND11_PYTHON_VERSION=" + python_version,
+            "-DCMAKE_BUILD_TYPE=" + build_type,
         ]
+        if not self.inplace:
+            # Use relative paths for install rpath.
+            rpath_origin = "@loader_path" if sys.platform == "darwin" else "$ORIGIN"
+            cmake_command += [
+                "-DCMAKE_INSTALL_PREFIX=install",
+                "-DCMAKE_INSTALL_RPATH=" + rpath_origin,
+            ]
+        self.spawn(cmake_command)
 
-        self.distribution.data_files = [
-            (
-                os.path.join(self.install_dir, "spatialdyn"),
-                [os.path.join(lib_dir, file) for file in lib_files],
-            )
-        ]
+        # Build and install.
+        make_command = ["cmake", "--build", str(build_dir)]
+        if not self.inplace:
+            make_command += ["--target", "install"]
 
-        self.distribution.run_command("install_data")
+        ncpus = (
+            subprocess.check_output(["./ncpu.sh"], cwd="cmake").strip().decode("utf-8")
+        )
+        make_command += ["--", "-j" + ncpus]
 
-        super().run()
+        self.spawn(make_command)
+
+        if not self.inplace:
+            # Copy pybind11 library.
+            spatialdyn_dir = str(extension_dir / "spatialdyn")
+            for file in os.listdir(build_dir / "src" / "python"):
+                if re.match(r".*\.(?:so|dylib)\.?", file) is not None:
+                    file = str(build_dir / "src" / "python" / file)
+                    shutil.move(file, spatialdyn_dir)
+
+            # Copy C++ libraries.
+            for file in os.listdir(os.path.join("install", "lib")):
+                if re.match(r".*\.(?:so|dylib)\.?", file) is not None:
+                    file = os.path.join("install", "lib", file)
+                    shutil.move(file, spatialdyn_dir)
 
 
-setup(
+setuptools.setup(
     name="spatialdyn",
     version="1.4.0",
-    description="Python wrapper for the C++ spatial_dyn library",
-    url="https://github.com/tmigimatsu/spatial-dyn.git",
     author="Toki Migimatsu",
+    description="spatial-dyn library",
+    url="https://github.com/tmigimatsu/spatial-dyn.git",
     license="MIT",
+    packages=["spatialdyn"],
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
+    python_requires=">=3.6",
     ext_modules=[CMakeExtension("spatialdyn")],
     cmdclass={
         "build_ext": CMakeBuild,
-        "install_lib": CMakeInstall,
     },
-    packages=["spatialdyn"],
-    package_dir={"": "lib"},
     install_requires=["numpy"],
 )

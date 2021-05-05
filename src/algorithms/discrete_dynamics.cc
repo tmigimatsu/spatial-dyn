@@ -21,6 +21,7 @@
 namespace spatial_dyn {
 namespace discrete {
 
+// Discrete Recursive Newton-Euler Algorithm
 Eigen::VectorXd InverseDynamics(const ArticulatedBody& ab,
                                 Eigen::Ref<const Eigen::VectorXd> q_next,
                                 const double dt,
@@ -175,6 +176,7 @@ void HandleContact() {
   //     d/dt dL/dq' - dL/dq - tau_ext = 0 (Euler-Lagrange)
 }
 
+// Recursive Impulse-based Quasi-Newton Method
 void Integrate(ArticulatedBody& ab, Eigen::Ref<const Eigen::VectorXd> tau, double dt,
                const std::map<size_t, SpatialForced>& f_external,
                const IntegrationOptions& options) {

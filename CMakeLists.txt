@@ -16,6 +16,7 @@ project(spatial_dyn
     LANGUAGES CXX
 )
 string(TOUPPER ${PROJECT_NAME} LIB_CMAKE_NAME)
+set(LIB_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Include custom CMake utilities.
 include(cmake/utils.cmake)
@@ -61,6 +62,11 @@ include(GNUInstallDirs)
 # Build the library.
 add_subdirectory(src)
 
+# # Build tests.
+# if(${LIB_CMAKE_NAME}_BUILD_TESTING)
+#     add_subdirectory(test)
+# endif()
+
 # Build docs.
 if(${LIB_CMAKE_NAME}_BUILD_DOCS)
     find_package(Doxygen)
@@ -74,14 +80,4 @@ endif()
 # Build Matlab wrapper.
 if(${LIB_CMAKE_NAME}_BUILD_MATLAB)
     add_subdirectory(matlab)
-endif()
-
-# Build Python wrapper.
-if(${LIB_CMAKE_NAME}_BUILD_PYTHON)
-    add_subdirectory(python)
-endif()
-
-# Build tests.
-if(${LIB_CMAKE_NAME}_BUILD_TESTING)
-    add_subdirectory(test)
 endif()

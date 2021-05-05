@@ -70,6 +70,11 @@ target_link_libraries(${LIB_NAME}
     tinyxml2::tinyxml2
 )
 
+# Build python wrapper.
+if(${LIB_CMAKE_NAME}_BUILD_PYTHON)
+    add_subdirectory(python)
+endif()
+
 # Install the library.
 install(TARGETS ${LIB_NAME}
     EXPORT ${LIB_NAME}Targets
@@ -78,8 +83,16 @@ install(TARGETS ${LIB_NAME}
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )
 
+# Install dependencies (only works for cmake>=3.13).
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13.0")
+    lib_install_subdirectory_yaml_cpp()
+    lib_install_subdirectory_tinyxml2()
+endif()
+
 # Install the headers.
-install(DIRECTORY "${LIB_INCLUDE_DIR}" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+install(DIRECTORY "${LIB_INCLUDE_DIR}/${LIB_NAME}"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
 
 # Create LibConfig.cmake
 set(LIB_CONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${LIB_NAME}")
@@ -95,6 +108,13 @@ write_basic_package_version_file(
     "${PROJECT_BINARY_DIR}/${LIB_NAME}ConfigVersion.cmake"
     VERSION ${PROJECT_VERSION}
     COMPATIBILITY SameMinorVersion
+)
+
+# Install LibConfig.cmake and LibConfigVersion.cmake.
+install(FILES
+    "${PROJECT_BINARY_DIR}/${LIB_NAME}Config.cmake"
+    "${PROJECT_BINARY_DIR}/${LIB_NAME}ConfigVersion.cmake"
+    DESTINATION ${LIB_CONFIG_INSTALL_DIR}
 )
 
 # Export targets to LibTargets.cmake.
