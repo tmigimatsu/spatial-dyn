@@ -1,3 +1,4 @@
+import pathlib
 import setuptools
 import subprocess
 
@@ -114,5 +115,8 @@ setuptools.setup(
     cmdclass={
         "build_ext": CMakeBuild,
     },
-    install_requires=["numpy"],
+    install_requires=[
+        "numpy",
+        f"ctrlutils @ file://{pathlib.Path.cwd() / 'external' / 'ctrl_utils' / 'ctrl-utils.git'}",
+    ],
 )

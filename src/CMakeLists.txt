@@ -45,7 +45,6 @@ target_sources(${LIB_NAME}
 
 # Set include directories.
 set(LIB_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
-set(LIB_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
 target_include_directories(${LIB_NAME}
   PUBLIC
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"

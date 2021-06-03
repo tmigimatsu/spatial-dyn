@@ -7,9 +7,9 @@
 # Authors: Toki Migimatsu
 ############################################################
 
-project(pysymbolic)
+project(spatialdyn)
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${LIB_SOURCE_DIR}/symbolic")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${LIB_SOURCE_DIR}/spatialdyn")
 
 ctrl_utils_add_subdirectory(pybind11)
 
@@ -26,7 +26,7 @@ target_link_libraries(spatialdyn
 # Create Eigen wrapper.
 pybind11_add_module(spatialeigen eigen.cc)
 
-# Link library depencies.
+# Link library dependencies.
 target_link_libraries(spatialeigen
   PUBLIC
     pybind11::pybind11
