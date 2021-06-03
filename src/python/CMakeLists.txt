@@ -23,20 +23,9 @@ target_link_libraries(spatialdyn
     spatial_dyn::spatial_dyn
 )
 
-# Create Eigen wrapper.
-pybind11_add_module(spatialeigen eigen.cc)
 
-# Link library dependencies.
-target_link_libraries(spatialeigen
-  PUBLIC
-    pybind11::pybind11
-    spatial_dyn::spatial_dyn
-)
 
 # Put binary for installation temporarily in build/src/python.
 install(TARGETS spatialdyn
-    LIBRARY DESTINATION "${PROJECT_BINARY_DIR}"
-)
-install(TARGETS spatialeigen
     LIBRARY DESTINATION "${PROJECT_BINARY_DIR}"
 )
