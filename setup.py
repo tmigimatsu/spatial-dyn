@@ -1,3 +1,4 @@
+import os
 import pathlib
 import setuptools
 import subprocess
@@ -96,6 +97,9 @@ class CMakeBuild(build_ext.build_ext):
                     file = os.path.join("install", "lib", file)
                     shutil.move(file, spatialdyn_dir)
 
+# Initialize ctrl-utils before tmp folder is created.
+os.system("git submodule update --init external/ctrl_utils/ctrl-utils.git")
+os.system("git -C external/ctrl_utils/ctrl-utils.git submodule update --init external/Eigen3/eigen-git-mirror.git external/pybind11/pybind11.git")
 
 setuptools.setup(
     name="spatialdyn",
