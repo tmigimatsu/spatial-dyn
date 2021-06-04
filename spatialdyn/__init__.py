@@ -1,4 +1,5 @@
 from .spatialdyn import *
+from .opspace_control import opspace_control
 
 from ctrlutils import eigen
 

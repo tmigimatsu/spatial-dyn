@@ -37,6 +37,7 @@ endif()
 
 # Define CMake options.
 lib_option(BUILD_DOCS "Build docs." OFF)
+lib_option(BUILD_EXAMPLES "Build examples." ON)
 lib_option(BUILD_MATLAB "Build Matlab library." OFF)
 lib_option(BUILD_PYTHON "Build Python library." ON)
 lib_option(BUILD_TESTING "Build tests." OFF)
@@ -61,6 +62,11 @@ include(GNUInstallDirs)
 
 # Build the library.
 add_subdirectory(src)
+
+# Build examples.
+if(${LIB_CMAKE_NAME}_BUILD_EXAMPLES)
+    add_subdirectory(apps)
+endif()
 
 # # Build tests.
 # if(${LIB_CMAKE_NAME}_BUILD_TESTING)
