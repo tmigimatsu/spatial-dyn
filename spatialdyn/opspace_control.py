@@ -1,5 +1,6 @@
 import typing
 
+import ctrlutils
 from ctrlutils import eigen
 import numpy as np
 import spatialdyn
@@ -15,10 +16,10 @@ def opspace_control(
     joint_gains: typing.Union[typing.Tuple[float, float], np.ndarray] = (4.0, 1.0),
     task_pos: typing.Optional[np.ndarray] = None,
     task_ori: typing.Optional[np.ndarray] = None,
-    max_pos_err: typing.Optional[float] = 1.0,
-    max_ori_err: typing.Optional[float] = 1.0,
-    pos_convergence: typing.Optional[typing.Tuple[float, float]] = None,
-    ori_convergence: typing.Optional[typing.Tuple[float, float]] = None,
+    max_pos_acceleration: typing.Optional[float] = None,
+    max_ori_acceleration: typing.Optional[float] = None,
+    pos_threshold: typing.Optional[typing.Tuple[float, float]] = None,
+    ori_threshold: typing.Optional[typing.Tuple[float, float]] = None,
     gravity_comp: bool = True,
 ) -> typing.Tuple[np.ndarray, bool]:
     """
@@ -56,7 +57,7 @@ def opspace_control(
             velocity damping to prevent the end-effector from moving too quickly
             or oscillating. `kv = 2 * sqrt(kp)` results in a critically damped
             system assuming no friction. A good rule of thumb is to start off
-            with `kv = kp / 5`, and then adjust `kv` depending on how much the
+            with `kv = kp / 4`, and then adjust `kv` depending on how much the
             end-effector oscillates or how slow it is to converge.
 
         ori_gains: (`kp`, `kv`) gains for the orientation task as a [2] vector,
@@ -73,22 +74,23 @@ def opspace_control(
         task_ori: Optional orientation of the task frame in the end-effector
             frame as an xyzw quaternion [4] or a [3 x 3] matrix.
 
-        max_pos_err: Optional maximum position error in meters. The distance
-            between the current and goal position will be clipped to this value
-            to prevent the robot from accelerating too quickly to the goal. No
-            clipping will occur if `max_pos_err <= 0`.
+        max_pos_acceleration: Optional maximum acceleration due to the position
+            error. The proportional error term in the PD control law
+            `ddx = -kp * (x - x_des)` will be clipped to this value to prevent
+            the robot from accelerating too quickly to the goal. No clipping
+            will occur if `max_pos_acceleration <= 0`.
 
-        max_ori_err: Optional maximum orientation error in radians. See
-            `max_pos_err` for more details.
+        max_ori_acceleration: Optional maximum acceleration due to the
+            orientation error. See `max_pos_acceleration` for more details.
 
-        pos_convergence: Optional convergence criteria (`x_thresh`,
+        pos_threshold: Optional convergence criteria (`x_thresh`,
             `dx_thresh`). If the distance to the goal is less than `x_thresh`
             and the end-effector's velocity is less than `dx_thresh`, then the
             position is considered to be converged, and this function will
-            return True if `ori_convergence` is satisfied as well.
+            return True if `ori_threshold` is satisfied as well.
 
-        ori_convergence: Optional convergence criteria (`ori_thresh`,
-            `w_thresh`). See `pos_convergence` for more details.
+        ori_threshold: Optional convergence criteria (`ori_thresh`,
+            `w_thresh`). See `pos_threshold` for more details.
 
         gravity_comp: Compensate for gravity.
 
@@ -98,16 +100,14 @@ def opspace_control(
         that indicates whether the position and orientation convergence criteria
         are satisfied, if given.
     """
-    import ctrlutils
-
     # Parse function inputs.
     x_task_to_ee = _parse_opspace_control_task_pos(task_pos)
     quat_ee_to_task = _parse_opspace_control_task_ori(task_ori)
     x_des = _parse_opspace_control_pos(pos, ab, x_task_to_ee)
     quat_des = _parse_opspace_control_ori(ori, ab, quat_ee_to_task)
     q_des = _parse_opspace_control_joint(joint, ab)
-    x_err_max = _parse_opspace_control_max_err(max_pos_err)
-    ori_err_max = _parse_opspace_control_max_err(max_ori_err)
+    ddx_max = _parse_opspace_control_max_acc(max_pos_acceleration)
+    dw_max = _parse_opspace_control_max_acc(max_ori_acceleration)
     kp_kv_pos = pos_gains
     kp_kv_ori = ori_gains
     kp_kv_joint = joint_gains
@@ -125,7 +125,7 @@ def opspace_control(
     # Compute position PD control.
     x = spatialdyn.position(ab, offset=x_task_to_ee)
     dx = J_v.dot(ab.dq)
-    ddx, x_err = ctrlutils.pd_control(x, x_des, dx, kp_kv_pos, x_err_max)
+    ddx, x_err = ctrlutils.pd_control(x, x_des, dx, kp_kv_pos, ddx_max)
 
     # Get current orientation.
     quat = spatialdyn.orientation(ab)
@@ -138,7 +138,7 @@ def opspace_control(
 
     # Compute orientation PD control.
     w = J_w.dot(ab.dq)
-    dw, w_err = ctrlutils.pd_control(quat, quat_des, w, kp_kv_ori, ori_err_max)
+    dw, w_err = ctrlutils.pd_control(quat, quat_des, w, kp_kv_ori, dw_max)
 
     # Compute opspace torques.
     N = np.eye(ab.dof)
@@ -162,21 +162,21 @@ def opspace_control(
         tau_cmd += spatialdyn.gravity(ab)
 
     # Compute convergence.
-    converged = is_converged(pos_convergence, x_err, dx) and is_converged(
-        ori_convergence, w_err, w
+    converged = is_converged(pos_threshold, x_err, dx) and is_converged(
+        ori_threshold, w_err, w
     )
 
     return tau_cmd, converged
 
 
 def is_converged(
-    convergence: typing.Optional[typing.Tuple[float, float]],
+    threshold: typing.Optional[typing.Tuple[float, float]],
     x_err: np.ndarray,
     dx: np.ndarray,
 ) -> bool:
-    if convergence is None:
+    if threshold is None:
         return True
-    x_thresh, dx_thresh = convergence
+    x_thresh, dx_thresh = threshold
     return np.linalg.norm(x_err) < x_thresh and np.linalg.norm(dx) < dx_thresh
 
 
@@ -196,7 +196,7 @@ def _parse_opspace_control_task_ori(
     elif type(task_ori) is eigen.Quaterniond:
         return task_ori.inverse()
     elif task_ori.shape == (4,):
-        return eigen.Quaterniond(*task_ori).inverse()
+        return eigen.Quaterniond(task_ori[3], *task_ori[:3]).inverse()
     else:
         return eigen.Quaterniond(task_ori.T)
 
@@ -224,7 +224,7 @@ def _parse_opspace_control_ori(
     elif type(ori) is eigen.Quaterniond:
         return ori
     elif ori.shape == (4,):
-        return eigen.Quaterniond(*ori)
+        return eigen.Quaterniond(ori[3], *ori[:3])
     else:
         return eigen.Quaterniond(ori)
 
@@ -237,6 +237,6 @@ def _parse_opspace_control_joint(
     return joint if joint is not None else ab.q
 
 
-def _parse_opspace_control_max_err(max_err: typing.Optional[float]) -> float:
+def _parse_opspace_control_max_acc(max_acc: typing.Optional[float]) -> float:
     # Convert error limit.
-    return max_err if max_err is not None else 0.0
+    return max_acc if max_acc is not None else 0.0

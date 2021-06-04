@@ -26,8 +26,8 @@ Q_HOME = np.array(
 # Position offset of the end-effector tip in the frame of the last link.
 EE_OFFSET = np.array([0.0, 0.0, 0.107])
 
-POS_CONVERGENCE = (0.01, 0.01)
-ORI_CONVERGENCE = (0.01, 0.01)
+POS_THRESHOLD = (0.01, 0.01)
+ORI_THRESHOLD = (0.01, 0.01)
 
 
 def main():
@@ -57,8 +57,8 @@ def main():
             ori=quat_des,
             joint=q_des,
             task_pos=EE_OFFSET,
-            pos_convergence=POS_CONVERGENCE,
-            ori_convergence=ORI_CONVERGENCE,
+            pos_threshold=POS_THRESHOLD,
+            ori_threshold=ORI_THRESHOLD,
         )
         if converged:
             break
