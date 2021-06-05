@@ -1,0 +1,33 @@
+name: Docs
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  generate_docs:
+    name: Generate Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt install doxygen
+          pip install pipenv
+          pipenv install --dev
+
+      - name: Build
+        run: |
+          mkdir -p build
+          cmake -B build -DBUILD_PYTHON=ON -DBUILD_DOCS=ON
+          cmake --build build
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/_build/html
