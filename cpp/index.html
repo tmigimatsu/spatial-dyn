@@ -60,11 +60,50 @@ $(function() {
 </iframe>
 </div>
 
-<div class="header">
+<div class="PageDoc"><div class="header">
   <div class="headertitle">
 <div class="title">spatial-dyn Documentation</div>  </div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><p><a href="https://github.com/tmigimatsu/spatial-dyn/actions/workflows/builds.yaml"><object type="image/svg+xml" data="https://github.com/tmigimatsu/spatial-dyn/actions/workflows/builds.yaml/badge.svg" style="pointer-events: none;">Build</object></a> <a href="https://github.com/tmigimatsu/spatial-dyn/actions/workflows/tests.yaml"><object type="image/svg+xml" data="https://github.com/tmigimatsu/spatial-dyn/actions/workflows/tests.yaml/badge.svg" style="pointer-events: none;">Tests</object></a> <a href="https://github.com/tmigimatsu/spatial-dyn/actions/workflows/docs.yaml"><object type="image/svg+xml" data="https://github.com/tmigimatsu/spatial-dyn/actions/workflows/docs.yaml/badge.svg" style="pointer-events: none;">Docs</object></a></p>
+<h1><a class="anchor" id="autotoc_md0"></a>
+spatial-dyn</h1>
+<p><code>spatial-dyn</code> is a C++/Python rigid body dynamics library.</p>
+<p>See the documentation for <code>spatial-dyn</code> <a href="https://tmigimatsu.github.io/spatial-dyn/">here</a>.</p>
+<h2><a class="anchor" id="autotoc_md1"></a>
+Installation</h2>
+<p>This library is written in C++ with Python bindings automatically generated with <a href="https://github.com/pybind/pybind11">pybind11</a>. It has been tested on Ubuntu 18.04, Ubuntu 20.04, and macOS 10.15 Catalina.</p>
+<p>Compilation requirements:</p><ul>
+<li><code>cmake &gt;= 3.11</code></li>
+<li>C++17 support (<code>gcc &gt;= 7</code>, <code>clang &gt;= 7</code>).</li>
+</ul>
+<p>See <a href="#updating-cmake">Updating CMake</a> for details on how to install the latest <code>cmake</code>. Ubuntu 20.04 comes with a sufficient version of <code>cmake</code> out of the box.</p>
+<h3><a class="anchor" id="autotoc_md2"></a>
+C++ only</h3>
+<p>The C++ portion of <code>spatial-dyn</code> is header-only, but to add <code>spatial-dyn</code> as a <code>cmake</code> dependency, you can run the following: </p><div class="fragment"><div class="line">mkdir build</div>
+<div class="line">cmake -B build</div>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md3"></a>
+Python only</h3>
+<p>Use <code>pip</code> to install <code>spatial-dyn</code> in your virtual environment. </p><div class="fragment"><div class="line">pip install .</div>
+</div><!-- fragment --><p>You can now import the <code>spatialdyn</code> package in Python. </p><div class="fragment"><div class="line">import spatialdyn <span class="keyword">as</span> dyn</div>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md4"></a>
+C++ and Python</h3>
+<p>An in-place <code>pip</code> install will run the appropriate CMake command to build <code>spatial-dyn</code> locally in the <code>./build</code> folder. This will give you access to the <code>cmake</code> configuration files for C++ as well as the <code>spatialdyn</code> package in Python. </p><div class="fragment"><div class="line">pip install -e .</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md5"></a>
+Updating CMake</h2>
+<h3><a class="anchor" id="autotoc_md6"></a>
+Ubuntu 18.04</h3>
+<p>The simplest way to install the latest version of <code>cmake</code> is through <code>pip</code>: </p><div class="fragment"><div class="line">pip install cmake</div>
+</div><!-- fragment --><p>You can also install it through <code>apt</code>: </p><div class="fragment"><div class="line">sudo apt-get update &amp;&amp; sudo apt-get install -y apt-transport-https ca-certificates gnupg wget</div>
+<div class="line">wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2&gt;/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg &gt;/dev/null</div>
+<div class="line">sudo apt-add-repository -y &#39;deb https://apt.kitware.com/ubuntu/ bionic main&#39;</div>
+<div class="line">sudo apt-get update &amp;&amp; sudo apt-get install -y cmake kitware-archive-keyring</div>
+<div class="line">sudo rm /etc/apt/trusted.gpg.d/kitware.gpg</div>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md7"></a>
+macOS</h3>
+<p>Install <code>cmake</code> through Homebrew: </p><div class="fragment"><div class="line">brew install cmake</div>
+</div><!-- fragment --><p>Or through <code>pip</code>: </p><div class="fragment"><div class="line">pip3 install cmake</div>
+</div><!-- fragment --> </div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
