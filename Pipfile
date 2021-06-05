@@ -1,13 +1,15 @@
 [[source]]
+name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
-name = "pypi"
-
-[packages]
-spatialdyn = {editable = true, path = "."}
-redis = "*"
 
 [dev-packages]
+sphinx = "*"
+sphinxcontrib-doxylink = "*"
+sphinx-autodoc-typehints = "*"
+sphinx-bootstrap-theme = "*"
+
+[packages]
 
 [requires]
-python_version = "3.7"
+python_version = "3"
