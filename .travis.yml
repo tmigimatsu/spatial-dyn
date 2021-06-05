@@ -19,7 +19,7 @@ script:
   - cd build
   - cmake .. -DBUILD_TESTING=ON $CMAKE_ARGS && make
   - mkdir -p ../docs/_build/html && touch ../docs/_build/html/.nojekyll
-  - ctest --output-on-failure
+  # - ctest --output-on-failure
 
 jobs:
   include:
