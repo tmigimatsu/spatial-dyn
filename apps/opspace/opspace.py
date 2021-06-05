@@ -59,12 +59,12 @@ def main():
             task_pos=EE_OFFSET,
             pos_threshold=POS_THRESHOLD,
             ori_threshold=ORI_THRESHOLD,
+            integration_step=timer.dt,
         )
+        print(timer.num_iters, tau_cmd)
+
         if converged:
             break
-
-        # Apply command torques to update ab.q, ab.dq.
-        dyn.integrate(ab, tau_cmd, timer.dt)
 
     # Print simulation stats
     print("Simulated {}s in {}s.".format(timer.time_sim(), timer.time_elapsed()))

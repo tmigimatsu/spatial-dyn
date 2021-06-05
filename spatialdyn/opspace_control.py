@@ -21,6 +21,7 @@ def opspace_control(
     pos_threshold: typing.Optional[typing.Tuple[float, float]] = None,
     ori_threshold: typing.Optional[typing.Tuple[float, float]] = None,
     gravity_comp: bool = True,
+    integration_step: typing.Optional[float] = None,
 ) -> typing.Tuple[np.ndarray, bool]:
     """
     Computes command torques for controlling the robot to a given pose using
@@ -94,9 +95,15 @@ def opspace_control(
 
         gravity_comp: Compensate for gravity.
 
+        integration_step: Optional integration time step. If set to a positive
+            number, this function will update `ab` with the expected position
+            and velocity of the robot after applying the returned command
+            torques `tau` for the given timsetep. This is helpful if the robot
+            only supports position/velocity control, not torque control.
+
     Returns:
-        2-tuple (tau, converged), where `tau` is an [N] array of torques (N is
-        the dof of the given articulated body), and `converged` is a boolean
+        2-tuple (`tau`, `converged`), where `tau` is an [N] array of torques (N
+        is the dof of the given articulated body), and `converged` is a boolean
         that indicates whether the position and orientation convergence criteria
         are satisfied, if given.
     """
@@ -165,6 +172,10 @@ def opspace_control(
     converged = is_converged(pos_threshold, x_err, dx) and is_converged(
         ori_threshold, w_err, w
     )
+
+    # Apply command torques to update ab.q, ab.dq.
+    if integration_step is not None:
+        spatialdyn.integrate(ab, tau_cmd, integration_step)
 
     return tau_cmd, converged
 
