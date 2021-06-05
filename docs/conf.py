@@ -78,7 +78,7 @@ html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 # -- Extension configuration -------------------------------------------------
 
 autosummary_generate = True  # Run sphinx-autogen on make
-autosummary_imported_members = True  # Document pyspatialdyn symbols imported in spatialdyn
+autosummary_imported_members = True  # Document spatialdyn symbols imported in spatialdyn
 
 # # Setup the breathe extension.
 # breathe_projects = {

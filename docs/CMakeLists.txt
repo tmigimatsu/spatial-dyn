@@ -13,4 +13,4 @@ add_custom_target(spatialdyn_docs ALL
     COMMAND pipenv run make -C docs clean && pipenv run make -C docs
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
-add_dependencies(spatialdyn_docs pyspatialdyn)
+add_dependencies(spatialdyn_docs spatialdyn)
