@@ -26,17 +26,15 @@ jobs:
 
       - name: Build
         run: |
-          pipenv shell
           mkdir -p build
           cmake -B build -DBUILD_PYTHON=ON -DBUILD_DOCS=ON
           # spatialdyn needs to be in the virtual environment.
-          pip install -e . -vvv
+          pipenv run pip install -e . -vvv
 
       - name: Generate docs
         run: |
-          pipenv shell
           cd build
-          make spatialdyn_docs
+          pipenv run make spatialdyn_docs
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
