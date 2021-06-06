@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '.github/workflows/builds.yaml'
+      - '.github/workflows/tests.yaml'
+      - '*.md'
   pull_request:
     branches:
       - main
@@ -26,7 +30,11 @@ jobs:
           cmake -B build -DBUILD_PYTHON=ON -DBUILD_DOCS=ON
           # spatialdyn needs to be in the virtual environment.
           pip install -e . -vvv
-          cmake --build build
+
+      - name: Generate docs
+        run: |
+          cd build
+          make spatialdyn_docs
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3

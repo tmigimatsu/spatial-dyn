@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '.github/workflows/builds.yaml'
+      - '.github/workflows/docs.yaml'
+      - '*.md'
   pull_request:
     branches:
       - main
