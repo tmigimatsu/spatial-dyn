@@ -1,0 +1,6 @@
+spatialdyn.centrifugal\_coriolis
+================================
+
+.. currentmodule:: spatialdyn
+
+.. autofunction:: centrifugal_coriolis

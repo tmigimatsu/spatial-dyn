@@ -1,0 +1,6 @@
+spatialdyn.external\_torques
+============================
+
+.. currentmodule:: spatialdyn
+
+.. autofunction:: external_torques

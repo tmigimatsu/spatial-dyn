@@ -1,0 +1,6 @@
+spatialdyn.integrate
+====================
+
+.. currentmodule:: spatialdyn
+
+.. autofunction:: integrate

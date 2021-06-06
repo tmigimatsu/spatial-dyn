@@ -1,0 +1,6 @@
+spatialdyn.orientation
+======================
+
+.. currentmodule:: spatialdyn
+
+.. autofunction:: orientation

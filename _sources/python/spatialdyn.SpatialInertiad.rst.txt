@@ -1,0 +1,33 @@
+spatialdyn.SpatialInertiad
+==========================
+
+.. currentmodule:: spatialdyn
+
+.. autoclass:: SpatialInertiad
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SpatialInertiad.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SpatialInertiad.I_com
+      ~SpatialInertiad.com
+      ~SpatialInertiad.mass
+   
+   

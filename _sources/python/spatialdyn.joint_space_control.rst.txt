@@ -1,0 +1,6 @@
+spatialdyn.joint\_space\_control
+================================
+
+.. currentmodule:: spatialdyn
+
+.. autofunction:: joint_space_control

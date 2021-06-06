@@ -1,0 +1,6 @@
+spatialdyn.mdot
+===============
+
+.. currentmodule:: spatialdyn
+
+.. autofunction:: mdot

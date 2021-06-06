@@ -1,0 +1,6 @@
+spatialdyn.inverse\_dynamics
+============================
+
+.. currentmodule:: spatialdyn
+
+.. autofunction:: inverse_dynamics

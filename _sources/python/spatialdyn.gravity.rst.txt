@@ -1,0 +1,6 @@
+spatialdyn.gravity
+==================
+
+.. currentmodule:: spatialdyn
+
+.. autofunction:: gravity

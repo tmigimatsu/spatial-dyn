@@ -1,0 +1,6 @@
+spatialdyn.hessian
+==================
+
+.. currentmodule:: spatialdyn
+
+.. autofunction:: hessian

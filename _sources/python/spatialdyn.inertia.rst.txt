@@ -1,0 +1,6 @@
+spatialdyn.inertia
+==================
+
+.. currentmodule:: spatialdyn
+
+.. autofunction:: inertia

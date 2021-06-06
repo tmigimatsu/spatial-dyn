@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>spatialdyn.ArticulatedBody &#8212; spatialdyn  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/bootstrap-sphinx.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="spatialdyn.Geometry" href="spatialdyn.Geometry.html" />
+    <link rel="prev" title="spatialdyn.position" href="spatialdyn.position.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          spatialdyn</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api_documentation.html">API Documentation</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">spatialdyn.ArticulatedBody</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="spatialdyn.position.html" title="Previous Chapter: spatialdyn.position"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; spatialdyn.position</span>
+    </a>
+  </li>
+  <li>
+    <a href="spatialdyn.Geometry.html" title="Next Chapter: spatialdyn.Geometry"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">spatialdyn.Geometry &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/python/spatialdyn.ArticulatedBody.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">spatialdyn.ArticulatedBody</a></li>
+</ul>
+
+        </div>
+      </div>
+    <div class="body col-md-9 content" role="main">
+      
+  <section id="spatialdyn-articulatedbody">
+<h1>spatialdyn.ArticulatedBody<a class="headerlink" href="#spatialdyn-articulatedbody" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="spatialdyn.ArticulatedBody">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spatialdyn.</span></span><span class="sig-name descname"><span class="pre">ArticulatedBody</span></span><a class="headerlink" href="#spatialdyn.ArticulatedBody" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="spatialdyn.ArticulatedBody.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spatialdyn.ArticulatedBody.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overloaded function.</p>
+<ol class="arabic simple">
+<li><p>__init__(self: spatialdyn.spatialdyn.ArticulatedBody) -&gt; None</p></li>
+<li><p>__init__(self: spatialdyn.spatialdyn.ArticulatedBody, arg0: str) -&gt; None</p></li>
+<li><p>__init__(self: spatialdyn.spatialdyn.ArticulatedBody, arg0: spatialdyn.spatialdyn.ArticulatedBody) -&gt; None</p></li>
+</ol>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#spatialdyn.ArticulatedBody.T_from_parent" title="spatialdyn.ArticulatedBody.T_from_parent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">T_from_parent</span></code></a>(self, i, q)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#spatialdyn.ArticulatedBody.T_from_world" title="spatialdyn.ArticulatedBody.T_from_world"><code class="xref py py-obj docutils literal notranslate"><span class="pre">T_from_world</span></code></a>(self, i, q)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#spatialdyn.ArticulatedBody.T_to_parent" title="spatialdyn.ArticulatedBody.T_to_parent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">T_to_parent</span></code></a>(self, i, q)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#spatialdyn.ArticulatedBody.T_to_world" title="spatialdyn.ArticulatedBody.T_to_world"><code class="xref py py-obj docutils literal notranslate"><span class="pre">T_to_world</span></code></a>(self, i, q)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#spatialdyn.ArticulatedBody.__init__" title="spatialdyn.ArticulatedBody.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Overloaded function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#spatialdyn.ArticulatedBody.add_load" title="spatialdyn.ArticulatedBody.add_load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_load</span></code></a>(self, inertia, idx_link)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#spatialdyn.ArticulatedBody.add_rigid_body" title="spatialdyn.ArticulatedBody.add_rigid_body"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_rigid_body</span></code></a>(self, rb, id_parent)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#spatialdyn.ArticulatedBody.ancestors" title="spatialdyn.ArticulatedBody.ancestors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ancestors</span></code></a>(self, arg0)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#spatialdyn.ArticulatedBody.clear_load" title="spatialdyn.ArticulatedBody.clear_load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_load</span></code></a>(self, idx_link)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#spatialdyn.ArticulatedBody.map" title="spatialdyn.ArticulatedBody.map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map</span></code></a>(self, arg0, float])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#spatialdyn.ArticulatedBody.replace_load" title="spatialdyn.ArticulatedBody.replace_load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">replace_load</span></code></a>(self, inertia, idx_link)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#spatialdyn.ArticulatedBody.subtree" title="spatialdyn.ArticulatedBody.subtree"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subtree</span></code></a>(self, arg0)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">T_base_to_world</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dof</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dq</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">g</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">graphics</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">inertia_base</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">inertia_load</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">q</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">rigid_bodies</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="spatialdyn.ArticulatedBody.T_from_parent">
+<span class="sig-name descname"><span class="pre">T_from_parent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#spatialdyn.ArticulatedBody" title="spatialdyn.spatialdyn.ArticulatedBody"><span class="pre">spatialdyn.spatialdyn.ArticulatedBody</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><span class="pre">object</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Eigen::Transform&lt;double,</span> <span class="pre">3,</span> <span class="pre">1,</span> <span class="pre">0&gt;</span><a class="headerlink" href="#spatialdyn.ArticulatedBody.T_from_parent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spatialdyn.ArticulatedBody.T_from_world">
+<span class="sig-name descname"><span class="pre">T_from_world</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#spatialdyn.ArticulatedBody" title="spatialdyn.spatialdyn.ArticulatedBody"><span class="pre">spatialdyn.spatialdyn.ArticulatedBody</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><span class="pre">object</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Eigen::Transform&lt;double,</span> <span class="pre">3,</span> <span class="pre">1,</span> <span class="pre">0&gt;</span><a class="headerlink" href="#spatialdyn.ArticulatedBody.T_from_world" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spatialdyn.ArticulatedBody.T_to_parent">
+<span class="sig-name descname"><span class="pre">T_to_parent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#spatialdyn.ArticulatedBody" title="spatialdyn.spatialdyn.ArticulatedBody"><span class="pre">spatialdyn.spatialdyn.ArticulatedBody</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><span class="pre">object</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Eigen::Transform&lt;double,</span> <span class="pre">3,</span> <span class="pre">1,</span> <span class="pre">0&gt;</span><a class="headerlink" href="#spatialdyn.ArticulatedBody.T_to_parent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spatialdyn.ArticulatedBody.T_to_world">
+<span class="sig-name descname"><span class="pre">T_to_world</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#spatialdyn.ArticulatedBody" title="spatialdyn.spatialdyn.ArticulatedBody"><span class="pre">spatialdyn.spatialdyn.ArticulatedBody</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><span class="pre">object</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Eigen::Transform&lt;double,</span> <span class="pre">3,</span> <span class="pre">1,</span> <span class="pre">0&gt;</span><a class="headerlink" href="#spatialdyn.ArticulatedBody.T_to_world" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spatialdyn.ArticulatedBody.add_load">
+<span class="sig-name descname"><span class="pre">add_load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self:</span> <span class="pre">spatialdyn.spatialdyn.ArticulatedBody</span></em>, <em class="sig-param"><span class="pre">inertia:</span> <span class="pre">spatial_dyn::SpatialInertia&lt;double&gt;</span></em>, <em class="sig-param"><span class="pre">idx_link:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">-1</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><span class="pre">None</span></a><a class="headerlink" href="#spatialdyn.ArticulatedBody.add_load" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spatialdyn.ArticulatedBody.add_rigid_body">
+<span class="sig-name descname"><span class="pre">add_rigid_body</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self:</span> <span class="pre">spatialdyn.spatialdyn.ArticulatedBody</span></em>, <em class="sig-param"><span class="pre">rb:</span> <span class="pre">spatial_dyn::RigidBody</span></em>, <em class="sig-param"><span class="pre">id_parent:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">-1</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a><a class="headerlink" href="#spatialdyn.ArticulatedBody.add_rigid_body" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spatialdyn.ArticulatedBody.ancestors">
+<span class="sig-name descname"><span class="pre">ancestors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#spatialdyn.ArticulatedBody" title="spatialdyn.spatialdyn.ArticulatedBody"><span class="pre">spatialdyn.spatialdyn.ArticulatedBody</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg0</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#spatialdyn.ArticulatedBody.ancestors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spatialdyn.ArticulatedBody.clear_load">
+<span class="sig-name descname"><span class="pre">clear_load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#spatialdyn.ArticulatedBody" title="spatialdyn.spatialdyn.ArticulatedBody"><span class="pre">spatialdyn.spatialdyn.ArticulatedBody</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx_link</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><span class="pre">None</span></a><a class="headerlink" href="#spatialdyn.ArticulatedBody.clear_load" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spatialdyn.ArticulatedBody.map">
+<span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self:</span> <span class="pre">spatialdyn.spatialdyn.ArticulatedBody,</span> <span class="pre">arg0:</span> <span class="pre">Callable[[spatial_dyn::RigidBody],</span> <span class="pre">float]</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><span class="pre">numpy.ndarray</span></a><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span> </span><span class="pre">1</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#spatialdyn.ArticulatedBody.map" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spatialdyn.ArticulatedBody.replace_load">
+<span class="sig-name descname"><span class="pre">replace_load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self:</span> <span class="pre">spatialdyn.spatialdyn.ArticulatedBody</span></em>, <em class="sig-param"><span class="pre">inertia:</span> <span class="pre">spatial_dyn::SpatialInertia&lt;double&gt;</span></em>, <em class="sig-param"><span class="pre">idx_link:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">-1</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><span class="pre">None</span></a><a class="headerlink" href="#spatialdyn.ArticulatedBody.replace_load" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spatialdyn.ArticulatedBody.subtree">
+<span class="sig-name descname"><span class="pre">subtree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#spatialdyn.ArticulatedBody" title="spatialdyn.spatialdyn.ArticulatedBody"><span class="pre">spatialdyn.spatialdyn.ArticulatedBody</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg0</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#spatialdyn.ArticulatedBody.subtree" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2020, Toki Migimatsu.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.0.2.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

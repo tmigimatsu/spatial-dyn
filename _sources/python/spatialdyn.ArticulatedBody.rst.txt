@@ -1,0 +1,51 @@
+spatialdyn.ArticulatedBody
+==========================
+
+.. currentmodule:: spatialdyn
+
+.. autoclass:: ArticulatedBody
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~ArticulatedBody.T_from_parent
+      ~ArticulatedBody.T_from_world
+      ~ArticulatedBody.T_to_parent
+      ~ArticulatedBody.T_to_world
+      ~ArticulatedBody.__init__
+      ~ArticulatedBody.add_load
+      ~ArticulatedBody.add_rigid_body
+      ~ArticulatedBody.ancestors
+      ~ArticulatedBody.clear_load
+      ~ArticulatedBody.map
+      ~ArticulatedBody.replace_load
+      ~ArticulatedBody.subtree
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ArticulatedBody.T_base_to_world
+      ~ArticulatedBody.dof
+      ~ArticulatedBody.dq
+      ~ArticulatedBody.g
+      ~ArticulatedBody.graphics
+      ~ArticulatedBody.inertia_base
+      ~ArticulatedBody.inertia_load
+      ~ArticulatedBody.name
+      ~ArticulatedBody.q
+      ~ArticulatedBody.rigid_bodies
+   
+   
