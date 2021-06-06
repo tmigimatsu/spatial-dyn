@@ -58,7 +58,7 @@ jobs:
 
       - name: Install
         run: |
-          pip install .
+          pip install . -vvv
 
   ubuntu_pip_dev:
     name: Ubuntu pip dev
@@ -68,7 +68,7 @@ jobs:
 
       - name: Install
         run: |
-          pip install -e .
+          pip install -e . -vvv
 
   macos_pip:
     name: macOS pip
@@ -78,4 +78,4 @@ jobs:
 
       - name: Install
         run: |
-          pip3 install .
+          pip3 install . -vvv
