@@ -31,11 +31,6 @@ jobs:
           # spatialdyn needs to be in the virtual environment.
           pipenv run pip install -e . -vvv
 
-      - name: Generate docs
-        run: |
-          cd build
-          pipenv run make spatialdyn_docs
-
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
