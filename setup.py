@@ -99,7 +99,7 @@ class CMakeBuild(build_ext.build_ext):
 
 # Initialize ctrl-utils before tmp folder is created.
 os.system("git submodule update --init external/ctrl_utils/ctrl-utils.git")
-os.system("git -C external/ctrl_utils/ctrl-utils.git submodule update --init external/Eigen3/eigen-git-mirror.git external/pybind11/pybind11.git")
+os.system("git -C external/ctrl_utils/ctrl-utils.git submodule update --init external/Eigen3/eigen.git external/pybind11/pybind11.git")
 
 setuptools.setup(
     name="spatialdyn",
@@ -121,6 +121,6 @@ setuptools.setup(
     },
     install_requires=[
         "numpy",
-        f"ctrlutils @ file://{pathlib.Path.cwd() / 'external' / 'ctrl_utils' / 'ctrl-utils.git'}",
+        f"ctrlutils @ file://localhost{pathlib.Path.cwd()}/external/ctrl_utils/ctrl-utils.git",
     ],
 )
