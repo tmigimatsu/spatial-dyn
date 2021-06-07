@@ -111,4 +111,5 @@ doxylink = {"spatial_dyn": ("_build/spatial_dyn.tag", "cpp/")}
 intersphinx_mapping = {
     "numpy": ("http://docs.scipy.org/doc/numpy/", None),
     "python": ("http://docs.python.org/3/", None),
+    "ctrlutils": ("https://tmigimatsu.github.io/ctrl-utils", None)
 }
