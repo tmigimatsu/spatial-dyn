@@ -1,4 +1,4 @@
-import typing
+from typing import Optional, Tuple, Union
 
 import ctrlutils
 from ctrlutils import eigen
@@ -8,13 +8,13 @@ import spatialdyn
 
 def joint_space_control(
     ab: spatialdyn.ArticulatedBody,
-    joint: typing.Optional[np.ndarray] = None,
-    joint_gains: typing.Union[typing.Tuple[float, float], np.ndarray] = (25.0, 10.0),
-    max_joint_acceleration: typing.Optional[float] = None,
-    joint_threshold: typing.Optional[typing.Tuple[float, float]] = None,
+    joint: Optional[np.ndarray] = None,
+    joint_gains: Union[Tuple[float, float], np.ndarray] = (25.0, 10.0),
+    max_joint_acceleration: Optional[float] = None,
+    joint_threshold: Optional[Tuple[float, float]] = None,
     gravity_comp: bool = True,
-    integration_step: typing.Optional[float] = None,
-) -> typing.Tuple[np.ndarray, bool]:
+    integration_step: Optional[float] = None,
+) -> Tuple[np.ndarray, bool]:
     """
     Computes command torques for controlling the robot to a given pose using
     joint space control.
@@ -83,7 +83,7 @@ def joint_space_control(
 
 
 def is_converged(
-    convergence: typing.Optional[typing.Tuple[float, float]],
+    convergence: Optional[Tuple[float, float]],
     x_err: np.ndarray,
     dx: np.ndarray,
 ) -> bool:
@@ -94,13 +94,13 @@ def is_converged(
 
 
 def _parse_joint_space_control_joint(
-    joint: typing.Optional[np.ndarray],
+    joint: Optional[np.ndarray],
     ab: spatialdyn.ArticulatedBody,
 ) -> np.ndarray:
     # Get desired joint configuration.
     return joint if joint is not None else ab.q
 
 
-def _parse_joint_space_control_max_acc(max_acc: typing.Optional[float]) -> float:
+def _parse_joint_space_control_max_acc(max_acc: Optional[float]) -> float:
     # Convert error limit.
     return max_acc if max_acc is not None else 0.0

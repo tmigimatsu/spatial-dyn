@@ -1,4 +1,4 @@
-import typing
+from typing import Optional, Tuple, Union
 
 import ctrlutils
 from ctrlutils import eigen
@@ -8,21 +8,21 @@ import spatialdyn
 
 def opspace_control(
     ab: spatialdyn.ArticulatedBody,
-    pos: typing.Optional[np.ndarray] = None,
-    ori: typing.Optional[typing.Union[np.ndarray, eigen.Quaterniond]] = None,
-    joint: typing.Optional[np.ndarray] = None,
-    pos_gains: typing.Union[typing.Tuple[float, float], np.ndarray] = (80.0, 18.0),
-    ori_gains: typing.Union[typing.Tuple[float, float], np.ndarray] = (80.0, 18.0),
-    joint_gains: typing.Union[typing.Tuple[float, float], np.ndarray] = (4.0, 1.0),
-    task_pos: typing.Optional[np.ndarray] = None,
-    task_ori: typing.Optional[np.ndarray] = None,
-    max_pos_acceleration: typing.Optional[float] = None,
-    max_ori_acceleration: typing.Optional[float] = None,
-    pos_threshold: typing.Optional[typing.Tuple[float, float]] = None,
-    ori_threshold: typing.Optional[typing.Tuple[float, float]] = None,
+    pos: Optional[np.ndarray] = None,
+    ori: Optional[Union[np.ndarray, eigen.Quaterniond]] = None,
+    joint: Optional[np.ndarray] = None,
+    pos_gains: Union[Tuple[float, float], np.ndarray] = (80.0, 18.0),
+    ori_gains: Union[Tuple[float, float], np.ndarray] = (80.0, 18.0),
+    joint_gains: Union[Tuple[float, float], np.ndarray] = (4.0, 1.0),
+    task_pos: Optional[np.ndarray] = None,
+    task_ori: Optional[np.ndarray] = None,
+    max_pos_acceleration: Optional[float] = None,
+    max_ori_acceleration: Optional[float] = None,
+    pos_threshold: Optional[Tuple[float, float]] = None,
+    ori_threshold: Optional[Union[Tuple[float, float], eigen.Quaterniond]] = None,
     gravity_comp: bool = True,
-    integration_step: typing.Optional[float] = None,
-) -> typing.Tuple[np.ndarray, bool]:
+    integration_step: Optional[float] = None,
+) -> Tuple[np.ndarray, bool]:
     """
     Computes command torques for controlling the robot to a given pose using
     Operational Space.
@@ -181,7 +181,7 @@ def opspace_control(
 
 
 def is_converged(
-    threshold: typing.Optional[typing.Tuple[float, float]],
+    threshold: Optional[Tuple[float, float]],
     x_err: np.ndarray,
     dx: np.ndarray,
 ) -> bool:
@@ -192,14 +192,14 @@ def is_converged(
 
 
 def _parse_opspace_control_task_pos(
-    task_pos: typing.Optional[np.ndarray],
+    task_pos: Optional[np.ndarray],
 ) -> np.ndarray:
     # Get task position offset.
     return task_pos if task_pos is not None else np.zeros((3,))
 
 
 def _parse_opspace_control_task_ori(
-    task_ori: typing.Optional[eigen.Quaterniond],
+    task_ori: Optional[eigen.Quaterniond],
 ) -> np.ndarray:
     # Convert task orientation in ee to rotation matrix from ee to task frame.
     if task_ori is None:
@@ -213,7 +213,7 @@ def _parse_opspace_control_task_ori(
 
 
 def _parse_opspace_control_pos(
-    pos: typing.Optional[np.ndarray],
+    pos: Optional[np.ndarray],
     ab: spatialdyn.ArticulatedBody,
     x_task_to_ee: np.ndarray,
 ) -> np.ndarray:
@@ -222,7 +222,7 @@ def _parse_opspace_control_pos(
 
 
 def _parse_opspace_control_ori(
-    ori: typing.Optional[np.ndarray],
+    ori: Optional[np.ndarray],
     ab: spatialdyn.ArticulatedBody,
     quat_ee_to_task: eigen.Quaterniond,
 ) -> eigen.Quaterniond:
@@ -241,13 +241,13 @@ def _parse_opspace_control_ori(
 
 
 def _parse_opspace_control_joint(
-    joint: typing.Optional[np.ndarray],
+    joint: Optional[np.ndarray],
     ab: spatialdyn.ArticulatedBody,
 ) -> np.ndarray:
     # Get desired joint configuration.
     return joint if joint is not None else ab.q
 
 
-def _parse_opspace_control_max_acc(max_acc: typing.Optional[float]) -> float:
+def _parse_opspace_control_max_acc(max_acc: Optional[float]) -> float:
     # Convert error limit.
     return max_acc if max_acc is not None else 0.0

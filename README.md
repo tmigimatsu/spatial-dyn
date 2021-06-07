@@ -1,4 +1,4 @@
-[![Build](https://github.com/tmigimatsu/spatial-dyn/actions/workflows/builds.yaml/badge.svg)](https://github.com/tmigimatsu/spatial-dyn/actions/workflows/builds.yaml)
+[![Builds](https://github.com/tmigimatsu/spatial-dyn/actions/workflows/builds.yaml/badge.svg)](https://github.com/tmigimatsu/spatial-dyn/actions/workflows/builds.yaml)
 [![Tests](https://github.com/tmigimatsu/spatial-dyn/actions/workflows/tests.yaml/badge.svg)](https://github.com/tmigimatsu/spatial-dyn/actions/workflows/tests.yaml)
 [![Docs](https://github.com/tmigimatsu/spatial-dyn/actions/workflows/docs.yaml/badge.svg)](https://github.com/tmigimatsu/spatial-dyn/actions/workflows/docs.yaml)
 
