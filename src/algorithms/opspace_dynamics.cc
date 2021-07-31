@@ -96,8 +96,8 @@ const Eigen::MatrixXd& InertiaInverse(const ArticulatedBody& ab, const Eigen::Ma
   auto& ops = ab.cache_->opspace_data_;
 
   if (!ops.is_lambda_inv_computed || ops.J.size() != J.size() || ops.J != J) {
-    ops.A_inv_J_bar_T = spatial_dyn::InertiaInverse(ab).solve(J.transpose());
-    ops.Lambda_inv = J * ops.A_inv_J_bar_T;
+    ops.A_inv_J_T = spatial_dyn::InertiaInverse(ab).solve(J.transpose());
+    ops.Lambda_inv = J * ops.A_inv_J_T;
     ops.J = J;
     ops.is_lambda_inv_computed = true;
     ops.is_lambda_computed = false;
@@ -115,7 +115,7 @@ const Eigen::MatrixXd& JacobianDynamicInverse(const ArticulatedBody& ab, const E
       ops.svd_epsilon != svd_epsilon) {
     // TODO: Force recompute
     opspace::Inertia(ab, J, svd_epsilon);
-    ops.J_bar = ops.A_inv_J_bar_T * ops.Lambda;
+    ops.J_bar = ops.A_inv_J_T * ops.Lambda;
     ops.is_jbar_computed = true;
   }
 

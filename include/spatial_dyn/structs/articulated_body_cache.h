@@ -98,7 +98,7 @@ struct ArticulatedBody::Cache {
 
     bool is_lambda_inv_computed = false;
     Eigen::MatrixXd Lambda_inv;
-    Eigen::MatrixXd A_inv_J_bar_T;
+    Eigen::MatrixXd A_inv_J_T;
     bool is_singular;
 
     bool is_jbar_computed = false;
