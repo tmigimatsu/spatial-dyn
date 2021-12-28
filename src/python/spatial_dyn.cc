@@ -7,6 +7,7 @@
  * Authors: Toki Migimatsu
  */
 
+#include <ctrl_utils/control.h>
 #include <ctrl_utils/eigen_string.h>
 #include <ctrl_utils/string.h>
 #include <pybind11/eigen.h>
@@ -27,6 +28,99 @@
 #include "spatial_dyn/eigen/spatial_math.h"
 #include "spatial_dyn/parsers/json.h"
 #include "spatial_dyn/parsers/urdf.h"
+
+namespace {
+
+namespace dyn = ::spatial_dyn;
+
+bool IsConverged(double threshold, Eigen::Ref<const Eigen::VectorXd> x_err) {
+  if (threshold < 0.) return true;
+  return x_err.squaredNorm() < threshold * threshold;
+}
+
+std::pair<Eigen::VectorXd, bool> ComputeOpspaceControl(
+    spatial_dyn::ArticulatedBody& ab, Eigen::Ref<const Eigen::Vector3d> x_des,
+    const Eigen::Quaterniond& quat_des, Eigen::Ref<const Eigen::VectorXd> q_des,
+    const Eigen::Matrix<double, 3, 2>& kp_kv_pos,
+    Eigen::Ref<const Eigen::Vector2d> kp_kv_ori,
+    Eigen::Ref<const Eigen::Vector2d> kp_kv_joint,
+    Eigen::Ref<const Eigen::Vector3d> x_task_to_ee,
+    const Eigen::Quaterniond* quat_ee_to_task, double ddx_max, double dw_max,
+    double x_threshold, double dx_threshold, double ori_threshold,
+    double w_threshold, bool gravity_comp, double dt) {
+  // Compute Jacobian.
+  Eigen::MatrixXd J = dyn::Jacobian(ab, -1, x_task_to_ee);
+  Eigen::Ref<Eigen::Matrix<double, 3, -1>> J_v = J.topRows<3>();
+  Eigen::Ref<Eigen::Matrix<double, 3, -1>> J_w = J.bottomRows<3>();
+  if (quat_ee_to_task) {
+    // Rotation Jacobian to task frame.
+    const Eigen::Matrix3d R_ee_to_task = quat_ee_to_task->matrix();
+    J_v = R_ee_to_task * J_v;
+    J_w = R_ee_to_task * J_w;
+  }
+
+  // Compute position PD control.
+  const Eigen::Vector3d x = dyn::Position(ab, -1, x_task_to_ee);
+  const Eigen::Vector3d dx = J_v * ab.dq();
+  Eigen::Vector3d x_err;
+  const Eigen::Vector3d ddx =
+      ctrl_utils::PdControl(x, x_des, dx, kp_kv_pos, ddx_max, &x_err);
+
+  // Get current orientation.
+  Eigen::Quaterniond quat = dyn::Orientation(ab);
+  if (quat_ee_to_task != nullptr) {
+    // Rotate quaternion to task frame.
+    quat = *quat_ee_to_task * quat;
+  }
+  // Choose the quaternion closer to quat_des so the end-effector doesn't rotate
+  // the far way around.
+  quat = ctrl_utils::NearQuaternion(quat, quat_des);
+
+  // Compute orientation PD control.
+  const Eigen::Vector3d w = J_w * ab.dq();
+  Eigen::Vector3d ori_err;
+  const Eigen::Vector3d dw =
+      ctrl_utils::PdControl(quat, quat_des, w, kp_kv_ori, dw_max, &ori_err);
+
+  // Compute opspace torques.
+  Eigen::VectorXd tau_cmd;
+  Eigen::MatrixXd N = Eigen::MatrixXd::Identity(ab.dof(), ab.dof());
+  if (dyn::opspace::IsSingular(ab, J, 0.01)) {
+    // Do only position control if the arm is in a 6-dof singularity.
+    tau_cmd = dyn::opspace::InverseDynamics(ab, J_v, ddx, &N);
+  } else {
+    // Otherwise do combined position and orientation control.
+    Eigen::Vector6d ddx_dw;
+    ddx_dw << ddx, dw;
+    tau_cmd = dyn::opspace::InverseDynamics(ab, J, ddx_dw, &N);
+  }
+
+  // Add joint task in nullspace.
+  Eigen::VectorXd q_err;
+  const Eigen::VectorXd ddq =
+      ctrl_utils::PdControl(ab.q(), q_des, ab.dq(), kp_kv_joint, 0., &q_err);
+  tau_cmd += dyn::opspace::InverseDynamics(
+      ab, Eigen::MatrixXd::Identity(ab.dof(), ab.dof()), ddq, &N);
+
+  // Add gravity compensation.
+  if (gravity_comp) {
+    tau_cmd += dyn::Gravity(ab);
+  }
+
+  // Compute convergence.
+  bool converged =
+      IsConverged(x_threshold, x_err) && IsConverged(dx_threshold, dx) &&
+      IsConverged(ori_threshold, ori_err) && IsConverged(w_threshold, w);
+
+  // Apply command torques to update ab.q, ab.dq.
+  if (dt > 0.) {
+    dyn::Integrate(ab, tau_cmd, dt);
+  }
+
+  return {tau_cmd, converged};
+}
+
+}  // namespace
 
 namespace spatial_dyn {
 
@@ -68,10 +162,10 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def("clear_load", &ArticulatedBody::ClearLoad, "idx_link"_a = -1)
       .def_property_readonly("inertia_load", &ArticulatedBody::inertia_load)
       .def_property("T_base_to_world", &ArticulatedBody::T_base_to_world,
-                    (void (ArticulatedBody::*)(const Eigen::Isometry3d&)) &
+                    (void(ArticulatedBody::*)(const Eigen::Isometry3d&)) &
                         ArticulatedBody::set_T_base_to_world)
       .def_property("inertia_base", &ArticulatedBody::inertia_base,
-                    (void (ArticulatedBody::*)(const SpatialInertiad&)) &
+                    (void(ArticulatedBody::*)(const SpatialInertiad&)) &
                         ArticulatedBody::set_inertia_base)
       .def(
           "T_to_parent",
@@ -127,11 +221,11 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def_property_readonly("id", &RigidBody::id)
       .def_property_readonly("id_parent", &RigidBody::id_parent)
       .def_property("T_to_parent", &RigidBody::T_to_parent,
-                    (void (RigidBody::*)(const Eigen::Isometry3d&)) &
+                    (void(RigidBody::*)(const Eigen::Isometry3d&)) &
                         RigidBody::set_T_to_parent)
-      .def_property("inertia", &RigidBody::inertia,
-                    (void (RigidBody::*)(const SpatialInertiad&)) &
-                        RigidBody::set_inertia)
+      .def_property(
+          "inertia", &RigidBody::inertia,
+          (void(RigidBody::*)(const SpatialInertiad&)) & RigidBody::set_inertia)
       .def_property("joint", &RigidBody::joint, &RigidBody::set_joint)
       .def("__str__",
            [](const RigidBody& rb) { return nlohmann::json(rb).dump(); })
@@ -465,6 +559,9 @@ PYBIND11_MODULE(spatialdyn, m) {
            "offset"_a = Eigen::Vector3d::Zero(),
            "f_external"_a = std::map<size_t, SpatialForced>(),
            "svd_epsilon"_a = 0.);
+
+  // Opspace control.
+  m.def("compute_opspace_control", &ComputeOpspaceControl);
 
   // urdf parser
   py::module m_urdf = m.def_submodule("urdf");

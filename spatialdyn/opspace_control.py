@@ -3,11 +3,11 @@ from typing import Optional, Tuple, Union
 import ctrlutils
 from ctrlutils import eigen
 import numpy as np
-import spatialdyn
+import spatialdyn as dyn
 
 
 def opspace_control(
-    ab: spatialdyn.ArticulatedBody,
+    ab: dyn.ArticulatedBody,
     pos: Optional[np.ndarray] = None,
     ori: Optional[Union[np.ndarray, eigen.Quaterniond]] = None,
     joint: Optional[np.ndarray] = None,
@@ -19,7 +19,8 @@ def opspace_control(
     max_pos_acceleration: Optional[float] = None,
     max_ori_acceleration: Optional[float] = None,
     pos_threshold: Optional[Tuple[float, float]] = None,
-    ori_threshold: Optional[Union[Tuple[float, float], eigen.Quaterniond]] = None,
+    ori_threshold: Optional[Union[Tuple[float, float],
+                                  eigen.Quaterniond]] = None,
     gravity_comp: bool = True,
     integration_step: Optional[float] = None,
 ) -> Tuple[np.ndarray, bool]:
@@ -115,12 +116,24 @@ def opspace_control(
     q_des = _parse_opspace_control_joint(joint, ab)
     ddx_max = _parse_opspace_control_max_acc(max_pos_acceleration)
     dw_max = _parse_opspace_control_max_acc(max_ori_acceleration)
-    kp_kv_pos = pos_gains
+    if not isinstance(pos_gains, np.ndarray) or pos_gains.size == 2:
+        kp_kv_pos = np.empty((3, 2))
+        kp_kv_pos[:, 0] = pos_gains[0]
+        kp_kv_pos[:, 1] = pos_gains[1]
+    else:
+        kp_kv_pos = pos_gains
+
     kp_kv_ori = ori_gains
     kp_kv_joint = joint_gains
+    dt = integration_step if integration_step is not None else 0.
+
+    return dyn.compute_opspace_control(ab, x_des, quat_des, q_des, kp_kv_pos, kp_kv_ori,
+                                kp_kv_joint, x_task_to_ee, quat_ee_to_task, ddx_max, dw_max,
+                                pos_threshold[0], pos_threshold[1], ori_threshold[0],
+                                ori_threshold[1], gravity_comp, dt)
 
     # Compute Jacobian.
-    J = spatialdyn.jacobian(ab, offset=x_task_to_ee)
+    J = dyn.jacobian(ab, offset=x_task_to_ee)
     J_v = J[:3]
     J_w = J[3:]
     if quat_ee_to_task is not None:
@@ -130,12 +143,12 @@ def opspace_control(
         J_w[...] = R_ee_to_task.dot(J_w)
 
     # Compute position PD control.
-    x = spatialdyn.position(ab, offset=x_task_to_ee)
+    x = dyn.position(ab, offset=x_task_to_ee)
     dx = J_v.dot(ab.dq)
     ddx, x_err = ctrlutils.pd_control(x, x_des, dx, kp_kv_pos, ddx_max)
 
     # Get current orientation.
-    quat = spatialdyn.orientation(ab)
+    quat = dyn.orientation(ab)
     if quat_ee_to_task is not None:
         # Rotate quaternion to task frame.
         quat = quat_ee_to_task * quat
@@ -149,24 +162,25 @@ def opspace_control(
 
     # Compute opspace torques.
     N = np.eye(ab.dof)
-    if spatialdyn.opspace.is_singular(ab, J, svd_epsilon=0.01):
+    if dyn.opspace.is_singular(ab, J, svd_epsilon=0.01):
         # Do only position control if the arm is in a 6-dof singularity.
-        tau_cmd = spatialdyn.opspace.inverse_dynamics(ab, J_v, ddx, N, svd_epsilon=0.01)
+        tau_cmd = dyn.opspace.inverse_dynamics(
+            ab, J_v, ddx, N, svd_epsilon=0.01)
     else:
         # Otherwise do combined position and orientation control.
-        ddx_dw = np.hstack((ddx, dw))
-        tau_cmd = spatialdyn.opspace.inverse_dynamics(
+        ddx_dw = np.concatenate((ddx, dw), axis=0)
+        tau_cmd = dyn.opspace.inverse_dynamics(
             ab, J, ddx_dw, N, svd_epsilon=0.01
         )
 
     # Add joint task in nullspace.
     I = np.eye(ab.dof)
     ddq, q_err = ctrlutils.pd_control(ab.q, q_des, ab.dq, kp_kv_joint)
-    tau_cmd += spatialdyn.opspace.inverse_dynamics(ab, I, ddq, N)
+    tau_cmd += dyn.opspace.inverse_dynamics(ab, I, ddq, N)
 
     # Add gravity compensation.
     if gravity_comp:
-        tau_cmd += spatialdyn.gravity(ab)
+        tau_cmd += dyn.gravity(ab)
 
     # Compute convergence.
     converged = is_converged(pos_threshold, x_err, dx) and is_converged(
@@ -175,7 +189,7 @@ def opspace_control(
 
     # Apply command torques to update ab.q, ab.dq.
     if integration_step is not None:
-        spatialdyn.integrate(ab, tau_cmd, integration_step)
+        dyn.integrate(ab, tau_cmd, integration_step)
 
     return tau_cmd, converged
 
@@ -185,10 +199,13 @@ def is_converged(
     x_err: np.ndarray,
     dx: np.ndarray,
 ) -> bool:
+    def less_than_norm(x: np.ndarray, norm: float) -> bool:
+        return x.dot(x) < norm * norm
     if threshold is None:
         return True
     x_thresh, dx_thresh = threshold
-    return np.linalg.norm(x_err) < x_thresh and np.linalg.norm(dx) < dx_thresh
+    return less_than_norm(x_err, x_thresh) and less_than_norm(dx, dx_thresh)
+    # return np.linalg.norm(x_err) < x_thresh and np.linalg.norm(dx) < dx_thresh
 
 
 def _parse_opspace_control_task_pos(
@@ -199,50 +216,51 @@ def _parse_opspace_control_task_pos(
 
 
 def _parse_opspace_control_task_ori(
-    task_ori: Optional[eigen.Quaterniond],
-) -> np.ndarray:
+    task_ori: Optional[Union[np.ndarray, eigen.Quaterniond]],
+) -> eigen.Quaterniond:
     # Convert task orientation in ee to rotation matrix from ee to task frame.
     if task_ori is None:
         return None
-    elif type(task_ori) is eigen.Quaterniond:
+    elif isinstance(task_ori, eigen.Quaterniond):
         return task_ori.inverse()
-    elif task_ori.shape == (4,):
-        return eigen.Quaterniond(task_ori[3], *task_ori[:3]).inverse()
+    elif task_ori.size == 4:
+        return eigen.Quaterniond(task_ori[3], task_ori[0], task_ori[1],
+                                 task_ori[2]).inverse()
     else:
         return eigen.Quaterniond(task_ori.T)
 
 
 def _parse_opspace_control_pos(
     pos: Optional[np.ndarray],
-    ab: spatialdyn.ArticulatedBody,
+    ab: dyn.ArticulatedBody,
     x_task_to_ee: np.ndarray,
 ) -> np.ndarray:
     # Get desired position.
-    return pos if pos is not None else spatialdyn.position(ab, -1, x_task_to_ee)
+    return pos if pos is not None else dyn.position(ab, -1, x_task_to_ee)
 
 
 def _parse_opspace_control_ori(
-    ori: Optional[np.ndarray],
-    ab: spatialdyn.ArticulatedBody,
+    ori: Optional[Union[np.ndarray, eigen.Quaterniond]],
+    ab: dyn.ArticulatedBody,
     quat_ee_to_task: eigen.Quaterniond,
 ) -> eigen.Quaterniond:
     # Get desired orientation.
-    if ori is None:
-        quat_des = spatialdyn.orientation(ab, -1)
+    if isinstance(ori, eigen.Quaterniond):
+        return ori
+    elif ori is None:
+        quat_des = dyn.orientation(ab, -1)
         if quat_ee_to_task is not None:
             quat_des = quat_ee_to_task * quat_des
         return quat_des
-    elif type(ori) is eigen.Quaterniond:
-        return ori
-    elif ori.shape == (4,):
-        return eigen.Quaterniond(ori[3], *ori[:3])
+    elif ori.size == 4:
+        return eigen.Quaterniond(ori[3], ori[0], ori[1], ori[2])
     else:
         return eigen.Quaterniond(ori)
 
 
 def _parse_opspace_control_joint(
     joint: Optional[np.ndarray],
-    ab: spatialdyn.ArticulatedBody,
+    ab: dyn.ArticulatedBody,
 ) -> np.ndarray:
     # Get desired joint configuration.
     return joint if joint is not None else ab.q
