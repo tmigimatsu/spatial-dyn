@@ -473,6 +473,8 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def_readwrite("mass", &SpatialInertiad::mass)
       .def_readwrite("com", &SpatialInertiad::com)
       .def_readwrite("I_com", &SpatialInertiad::I_com)
+      .def("__add__", &SpatialInertiad::operator+)
+      .def("__iadd__", &SpatialInertiad::operator+=)
       .def("__repr__", [](const SpatialInertiad& inertia) {
         return "<spatialdyn.SpatialInertiad (mass=" +
                std::to_string(inertia.mass) + ", com=[" +
