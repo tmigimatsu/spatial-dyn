@@ -31,6 +31,13 @@
 
 namespace {
 
+const uint32_t MASK_X_CONVERGED = 1 << 0;
+const uint32_t MASK_DX_CONVERGED = 1 << 1;
+const uint32_t MASK_ORI_CONVERGED = 1 << 2;
+const uint32_t MASK_W_CONVERGED = 1 << 3;
+const uint32_t MASK_SINGULAR_6 = 1 << 4;
+const uint32_t MASK_SINGULAR_3 = 1 << 5;
+
 namespace dyn = ::spatial_dyn;
 
 bool IsConverged(double threshold, Eigen::Ref<const Eigen::VectorXd> x_err) {
@@ -38,7 +45,7 @@ bool IsConverged(double threshold, Eigen::Ref<const Eigen::VectorXd> x_err) {
   return x_err.squaredNorm() < threshold * threshold;
 }
 
-std::pair<Eigen::VectorXd, bool> ComputeOpspaceControl(
+std::pair<Eigen::VectorXd, uint32_t> ComputeOpspaceControl(
     spatial_dyn::ArticulatedBody& ab, Eigen::Ref<const Eigen::Vector3d> x_des,
     const Eigen::Quaterniond& quat_des, Eigen::Ref<const Eigen::VectorXd> q_des,
     const Eigen::Matrix<double, 3, 2>& kp_kv_pos,
@@ -85,9 +92,12 @@ std::pair<Eigen::VectorXd, bool> ComputeOpspaceControl(
   // Compute opspace torques.
   Eigen::VectorXd tau_cmd;
   Eigen::MatrixXd N = Eigen::MatrixXd::Identity(ab.dof(), ab.dof());
-  if (dyn::opspace::IsSingular(ab, J, 0.01)) {
+  const bool is_singular_6 = dyn::opspace::IsSingular(ab, J, 0.01);
+  bool is_singular_3 = false;
+  if (is_singular_6) {
     // Do only position control if the arm is in a 6-dof singularity.
     tau_cmd = dyn::opspace::InverseDynamics(ab, J_v, ddx, &N);
+    is_singular_3 = dyn::opspace::IsSingular(ab, J_v, 0.01);
   } else {
     // Otherwise do combined position and orientation control.
     Eigen::Vector6d ddx_dw;
@@ -108,16 +118,20 @@ std::pair<Eigen::VectorXd, bool> ComputeOpspaceControl(
   }
 
   // Compute convergence.
-  bool converged =
-      IsConverged(x_threshold, x_err) && IsConverged(dx_threshold, dx) &&
-      IsConverged(ori_threshold, ori_err) && IsConverged(w_threshold, w);
+  uint32_t status = 0;
+  if (IsConverged(x_threshold, x_err)) status |= MASK_X_CONVERGED;
+  if (IsConverged(dx_threshold, dx)) status |= MASK_DX_CONVERGED;
+  if (IsConverged(ori_threshold, ori_err)) status |= MASK_ORI_CONVERGED;
+  if (IsConverged(w_threshold, w)) status |= MASK_W_CONVERGED;
+  if (is_singular_6) status |= MASK_SINGULAR_6;
+  if (is_singular_3) status |= MASK_SINGULAR_3;
 
   // Apply command torques to update ab.q, ab.dq.
   if (dt > 0.) {
     dyn::Integrate(ab, tau_cmd, dt);
   }
 
-  return {tau_cmd, converged};
+  return {tau_cmd, status};
 }
 
 }  // namespace
