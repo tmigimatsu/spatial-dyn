@@ -1,13 +1,12 @@
 from typing import Optional, Tuple, Union
 
-import ctrlutils
-from ctrlutils import eigen
+import ctrlutils  # type: ignore
 import numpy as np
-import spatialdyn
+import spatialdyn as dyn
 
 
 def joint_space_control(
-    ab: spatialdyn.ArticulatedBody,
+    ab: dyn.ArticulatedBody,
     joint: Optional[np.ndarray] = None,
     joint_gains: Union[Tuple[float, float], np.ndarray] = (25.0, 10.0),
     max_joint_acceleration: Optional[float] = None,
@@ -68,7 +67,7 @@ def joint_space_control(
 
     # Compute PD control.
     ddq, q_err = ctrlutils.pd_control(ab.q, q_des, ab.dq, kp_kv_joint, ddq_max)
-    tau_cmd = spatialdyn.inverse_dynamics(
+    tau_cmd = dyn.inverse_dynamics(
         ab, ddq, centrifugal_coriolis=False, gravity=gravity_comp
     )
 
@@ -77,7 +76,7 @@ def joint_space_control(
 
     # Apply command torques to update ab.q, ab.dq.
     if integration_step is not None:
-        spatialdyn.integrate(ab, tau_cmd, integration_step)
+        dyn.integrate(ab, tau_cmd, integration_step)
 
     return tau_cmd, converged
 
@@ -95,7 +94,7 @@ def is_converged(
 
 def _parse_joint_space_control_joint(
     joint: Optional[np.ndarray],
-    ab: spatialdyn.ArticulatedBody,
+    ab: dyn.ArticulatedBody,
 ) -> np.ndarray:
     # Get desired joint configuration.
     return joint if joint is not None else ab.q

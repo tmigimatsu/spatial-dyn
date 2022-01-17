@@ -7,7 +7,7 @@ verify_ssl = true
 sphinx = "*"
 sphinxcontrib-doxylink = "*"
 sphinx-autodoc-typehints = "*"
-sphinx-bootstrap-theme = "*"
+sphinx_bootstrap_theme = "*"
 
 [packages]
 

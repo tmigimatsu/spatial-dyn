@@ -1,0 +1,29 @@
+# [build-system]
+# requires = ["setuptools", "wheel"]
+# build-backend = "setuptools.build_meta:__legacy__"
+
+[tool.semantic_release]
+branch = "main"
+build_command = false
+upload_to_repository = false
+upload_to_release = false
+version_variable = [
+    "setup.py:__version__",
+    "spatialdyn/__init__.py:__version__",
+]
+version_pattern = [
+    "CMakeLists.txt:VERSION {version}$",
+]
+
+[tool.cibuildwheel]
+skip = [
+    "pp*",
+    "*-musllinux*",
+]
+
+[tool.cibuildwheel.linux]
+archs = ["auto64"]
+
+[tool.cibuildwheel.macos]
+archs = ["universal2"]
+environment = { CMAKE_OSX_ARCHITECTURES="arm64;x86_64", MACOSX_DEPLOYMENT_TARGET="10.14" }

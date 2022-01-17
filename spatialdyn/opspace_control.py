@@ -1,6 +1,6 @@
 from typing import Optional, Tuple, Union
 
-import ctrlutils
+import ctrlutils  # type: ignore
 from ctrlutils import eigen
 import numpy as np
 import spatialdyn as dyn
