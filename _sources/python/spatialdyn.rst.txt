@@ -18,6 +18,7 @@
       cartesian_pose
       centrifugal_coriolis
       composite_inertia
+      compute_opspace_control
       external_torques
       fdot
       forward_dynamics

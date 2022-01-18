@@ -20,9 +20,9 @@
 <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
 <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
 <meta name="apple-mobile-web-app-capable" content="yes">
-<script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-1.12.4.min.js "></script>
 <script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
-<script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
 <script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
 
   </head><body>
@@ -137,7 +137,7 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.angular_jacobian.html#spatialdyn.angular_jacobian" title="spatialdyn.angular_jacobian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">angular_jacobian</span></code></a>(ab, link, offset, …)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.angular_jacobian.html#spatialdyn.angular_jacobian" title="spatialdyn.angular_jacobian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">angular_jacobian</span></code></a>(ab[, link, offset, q])</p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.cartesian_pose.html#spatialdyn.cartesian_pose" title="spatialdyn.cartesian_pose"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cartesian_pose</span></code></a>(ab, link, offset, 1]] = array, q)</p></td>
@@ -149,61 +149,64 @@
 <tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.composite_inertia.html#spatialdyn.composite_inertia" title="spatialdyn.composite_inertia"><code class="xref py py-obj docutils literal notranslate"><span class="pre">composite_inertia</span></code></a>(ab, link)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.external_torques.html#spatialdyn.external_torques" title="spatialdyn.external_torques"><code class="xref py py-obj docutils literal notranslate"><span class="pre">external_torques</span></code></a>(ab, f_external, …)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.compute_opspace_control.html#spatialdyn.compute_opspace_control" title="spatialdyn.compute_opspace_control"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_opspace_control</span></code></a>(arg0, arg1, 1]], ...)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.fdot.html#spatialdyn.fdot" title="spatialdyn.fdot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fdot</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.external_torques.html#spatialdyn.external_torques" title="spatialdyn.external_torques"><code class="xref py py-obj docutils literal notranslate"><span class="pre">external_torques</span></code></a>(ab[, f_external])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.fdot.html#spatialdyn.fdot" title="spatialdyn.fdot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fdot</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.forward_dynamics.html#spatialdyn.forward_dynamics" title="spatialdyn.forward_dynamics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward_dynamics</span></code></a>(ab, tau, 1]], f_external, …)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.forward_dynamics.html#spatialdyn.forward_dynamics" title="spatialdyn.forward_dynamics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward_dynamics</span></code></a>(ab, tau[, f_external, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.forward_dynamics_aba.html#spatialdyn.forward_dynamics_aba" title="spatialdyn.forward_dynamics_aba"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward_dynamics_aba</span></code></a>(ab, tau, 1]], …)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.forward_dynamics_aba.html#spatialdyn.forward_dynamics_aba" title="spatialdyn.forward_dynamics_aba"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward_dynamics_aba</span></code></a>(ab, tau[, f_external, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.friction.html#spatialdyn.friction" title="spatialdyn.friction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">friction</span></code></a>(ab, tau, 1]], compensate, …)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.friction.html#spatialdyn.friction" title="spatialdyn.friction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">friction</span></code></a>(ab, tau[, compensate, stiction_epsilon])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.gravity.html#spatialdyn.gravity" title="spatialdyn.gravity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gravity</span></code></a>(ab)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.gravity.html#spatialdyn.gravity" title="spatialdyn.gravity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gravity</span></code></a>(ab)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.hessian.html#spatialdyn.hessian" title="spatialdyn.hessian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hessian</span></code></a>(ab, link, offset, 1]] = array)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.hessian.html#spatialdyn.hessian" title="spatialdyn.hessian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hessian</span></code></a>(ab[, link, offset])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.inertia.html#spatialdyn.inertia" title="spatialdyn.inertia"><code class="xref py py-obj docutils literal notranslate"><span class="pre">inertia</span></code></a>(ab)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.inertia.html#spatialdyn.inertia" title="spatialdyn.inertia"><code class="xref py py-obj docutils literal notranslate"><span class="pre">inertia</span></code></a>(ab)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.inertia_inverse.html#spatialdyn.inertia_inverse" title="spatialdyn.inertia_inverse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">inertia_inverse</span></code></a>(ab)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.inertia_inverse.html#spatialdyn.inertia_inverse" title="spatialdyn.inertia_inverse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">inertia_inverse</span></code></a>(ab)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.inertia_inverse_aba.html#spatialdyn.inertia_inverse_aba" title="spatialdyn.inertia_inverse_aba"><code class="xref py py-obj docutils literal notranslate"><span class="pre">inertia_inverse_aba</span></code></a>(ab)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.inertia_inverse_aba.html#spatialdyn.inertia_inverse_aba" title="spatialdyn.inertia_inverse_aba"><code class="xref py py-obj docutils literal notranslate"><span class="pre">inertia_inverse_aba</span></code></a>(ab)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.integrate.html#spatialdyn.integrate" title="spatialdyn.integrate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">integrate</span></code></a>(ab, tau, 1]], dt, f_external, …)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.integrate.html#spatialdyn.integrate" title="spatialdyn.integrate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">integrate</span></code></a>(ab, tau, dt[, f_external, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.inverse_dynamics.html#spatialdyn.inverse_dynamics" title="spatialdyn.inverse_dynamics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">inverse_dynamics</span></code></a>(ab, ddq, 1]], f_external, …)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.inverse_dynamics.html#spatialdyn.inverse_dynamics" title="spatialdyn.inverse_dynamics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">inverse_dynamics</span></code></a>(ab, ddq[, f_external, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.jacobian.html#spatialdyn.jacobian" title="spatialdyn.jacobian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">jacobian</span></code></a>(ab, link, offset, 1]] = array, q)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.jacobian.html#spatialdyn.jacobian" title="spatialdyn.jacobian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">jacobian</span></code></a>(ab[, link, offset, q])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.joint_space_control.html#spatialdyn.joint_space_control" title="spatialdyn.joint_space_control"><code class="xref py py-obj docutils literal notranslate"><span class="pre">joint_space_control</span></code></a>(ab[, joint, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.joint_space_control.html#spatialdyn.joint_space_control" title="spatialdyn.joint_space_control"><code class="xref py py-obj docutils literal notranslate"><span class="pre">joint_space_control</span></code></a>(ab[, joint, ...])</p></td>
 <td><p>Computes command torques for controlling the robot to a given pose using joint space control.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.linear_jacobian.html#spatialdyn.linear_jacobian" title="spatialdyn.linear_jacobian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">linear_jacobian</span></code></a>(ab, link, offset, 1]] = array, q)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.linear_jacobian.html#spatialdyn.linear_jacobian" title="spatialdyn.linear_jacobian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">linear_jacobian</span></code></a>(ab[, link, offset, q])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.mdot.html#spatialdyn.mdot" title="spatialdyn.mdot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mdot</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.mdot.html#spatialdyn.mdot" title="spatialdyn.mdot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mdot</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.opspace_control.html#spatialdyn.opspace_control" title="spatialdyn.opspace_control"><code class="xref py py-obj docutils literal notranslate"><span class="pre">opspace_control</span></code></a>(ab[, pos, ori, joint, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.opspace_control.html#spatialdyn.opspace_control" title="spatialdyn.opspace_control"><code class="xref py py-obj docutils literal notranslate"><span class="pre">opspace_control</span></code></a>(ab[, pos, ori, joint, ...])</p></td>
 <td><p>Computes command torques for controlling the robot to a given pose using Operational Space.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.orientation.html#spatialdyn.orientation" title="spatialdyn.orientation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">orientation</span></code></a>(ab, link, q)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.orientation.html#spatialdyn.orientation" title="spatialdyn.orientation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">orientation</span></code></a>(ab, link, q)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="spatialdyn.position.html#spatialdyn.position" title="spatialdyn.position"><code class="xref py py-obj docutils literal notranslate"><span class="pre">position</span></code></a>(ab, link, offset, 1]] = array, q)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="spatialdyn.position.html#spatialdyn.position" title="spatialdyn.position"><code class="xref py py-obj docutils literal notranslate"><span class="pre">position</span></code></a>(ab[, link, offset, q])</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -253,7 +256,7 @@
     </p>
     <p>
         &copy; Copyright 2020, Toki Migimatsu.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.1.2.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.4.0.<br/>
     </p>
   </div>
 </footer>
