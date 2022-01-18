@@ -18,6 +18,7 @@ if(NOT TARGET tinyxml2::tinyxml2)
         add_subdirectory(tinyxml2.git)
 
         set(BUILD_TESTING ${PREV_BUILD_TESTING} CACHE BOOL "" FORCE)
+        set_target_properties(tinyxml2 PROPERTIES MACOSX_RPATH ON)
     endif()
 
     add_library(tinyxml2::tinyxml2 INTERFACE IMPORTED GLOBAL)
