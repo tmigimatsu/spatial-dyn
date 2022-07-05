@@ -101,6 +101,8 @@ setuptools.setup(
     version=__version__,
     author="Toki Migimatsu",
     description="spatial-dyn library",
+    long_description="spatial-dyn is a C++/Python rigid body dynamics library.",
+    long_description_content_type="text/plain",
     url="https://github.com/tmigimatsu/spatial-dyn.git",
     license="MIT",
     packages=["spatialdyn"],
@@ -115,5 +117,5 @@ setuptools.setup(
     cmdclass={
         "build_ext": CMakeBuild,
     },
-    install_requires=[ "numpy", "ctrlutils"],
+    install_requires=["numpy", "ctrlutils"],
 )
