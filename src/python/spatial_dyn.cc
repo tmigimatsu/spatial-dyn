@@ -59,7 +59,7 @@ std::pair<Eigen::VectorXd, uint32_t> ComputeOpspaceControl(
   Eigen::MatrixXd J = dyn::Jacobian(ab, -1, x_task_to_ee);
   Eigen::Ref<Eigen::Matrix<double, 3, -1>> J_v = J.topRows<3>();
   Eigen::Ref<Eigen::Matrix<double, 3, -1>> J_w = J.bottomRows<3>();
-  if (quat_ee_to_task) {
+  if (quat_ee_to_task != nullptr) {
     // Rotation Jacobian to task frame.
     const Eigen::Matrix3d R_ee_to_task = quat_ee_to_task->matrix();
     J_v = R_ee_to_task * J_v;
@@ -145,8 +145,8 @@ PYBIND11_MODULE(spatialdyn, m) {
   // Articulated body
   py::class_<ArticulatedBody>(m, "ArticulatedBody")
       .def(py::init<>())
-      .def(py::init<const std::string&>())
-      .def(py::init<const ArticulatedBody&>())
+      .def(py::init<const std::string&>(), "name"_a)
+      .def(py::init<const ArticulatedBody&>(), "ab"_a)
       .def_readwrite("name", &ArticulatedBody::name)
       .def_readwrite("graphics", &ArticulatedBody::graphics)
       .def_property_readonly("dof", &ArticulatedBody::dof)
@@ -279,7 +279,7 @@ PYBIND11_MODULE(spatialdyn, m) {
 
   // Graphics
   py::class_<Graphics>(m, "Graphics")
-      .def(py::init<const std::string&>())
+      .def(py::init<const std::string&>(), "name"_a)
       .def_readwrite("name", &Graphics::name)
       .def_readwrite("T_to_parent", &Graphics::T_to_parent)
       .def_readwrite("geometry", &Graphics::geometry)
@@ -483,12 +483,18 @@ PYBIND11_MODULE(spatialdyn, m) {
   // Spatial inertia
   py::class_<SpatialInertiad>(m, "SpatialInertiad")
       .def(py::init<>())
-      .def(py::init<double, const Eigen::Vector3d&, const Eigen::Vector6d>())
+      .def(py::init<double, const Eigen::Vector3d&, const Eigen::Vector6d>(),
+           "mass"_a, "com"_a, "I_com"_a)
       .def_readwrite("mass", &SpatialInertiad::mass)
       .def_readwrite("com", &SpatialInertiad::com)
       .def_readwrite("I_com", &SpatialInertiad::I_com)
       .def("__add__", &SpatialInertiad::operator+)
       .def("__iadd__", &SpatialInertiad::operator+=)
+      // TODO: rmul doesn't seem to work. mul isn't correct notation.
+      .def("__mul__", [](const SpatialInertiad& inertia,
+                         const Eigen::Isometry3d& T) { return T * inertia; })
+      .def("__rmul__", [](const SpatialInertiad& inertia,
+                          const Eigen::Isometry3d& T) { return T * inertia; })
       .def("__repr__", [](const SpatialInertiad& inertia) {
         return "<spatialdyn.SpatialInertiad (mass=" +
                std::to_string(inertia.mass) + ", com=[" +
