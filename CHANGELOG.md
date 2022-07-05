@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v1.4.2 (2022-07-05)
+### Fix
+* Add long description to setup ([`5bcc5dc`](https://github.com/tmigimatsu/spatial-dyn/commit/5bcc5dccaf4fbdc680d23daab38f6fa279457303))
+* Add inertia transformation python binding ([`f5338a4`](https://github.com/tmigimatsu/spatial-dyn/commit/f5338a4924b0816d8651ee869a5ea46ad71d6dfa))
+
 ## v1.4.1 (2022-01-18)
 ### Fix
 * Set tinyxml2 rpath on macos ([`74e7da2`](https://github.com/tmigimatsu/spatial-dyn/commit/74e7da2a63f89e1d768915f82dfc58b15ed8b8f4))
