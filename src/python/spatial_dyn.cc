@@ -483,11 +483,12 @@ PYBIND11_MODULE(spatialdyn, m) {
   // Spatial inertia
   py::class_<SpatialInertiad>(m, "SpatialInertiad")
       .def(py::init<>())
-      .def(py::init<double, const Eigen::Vector3d&, const Eigen::Vector6d>(),
+      .def(py::init<double, const Eigen::Vector3d&, const Eigen::Vector6d&>(),
            "mass"_a, "com"_a, "I_com"_a)
       .def_readwrite("mass", &SpatialInertiad::mass)
       .def_readwrite("com", &SpatialInertiad::com)
       .def_readwrite("I_com", &SpatialInertiad::I_com)
+      .def("I_com_flat", &SpatialInertiad::I_com_flat)
       .def("__add__", &SpatialInertiad::operator+)
       .def("__iadd__", &SpatialInertiad::operator+=)
       // TODO: rmul doesn't seem to work. mul isn't correct notation.
@@ -499,8 +500,19 @@ PYBIND11_MODULE(spatialdyn, m) {
         return "<spatialdyn.SpatialInertiad (mass=" +
                std::to_string(inertia.mass) + ", com=[" +
                ctrl_utils::EncodeMatlab(inertia.com) + "], I_com=[" +
-               ctrl_utils::EncodeMatlab(inertia.I_com_flat()) + "])>";
-      });
+               ctrl_utils::EncodeMatlab(inertia.I_com_flat()) + "])>"; })
+      .def(py::pickle(
+        [](const SpatialInertiad& inertia) {
+          return py::make_tuple(inertia.mass, inertia.com, inertia.I_com_flat());
+        },
+        [](py::tuple t) {
+          if (t.size() != 3) {
+            throw std::runtime_error("Invalid SpatialInertiad pickle");
+          }
+          return SpatialInertiad(t[0].cast<double>(), t[1].cast<Eigen::Vector3d>(),
+                                 t[2].cast<Eigen::Vector6d>());
+        }
+      ));
 
   // opspace dynamics
   py::module m_op = m.def_submodule("opspace");
