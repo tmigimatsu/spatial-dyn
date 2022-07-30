@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.4.4 (2022-07-30)
+### Fix
+* Commit SpatialInertiad pickling ([`0954bf7`](https://github.com/tmigimatsu/spatial-dyn/commit/0954bf7f4260bcba176410eae6a5c1051ac487ad))
+
 ## v1.4.3 (2022-07-30)
 ### Fix
 * Implement SpatialInertiad pickling ([`ba42d7d`](https://github.com/tmigimatsu/spatial-dyn/commit/ba42d7d3c6713e67c07fee0bd1738273e6052b90))
