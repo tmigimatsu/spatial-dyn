@@ -16,6 +16,7 @@ spatialdyn.SpatialInertiad
 
    .. autosummary::
    
+      ~SpatialInertiad.I_com_flat
       ~SpatialInertiad.__init__
    
    
