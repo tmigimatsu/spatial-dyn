@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>spatialdyn.external_torques &#8212; spatialdyn  documentation</title>
+    <title>spatialdyn.inverse_kinematics &#8212; spatialdyn  documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/bootstrap-sphinx.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -14,8 +14,8 @@
     <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="spatialdyn.fdot" href="spatialdyn.fdot.html" />
-    <link rel="prev" title="spatialdyn.compute_opspace_control" href="spatialdyn.compute_opspace_control.html" />
+    <link rel="next" title="spatialdyn.jacobian" href="spatialdyn.jacobian.html" />
+    <link rel="prev" title="spatialdyn.inverse_dynamics" href="spatialdyn.inverse_dynamics.html" />
 <meta charset='utf-8'>
 <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
 <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
@@ -69,7 +69,7 @@
   <ul class="dropdown-menu localtoc"
       role="menu"
       aria-labelledby="dLabelLocalToc"><ul>
-<li><a class="reference internal" href="#">spatialdyn.external_torques</a></li>
+<li><a class="reference internal" href="#">spatialdyn.inverse_kinematics</a></li>
 </ul>
 </ul>
 </li>
@@ -79,11 +79,11 @@
               
                 
   <li>
-    <a href="spatialdyn.compute_opspace_control.html" title="Previous Chapter: spatialdyn.compute_opspace_control"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; spatialdyn.co...</span>
+    <a href="spatialdyn.inverse_dynamics.html" title="Previous Chapter: spatialdyn.inverse_dynamics"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; spatialdyn.in...</span>
     </a>
   </li>
   <li>
-    <a href="spatialdyn.fdot.html" title="Next Chapter: spatialdyn.fdot"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">spatialdyn.fdot &raquo;</span>
+    <a href="spatialdyn.jacobian.html" title="Next Chapter: spatialdyn.jacobian"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">spatialdyn.jacobian &raquo;</span>
     </a>
   </li>
               
@@ -93,7 +93,7 @@
             
               <li class="hidden-sm">
 <div id="sourcelink">
-  <a href="../_sources/python/spatialdyn.external_torques.rst.txt"
+  <a href="../_sources/python/spatialdyn.inverse_kinematics.rst.txt"
      rel="nofollow">Source</a>
 </div></li>
             
@@ -117,24 +117,19 @@
   <div class="row">
       <div class="col-md-3">
         <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
-<li><a class="reference internal" href="#">spatialdyn.external_torques</a></li>
+<li><a class="reference internal" href="#">spatialdyn.inverse_kinematics</a></li>
 </ul>
 
         </div>
       </div>
     <div class="body col-md-9 content" role="main">
       
-  <section id="spatialdyn-external-torques">
-<h1>spatialdyn.external_torques<a class="headerlink" href="#spatialdyn-external-torques" title="Permalink to this headline">¶</a></h1>
+  <section id="spatialdyn-inverse-kinematics">
+<h1>spatialdyn.inverse_kinematics<a class="headerlink" href="#spatialdyn-inverse-kinematics" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="spatialdyn.external_torques">
-<span class="sig-prename descclassname"><span class="pre">spatialdyn.</span></span><span class="sig-name descname"><span class="pre">external_torques</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spatialdyn.external_torques" title="Permalink to this definition">¶</a></dt>
-<dd><p>Overloaded function.</p>
-<ol class="arabic simple">
-<li><p>external_torques(ab: spatialdyn.spatialdyn.ArticulatedBody, f_external: Dict[int, numpy.ndarray[float64[6, 1]]] = {}) -&gt; numpy.ndarray[float64[m, 1]]</p></li>
-<li><p>external_torques(ab: spatialdyn.spatialdyn.ArticulatedBody, f_external: Dict[int, numpy.ndarray[float64[6, 1]]] = {}) -&gt; numpy.ndarray[float64[m, 1]]</p></li>
-</ol>
-</dd></dl>
+<dt class="sig sig-object py" id="spatialdyn.inverse_kinematics">
+<span class="sig-prename descclassname"><span class="pre">spatialdyn.</span></span><span class="sig-name descname"><span class="pre">inverse_kinematics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">ab:</span> <span class="pre">spatialdyn.spatialdyn.ArticulatedBody,</span> <span class="pre">x:</span> <span class="pre">numpy.ndarray[float64[3,</span> <span class="pre">1]],</span> <span class="pre">quat:</span> <span class="pre">Eigen::Quaternion&lt;double,</span> <span class="pre">0&gt;,</span> <span class="pre">link:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">-1,</span> <span class="pre">offset:</span> <span class="pre">numpy.ndarray[float64[3,</span> <span class="pre">1]]</span> <span class="pre">=</span> <span class="pre">array([0.,</span> <span class="pre">0.,</span> <span class="pre">0.])</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.23)"><span class="pre">numpy.ndarray</span></a><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#spatialdyn.inverse_kinematics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </section>
 

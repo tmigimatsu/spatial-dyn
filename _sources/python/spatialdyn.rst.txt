@@ -31,6 +31,7 @@
       inertia_inverse_aba
       integrate
       inverse_dynamics
+      inverse_kinematics
       jacobian
       joint_space_control
       linear_jacobian
