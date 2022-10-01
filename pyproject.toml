@@ -1,29 +1,44 @@
-# [build-system]
-# requires = ["setuptools", "wheel"]
-# build-backend = "setuptools.build_meta:__legacy__"
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spatialdyn"
+version = "1.4.4"
+authors = [
+    {name = "Toki Migimatsu", email = "takatoki@cs.stanford.edu"}
+]
+description = "Rigid body dynamics library"
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent"
+]
+
+[project.urls]
+Homepage = "https://github.com/tmigimatsu/spatial-dyn.git"
 
 [tool.semantic_release]
 branch = "main"
 build_command = false
 upload_to_repository = false
 upload_to_release = false
-version_variable = [
-    "setup.py:__version__",
-    "spatialdyn/__init__.py:__version__",
-]
-version_pattern = [
-    "CMakeLists.txt:VERSION {version}$",
-]
+version_variable = ["setup.py:__version__", "spatialdyn/__init__.py:__version__"]
+version_pattern = ["CMakeLists.txt:VERSION {version}$"]
+version_toml = ["pyproject.toml:project.version"]
 
 [tool.cibuildwheel]
-skip = [
-    "pp*",
-    "*-musllinux*",
-]
+skip = ["cp36-*", "pp*", "*-musllinux*"]
 
 [tool.cibuildwheel.linux]
 archs = ["auto64"]
 
 [tool.cibuildwheel.macos]
 archs = ["universal2"]
-environment = { CMAKE_OSX_ARCHITECTURES="arm64;x86_64", MACOSX_DEPLOYMENT_TARGET="10.14" }
+
+[tool.cibuildwheel.macos.environment]
+CMAKE_OSX_ARCHITECTURES = "arm64;x86_64"
+MACOSX_DEPLOYMENT_TARGET = "10.14"
