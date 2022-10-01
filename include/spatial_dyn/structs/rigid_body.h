@@ -71,12 +71,14 @@ class RigidBody {
    * @see Python: spatialdyn.RigidBody.id
    */
   int id() const { return id_; }
+  void set_id(int id) { id_ = id; }
 
   /**
    * @return ID of the rigid body's parent as assigned by ArticulatedBody::AddRigidBody().
    * @see Python: spatialdyn.RigidBody.id_parent
    */
   int id_parent() const { return id_parent_; }
+  void set_id_parent(int id_parent) { id_parent_ = id_parent; }
 
   /**
    * @return Fixed transform from the rigid body's frame to its parent's frame
