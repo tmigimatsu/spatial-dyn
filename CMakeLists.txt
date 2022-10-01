@@ -11,7 +11,7 @@ cmake_minimum_required(VERSION 3.11)
 
 # Define project
 project(spatial_dyn
-    VERSION 1.4.4
+    VERSION 1.5.0
     DESCRIPTION "Rigid body dynamics"
     LANGUAGES CXX
 )
