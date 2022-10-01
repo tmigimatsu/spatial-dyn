@@ -1,6 +1,0 @@
-spatialdyn.linear\_jacobian
-===========================
-
-.. currentmodule:: spatialdyn
-
-.. autofunction:: linear_jacobian

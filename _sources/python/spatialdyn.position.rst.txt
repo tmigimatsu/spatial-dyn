@@ -1,6 +1,0 @@
-spatialdyn.position
-===================
-
-.. currentmodule:: spatialdyn
-
-.. autofunction:: position

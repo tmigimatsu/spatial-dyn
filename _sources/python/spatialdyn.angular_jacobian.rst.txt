@@ -1,6 +1,0 @@
-spatialdyn.angular\_jacobian
-============================
-
-.. currentmodule:: spatialdyn
-
-.. autofunction:: angular_jacobian

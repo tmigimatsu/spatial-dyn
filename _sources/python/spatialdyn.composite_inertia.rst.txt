@@ -1,6 +1,0 @@
-spatialdyn.composite\_inertia
-=============================
-
-.. currentmodule:: spatialdyn
-
-.. autofunction:: composite_inertia

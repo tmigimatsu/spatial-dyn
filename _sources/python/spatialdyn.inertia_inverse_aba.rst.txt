@@ -1,6 +1,0 @@
-spatialdyn.inertia\_inverse\_aba
-================================
-
-.. currentmodule:: spatialdyn
-
-.. autofunction:: inertia_inverse_aba

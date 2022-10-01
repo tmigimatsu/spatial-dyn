@@ -1,6 +1,0 @@
-spatialdyn.friction
-===================
-
-.. currentmodule:: spatialdyn
-
-.. autofunction:: friction

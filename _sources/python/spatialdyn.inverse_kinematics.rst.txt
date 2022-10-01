@@ -1,6 +1,0 @@
-spatialdyn.inverse\_kinematics
-==============================
-
-.. currentmodule:: spatialdyn
-
-.. autofunction:: inverse_kinematics

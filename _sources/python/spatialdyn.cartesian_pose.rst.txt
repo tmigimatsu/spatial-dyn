@@ -1,6 +1,0 @@
-spatialdyn.cartesian\_pose
-==========================
-
-.. currentmodule:: spatialdyn
-
-.. autofunction:: cartesian_pose

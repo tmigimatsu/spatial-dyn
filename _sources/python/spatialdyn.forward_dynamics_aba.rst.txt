@@ -1,6 +1,0 @@
-spatialdyn.forward\_dynamics\_aba
-=================================
-
-.. currentmodule:: spatialdyn
-
-.. autofunction:: forward_dynamics_aba

@@ -1,6 +1,0 @@
-spatialdyn.forward\_dynamics
-============================
-
-.. currentmodule:: spatialdyn
-
-.. autofunction:: forward_dynamics

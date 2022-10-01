@@ -1,6 +1,0 @@
-spatialdyn.opspace\_control
-===========================
-
-.. currentmodule:: spatialdyn
-
-.. autofunction:: opspace_control

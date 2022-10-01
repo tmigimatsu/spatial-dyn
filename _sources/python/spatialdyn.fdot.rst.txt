@@ -1,6 +1,0 @@
-spatialdyn.fdot
-===============
-
-.. currentmodule:: spatialdyn
-
-.. autofunction:: fdot
