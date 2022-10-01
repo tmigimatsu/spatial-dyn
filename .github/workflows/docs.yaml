@@ -22,7 +22,7 @@ jobs:
 
       - name: Install pip dependencies
         run: |
-          sudp apt update
+          sudo apt update
           sudo apt install -y doxygen
           pip install pipenv
           pipenv install --dev
