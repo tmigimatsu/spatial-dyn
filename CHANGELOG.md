@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.5.1 (2023-04-26)
+### Fix
+* Initialize inertia matrix ([`de0435a`](https://github.com/tmigimatsu/spatial-dyn/commit/de0435a87e79ecbbaa060bcdbc7625bb5fa3899a))
+
 ## v1.5.0 (2022-10-01)
 ### Feature
 * Implement ik and pickling, fix urdf rpy ([`2a6c2a4`](https://github.com/tmigimatsu/spatial-dyn/commit/2a6c2a43f67d81ce8d55e0814032b87f9578a622))
