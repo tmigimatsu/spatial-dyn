@@ -23,6 +23,7 @@
 #include "spatial_dyn/algorithms/forward_dynamics.h"
 #include "spatial_dyn/algorithms/forward_kinematics.h"
 #include "spatial_dyn/algorithms/inverse_dynamics.h"
+#include "spatial_dyn/algorithms/inverse_kinematics.h"
 #include "spatial_dyn/algorithms/opspace_dynamics.h"
 #include "spatial_dyn/algorithms/simulation.h"
 #include "spatial_dyn/eigen/spatial_math.h"
@@ -59,7 +60,7 @@ std::pair<Eigen::VectorXd, uint32_t> ComputeOpspaceControl(
   Eigen::MatrixXd J = dyn::Jacobian(ab, -1, x_task_to_ee);
   Eigen::Ref<Eigen::Matrix<double, 3, -1>> J_v = J.topRows<3>();
   Eigen::Ref<Eigen::Matrix<double, 3, -1>> J_w = J.bottomRows<3>();
-  if (quat_ee_to_task) {
+  if (quat_ee_to_task != nullptr) {
     // Rotation Jacobian to task frame.
     const Eigen::Matrix3d R_ee_to_task = quat_ee_to_task->matrix();
     J_v = R_ee_to_task * J_v;
@@ -145,8 +146,8 @@ PYBIND11_MODULE(spatialdyn, m) {
   // Articulated body
   py::class_<ArticulatedBody>(m, "ArticulatedBody")
       .def(py::init<>())
-      .def(py::init<const std::string&>())
-      .def(py::init<const ArticulatedBody&>())
+      .def(py::init<const std::string&>(), "name"_a)
+      .def(py::init<const ArticulatedBody&>(), "ab"_a)
       .def_readwrite("name", &ArticulatedBody::name)
       .def_readwrite("graphics", &ArticulatedBody::graphics)
       .def_property_readonly("dof", &ArticulatedBody::dof)
@@ -222,11 +223,18 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def("map", &ArticulatedBody::Map)
       .def("__str__",
            [](const ArticulatedBody& ab) { return nlohmann::json(ab).dump(); })
-      .def("__repr__", [](const ArticulatedBody& ab) {
-        std::stringstream ss;
-        ss << "spatialdyn." << ab;
-        return ss.str();
-      });
+      .def("__repr__",
+           [](const ArticulatedBody& ab) {
+             std::stringstream ss;
+             ss << "spatialdyn.ArticulatedBody(name=\"" << ab.name
+                << "\", dof=" << ab.dof() << ")";
+             return ss.str();
+           })
+      .def(py::pickle(
+          [](const ArticulatedBody& ab) { return nlohmann::json(ab).dump(); },
+          [](const std::string& s) {
+            return nlohmann::json::parse(s).get<ArticulatedBody>();
+          }));
 
   // Rigid body
   py::class_<RigidBody>(m, "RigidBody")
@@ -279,7 +287,7 @@ PYBIND11_MODULE(spatialdyn, m) {
 
   // Graphics
   py::class_<Graphics>(m, "Graphics")
-      .def(py::init<const std::string&>())
+      .def(py::init<const std::string&>(), "name"_a)
       .def_readwrite("name", &Graphics::name)
       .def_readwrite("T_to_parent", &Graphics::T_to_parent)
       .def_readwrite("geometry", &Graphics::geometry)
@@ -452,6 +460,18 @@ PYBIND11_MODULE(spatialdyn, m) {
       .def("inertia", &Inertia, "ab"_a)
       .def("composite_inertia", &CompositeInertia, "ab"_a, "link"_a = 0);
 
+  // Inverse kinematics
+  m.def("inverse_kinematics", &InverseKinematics, "ab"_a, "x"_a, "quat"_a,
+        "link"_a = -1, "offset"_a = Eigen::Vector3d::Zero())
+      .def("centrifugal_coriolis", &CentrifugalCoriolis, "ab"_a)
+      .def("gravity", &Gravity, "ab"_a)
+      .def("external_torques", &ExternalTorques, "ab"_a,
+           "f_external"_a = std::map<size_t, SpatialForced>())
+      .def("friction", &Friction, "ab"_a, "tau"_a, "compensate"_a = true,
+           "stiction_epsilon"_a = 0.01)
+      .def("inertia", &Inertia, "ab"_a)
+      .def("composite_inertia", &CompositeInertia, "ab"_a, "link"_a = 0);
+
   // Simulation
   m.def(
       "integrate",
@@ -483,18 +503,39 @@ PYBIND11_MODULE(spatialdyn, m) {
   // Spatial inertia
   py::class_<SpatialInertiad>(m, "SpatialInertiad")
       .def(py::init<>())
-      .def(py::init<double, const Eigen::Vector3d&, const Eigen::Vector6d>())
+      .def(py::init<double, const Eigen::Vector3d&, const Eigen::Vector6d&>(),
+           "mass"_a, "com"_a, "I_com"_a)
       .def_readwrite("mass", &SpatialInertiad::mass)
       .def_readwrite("com", &SpatialInertiad::com)
       .def_readwrite("I_com", &SpatialInertiad::I_com)
+      .def("I_com_flat", &SpatialInertiad::I_com_flat)
       .def("__add__", &SpatialInertiad::operator+)
       .def("__iadd__", &SpatialInertiad::operator+=)
-      .def("__repr__", [](const SpatialInertiad& inertia) {
-        return "<spatialdyn.SpatialInertiad (mass=" +
-               std::to_string(inertia.mass) + ", com=[" +
-               ctrl_utils::EncodeMatlab(inertia.com) + "], I_com=[" +
-               ctrl_utils::EncodeMatlab(inertia.I_com_flat()) + "])>";
-      });
+      // TODO: rmul doesn't seem to work. mul isn't correct notation.
+      .def("__mul__", [](const SpatialInertiad& inertia,
+                         const Eigen::Isometry3d& T) { return T * inertia; })
+      .def("__rmul__", [](const SpatialInertiad& inertia,
+                          const Eigen::Isometry3d& T) { return T * inertia; })
+      .def("__repr__",
+           [](const SpatialInertiad& inertia) {
+             return "<spatialdyn.SpatialInertiad (mass=" +
+                    std::to_string(inertia.mass) + ", com=[" +
+                    ctrl_utils::EncodeMatlab(inertia.com) + "], I_com=[" +
+                    ctrl_utils::EncodeMatlab(inertia.I_com_flat()) + "])>";
+           })
+      .def(py::pickle(
+          [](const SpatialInertiad& inertia) {
+            return py::make_tuple(inertia.mass, inertia.com,
+                                  inertia.I_com_flat());
+          },
+          [](py::tuple t) {
+            if (t.size() != 3) {
+              throw std::runtime_error("Invalid SpatialInertiad pickle");
+            }
+            return SpatialInertiad(t[0].cast<double>(),
+                                   t[1].cast<Eigen::Vector3d>(),
+                                   t[2].cast<Eigen::Vector6d>());
+          }));
 
   // opspace dynamics
   py::module m_op = m.def_submodule("opspace");
@@ -525,13 +566,13 @@ PYBIND11_MODULE(spatialdyn, m) {
         typedef Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic> Strides;
         if (info.format != py::format_descriptor<double>::format()) {
           throw std::runtime_error(
-              "spatialdyn.opspace.inverse_dynamics(): Expected a double array "
-              "for N.");
+              "spatialdyn.opspace.inverse_dynamics(): Expected a double "
+              "array for N.");
         }
         if (info.ndim != 2) {
           throw std::runtime_error(
-              "spatialdyn.opspace.inverse_dynamics(): Expected a 2D array for "
-              "N." +
+              "spatialdyn.opspace.inverse_dynamics(): Expected a 2D array "
+              "for N." +
               std::to_string(info.ndim));
         }
         auto strides = Strides(info.strides[1] / (py::ssize_t)sizeof(double),

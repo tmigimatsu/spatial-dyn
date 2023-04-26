@@ -77,9 +77,9 @@ ParseOriginElement(const tinyxml2::XMLElement* xml_element) {
     if (attr_rpy != nullptr) {
       Eigen::Vector3d rpy = ctrl_utils::DecodeMatlab<Eigen::Vector3d>(std::string(attr_rpy));
       // TODO: Check Euler angles
-      ori = Eigen::AngleAxisd(rpy(0), Eigen::Vector3d::UnitX()) *
+      ori = Eigen::AngleAxisd(rpy(2), Eigen::Vector3d::UnitZ()) *
             Eigen::AngleAxisd(rpy(1), Eigen::Vector3d::UnitY()) *
-            Eigen::AngleAxisd(rpy(2), Eigen::Vector3d::UnitZ());
+            Eigen::AngleAxisd(rpy(0), Eigen::Vector3d::UnitX());
     }
   }
   return std::make_pair(std::move(pos), std::move(ori));
@@ -390,7 +390,7 @@ ArticulatedBody LoadModel(const std::string& path_urdf, const std::string& path_
 
   // Merge fixed joints
   if (simplify) {
-      for (auto it = rb_list.begin(); it != rb_list.end(); ) {
+    for (auto it = rb_list.begin(); it != rb_list.end(); ) {
       if (it == rb_list.begin()) { ++it; continue; }
 
       RigidBody& rb = rigid_bodies.at(*it).first;

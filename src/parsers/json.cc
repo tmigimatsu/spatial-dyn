@@ -61,6 +61,12 @@ void from_json(const nlohmann::json& json, RigidBody& rb) {
   if (json.count("graphics")) {
     rb.graphics = json.at("graphics").get<std::vector<Graphics>>();
   }
+  if (json.count("id")) {
+    rb.set_id(json.at("id").get<int>());
+  }
+  if (json.count("id_parent")) {
+    rb.set_id_parent(json.at("id_parent").get<int>());
+  }
   if (json.count("T_to_parent")) {
     rb.set_T_to_parent(json.at("T_to_parent").get<Eigen::Isometry3d>());
   }
