@@ -232,6 +232,7 @@ const Eigen::MatrixXd& Inertia(const ArticulatedBody& ab) {
   }
 
   // Backward pass
+  crba.A.setZero();
   for (int i = ab.dof() - 1; i >= 0; i--) {
     // Add inertia to parent
     const int parent = ab.rigid_bodies(i).id_parent();

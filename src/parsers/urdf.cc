@@ -315,7 +315,8 @@ ArticulatedBody LoadModel(const std::string& path_urdf, const std::string& path_
     }
 
     // Parse limits
-    double q_min = 0., q_max = 0.,
+    double q_min = -std::numeric_limits<double>::infinity(),
+           q_max = std::numeric_limits<double>::infinity(),
            dq_max = std::numeric_limits<double>::infinity(),
            fq_max = std::numeric_limits<double>::infinity();
     const tinyxml2::XMLElement* xml_limit = xml_joint->FirstChildElement("limit");
@@ -348,13 +349,6 @@ ArticulatedBody LoadModel(const std::string& path_urdf, const std::string& path_
           case 2: type = Joint::Type::kRz; break;
           default: type = Joint::Type::kUndefined; break;
         }
-      }
-      if (attr_type == "revolute" || attr_type == "prismatic") {
-        if (xml_limit == nullptr) {
-          throw std::runtime_error("spatial_dyn::urdf::LoadModel(): <limit> element missing from <joint> element.");
-        }
-        dq_max = ParseDoubleAttribute(xml_limit, "velocity");
-        fq_max = ParseDoubleAttribute(xml_limit, "effort");
       }
 
       Joint joint(type);
