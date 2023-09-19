@@ -4,7 +4,7 @@ from .joint_space_control import joint_space_control
 
 from ctrlutils import eigen
 
-__version__ = "1.5.1"
+__version__ = "1.5.2"
 
 eigen.Isometry3d.fdot = lambda self, f: fdot(self, f)
 eigen.Isometry3d.mdot = lambda self, m: mdot(self, m)

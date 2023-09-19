@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.5.2 (2023-09-19)
+
+### Fix
+
+* Parse urdf color ([`3d41e4b`](https://github.com/tmigimatsu/spatial-dyn/commit/3d41e4bc71206e951ccaf6dd4f48a109be4055e2))
+
 ## v1.5.1 (2023-04-26)
 ### Fix
 * Initialize inertia matrix ([`de0435a`](https://github.com/tmigimatsu/spatial-dyn/commit/de0435a87e79ecbbaa060bcdbc7625bb5fa3899a))

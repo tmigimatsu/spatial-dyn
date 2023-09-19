@@ -9,7 +9,7 @@ from setuptools.command import build_ext  # type: ignore
 from setuptools.extern.packaging import version  # type: ignore
 
 
-__version__ = "1.5.1"
+__version__ = "1.5.2"
 
 
 class CMakeExtension(setuptools.Extension):
