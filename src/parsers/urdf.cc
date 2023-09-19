@@ -145,7 +145,7 @@ Graphics ParseGraphics(const tinyxml2::XMLElement* xml_visual, const std::string
     }
 
     const tinyxml2::XMLElement* xml_texture = xml_material->FirstChildElement("texture");
-    if (xml_color != nullptr) {
+    if (xml_texture != nullptr) {
       material.texture = ParseAttribute(xml_texture, "filename");
     }
   }
